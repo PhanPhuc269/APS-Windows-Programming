@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="App.Views.PendingControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:App.Views"
+    xmlns:vm="using:App.ViewModels"
+    xmlns:model="using:App.Model"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:converters="using:App.Converters"
+    mc:Ignorable="d">
+    <UserControl.Resources>
+        <converters:DateTimeConverter x:Key="DateTimeConverter"/>
+        <converters:IntToVnCurrencyConverter x:Key="IntToVnCurrencyConverter"/>
+    </UserControl.Resources>
+    <StackPanel Padding="20">
+        <TextBlock Text="Phòng chờ"
+                   FontSize="24"
+                   FontWeight="Bold"
+                   Margin="0,0,0,20"
+                   Foreground="{StaticResource PrimaryColor}"/>
+
+        <ListView x:Name="PendingOrdersListView"
+                      ItemsSource="{x:Bind ViewModel.PendingInvoices, Mode=OneWay}"
+                      SelectionMode="None"
+                      Background="Transparent"
+                      Padding="10"
+                      Height="650"
+                      BorderThickness="0"
+                      ItemContainerStyle="{StaticResource DefaultListViewItemStyle}">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="model:Invoice">
+                    <Border Background="White"
+                                CornerRadius="10"
+                                Padding="15"
+                                Margin="0,0,0,15">
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Thông tin đơn hàng -->
+                            <Grid Margin="2" Grid.Column="0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="3*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="Mã đơn hàng:" FontSize="14" Foreground="Gray" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0"/>
+                                <TextBlock Text="{x:Bind InvoiceNumber}" FontSize="20" FontWeight="SemiBold" Grid.Column="1" Grid.Row="0"/>
+
+                                <TextBlock Text="Thời gian tạo:" FontSize="14" Foreground="Gray" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1" Margin="0,5,0,0"/>
+                                <TextBlock Text="{x:Bind CreatedTime, Converter={StaticResource DateTimeConverter}}" FontSize="14" FontWeight="Medium" Grid.Column="1" Grid.Row="1" Margin="0,5,0,0"/>
+
+                                <TextBlock Text="Thời gian hoàn thành:" FontSize="14" Foreground="Gray" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2" Margin="0,5,0,0"/>
+                                <TextBlock Text="{x:Bind CompleteTime, Converter={StaticResource DateTimeConverter}, FallbackValue='Chưa hoàn thành'}" FontSize="14" Grid.Column="1" Grid.Row="2" Margin="0,5,0,0"/>
+
+                                <TextBlock Text="Phương thức thanh toán: " FontSize="14" Foreground="Gray" VerticalAlignment="Center" Grid.Column="0" Grid.Row="3" Margin="0,5,0,0"/>
+                                <TextBlock Text="{x:Bind PaymentMethod, FallbackValue='Chưa thanh toán'}" FontSize="14" Grid.Column="1" Grid.Row="3" Margin="0,5,0,0"/>
+
+                                <TextBlock Text="Tổng số lượng:" FontSize="14" Foreground="Gray" VerticalAlignment="Center" Grid.Column="0" Grid.Row="4" Margin="0,5,0,0"/>
+                                <TextBlock Text="{x:Bind TotalQuantity}" FontSize="14" Grid.Column="1" Grid.Row="4" Margin="0,5,0,0"/>
+
+                                <TextBlock Text="Tổng tiền:" FontSize="14" Foreground="Gray" VerticalAlignment="Center" Grid.Column="0" Grid.Row="5" Margin="0,5,0,0"/>
+                                <TextBlock Text="{x:Bind TotalPrice, Converter={StaticResource IntToVnCurrencyConverter}}" FontSize="14" Grid.Column="1" Grid.Row="5" Margin="0,5,0,0"/>
+                            </Grid>
+
+                            <!-- Danh sách sản phẩm -->
+                            <Grid Grid.Column="1" Margin="0,10,0,0">
+                                <ScrollViewer>
+                                    <ListView ItemsSource="{x:Bind InvoiceItems}" Margin="0,5,0,0">
+                                        <ListView.Header>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="3*"/>
+                                                    <ColumnDefinition Width="1*"/>
+                                                    <ColumnDefinition Width="2*"/>
+                                                    <ColumnDefinition Width="2*"/>
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock Text="Tên sản phẩm" FontWeight="Bold" FontSize="14" Grid.Column="0" Margin="8,0,0,0"/>
+                                                <TextBlock Text="SL" FontWeight="Bold" FontSize="14" Grid.Column="1" HorizontalAlignment="Center"/>
+                                                <TextBlock Text="Đơn giá" FontWeight="Bold" FontSize="14" Grid.Column="2" HorizontalAlignment="Center"/>
+                                                <TextBlock Text="Thành tiền" FontWeight="Bold" FontSize="14" Grid.Column="3" HorizontalAlignment="Center"/>
+                                            </Grid>
+                                        </ListView.Header>
+
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate x:DataType="model:InvoiceItem">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="3*"/>
+                                                        <ColumnDefinition Width="1*"/>
+                                                        <ColumnDefinition Width="2*"/>
+                                                        <ColumnDefinition Width="2*"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <TextBlock Grid.Column="0" Text="{x:Bind Name}" FontSize="14" Margin="3,0,0,0"/>
+                                                    <TextBlock Grid.Column="1" Text="{x:Bind Quantity}" FontSize="14" HorizontalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="2" Text="{x:Bind Price, Converter={StaticResource IntToVnCurrencyConverter}}" FontSize="14" HorizontalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="3" Text="{x:Bind Total, Converter={StaticResource IntToVnCurrencyConverter}}" FontSize="14" HorizontalAlignment="Center"/>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                </ScrollViewer>
+                            </Grid>
+
+                            <!-- Nút hoàn tất -->
+                            <Button Content="Hoàn tất"
+                                        Grid.Column="2"
+                                        Width="80"
+                                        Height="40"
+                                        Background="{StaticResource PrimaryColor}"
+                                        Foreground="White"
+                                        CornerRadius="20"
+                                        FontWeight="Bold"
+                                        FontSize="13"
+                                        VerticalAlignment="Center"
+                                        Click="CompleteOrderButton_Click"
+                                        Style="{StaticResource ButtonRevealStyle}"/>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </StackPanel>
+</UserControl>
+<!--<Grid Padding="10" Margin="0,0,0,10" Background="White" CornerRadius="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="{x:Bind InvoiceNumber}" FontSize="18" FontWeight="SemiBold"/>
+                            <TextBlock Text="{x:Bind TableNumber}" FontSize="18" FontWeight="SemiBold"/>
+                            --><!--<TextBlock Text="Quantity: {x:Bind Quantity}" FontSize="14" Foreground="Gray"/>--><!--
+                        </StackPanel>
+                        <Button Content="Complete"
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                Click="CompleteOrderButton_Click"/>
+                    </Grid>-->

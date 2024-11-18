@@ -1,0 +1,34 @@
+﻿<Application
+    x:Class="App.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <ResourceDictionary Source="/Styles/FontSizes.xaml" />
+                <ResourceDictionary Source="/Styles/Thickness.xaml" />
+                <ResourceDictionary Source="/Styles/TextBlock.xaml" />
+                <ResourceDictionary Source="/Styles/TextBox.xaml" />
+                <ResourceDictionary>
+                    <!-- Define theme colors -->
+                    <!--<SolidColorBrush x:Key="TextControlBackgroundFocused" Color="White"/>-->
+                    <SolidColorBrush x:Key="PrimaryColor" Color="#704232"/>
+                    <SolidColorBrush x:Key="SecondaryColor" Color="#704232cf"/>
+                    <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#b26950"/>
+                    <!--<SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#4bc6f2"/>-->
+                    <!--<SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="#CCCCCC"/>-->
+                    <!--<SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="Black"/>
+                    <SolidColorBrush x:Key="ButtonForegroundPressed" Color="Black"/>-->
+                    <!--<SolidColorBrush x:Key="ButtonForegroundDisabled" Color="#666666"/>-->
+                    <!--<SolidColorBrush x:Key="TabViewItemHeaderBackground" Color="White"/>-->
+                    <!--<SolidColorBrush x:Key="TabViewItemHeaderForeground" Color="Black"/>
+                    <SolidColorBrush x:Key="TabViewItemHeaderForegroundSelected" Color="Black"/>
+                    <SolidColorBrush x:Key="TextControlForegroundFocused" Color="Black"/>-->
+                    <!-- Define text colors -->
+                    <!--<SolidColorBrush x:Key="DefaultTextColor" Color="{StaticResource PrimaryColor}"/>-->
+                </ResourceDictionary>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
