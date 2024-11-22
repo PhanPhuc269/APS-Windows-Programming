@@ -10,8 +10,9 @@ using App.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
+
 using Windows.UI;
 
 namespace App;
@@ -64,13 +65,15 @@ public partial class App : Application
             services.AddSingleton<IActivationService, ActivationService>();
             services.AddSingleton<IPageService, PageService>();
             services.AddSingleton<INavigationService, NavigationService>();
-            services.AddSingleton<IDao, MySqlDao>();
+            services.AddSingleton<IDao, MockDao>();
 
             // Core Services
             services.AddSingleton<ISampleDataService, SampleDataService>();
             services.AddSingleton<IFileService, FileService>();
 
             // Views and ViewModels
+            services.AddTransient<CustomerManagementViewModel>();
+            services.AddTransient<CustomerManagementPage>();
             services.AddTransient<InventoryManagementViewModel>();
             services.AddTransient<InventoryManagementPage>();
             services.AddTransient<RevenueViewModel>();

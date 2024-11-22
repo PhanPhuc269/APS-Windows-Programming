@@ -1,0 +1,111 @@
+﻿<Page
+    x:Class="App.Views.CustomerManagementPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:model="using:App.Model"
+    mc:Ignorable="d">
+
+    <Grid x:Name="ContentArea">
+        <Grid>
+            <StackPanel Orientation="Vertical" Spacing="10" Background="White" Padding="0,20,0,10">
+                <StackPanel Orientation="Vertical">
+                    <!-- Title Section -->
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="Quản lý khách hàng" Foreground="#4E342E" FontSize="30" FontWeight="Bold" Padding="0,0,0,10"/>
+                    </StackPanel>
+
+                    <!-- Search and Filters Section -->
+                    <StackPanel Orientation="Horizontal" Spacing="15" Padding="10" Background="#6D4C41">
+                        <ComboBox x:Name="SearchCriteriaComboBox" Width="150" SelectedIndex="0" Background="White">
+                            <ComboBoxItem Content="Name" IsSelected="True"/>
+                            <ComboBoxItem Content="Phone Number"/>
+                        </ComboBox>
+                        <TextBox x:Name="SearchBox" Foreground="Black" PlaceholderText="Tìm kiếm khách hàng..." Width="200" Background="White"/>
+
+                        <Button Content="Tìm kiếm" Click="SearchButton_Click" Background="#8D6E63" Foreground="White" Padding="10,5" CornerRadius="5"/>
+
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Điểm từ" Foreground="White" VerticalAlignment="Center" Margin="5,0"/>
+                            <TextBox x:Name="MinPointsTextBox" PlaceholderText="Tối thiểu" Width="70" Background="White"/>
+                            <TextBlock Text="đến" Foreground="White" VerticalAlignment="Center" Margin="5,0"/>
+                            <TextBox x:Name="MaxPointsTextBox" PlaceholderText="Tối đa" Width="70" Background="White"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Points Conversion Section -->
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Background="#A1887F" Padding="10">
+                        <TextBlock Text="Quy đổi điểm:" VerticalAlignment="Center" Foreground="White" Padding="5"/>
+                        <TextBlock Text="1 điểm =" VerticalAlignment="Center" Foreground="White" Padding="5"/>
+                        <TextBox x:Name="PointsToVNDTextBox" PlaceholderText="Nhập giá trị VND" Width="100" Background="White"/>
+                        <TextBlock Text="VND" VerticalAlignment="Center" Foreground="White" Padding="5"/>
+                    </StackPanel>
+
+                    <!-- Action Buttons Section -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10" Padding="10">
+                        <Button Content="Thêm" Click="AddButton_Click" Background="#5D4037" Foreground="White" Padding="10,5" CornerRadius="5"/>
+                        <Button Content="Sửa" Click="EditButton_Click" Background="#5D4037" Foreground="White" Padding="10,5" CornerRadius="5"/>
+                        <Button Content="Xóa" Click="DeleteButton_Click" Background="#5D4037" Foreground="White" Padding="10,5" CornerRadius="5"/>
+                        <Button Content="Xem chi tiết" Click="DetailButton_Click" Background="#5D4037" Foreground="White" Padding="10,5" CornerRadius="5"/>
+                        <Button Content="Xuất Excel" Click="ExportExcelButton_Click" Background="#5D4037" Foreground="White" Padding="10,5" CornerRadius="5"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <ListView x:Name="InventoryListView" HorizontalAlignment="Center" BorderBrush="Black" BorderThickness="1" Background="WhiteSmoke" 
+                  ItemsSource="{x:Bind ViewModel.FilteredCustomers, Mode=OneWay}" SelectionChanged="InventoryListView_SelectionChanged">
+                    <ListView.Header>
+                        <Grid Padding="20,0,20,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="200"/>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="200"/>
+                                <ColumnDefinition Width="100"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock HorizontalAlignment="Center" Text="Mã khách hàng" Grid.Column="0" Foreground="Black" FontWeight="Bold"/>
+                            <TextBlock HorizontalAlignment="Center" Text="Tên khách hàng" Grid.Column="1" Foreground="Black" FontWeight="Bold"/>
+                            <TextBlock HorizontalAlignment="Center" Text="Số điện thoại" Grid.Column="2" Foreground="Black" FontWeight="Bold"/>
+                            <TextBlock HorizontalAlignment="Center" Text="Email" Grid.Column="3" Foreground="Black" FontWeight="Bold"/>
+                            <TextBlock HorizontalAlignment="Center" Text="Điểm" Grid.Column="4" Foreground="Black" FontWeight="Bold"/>
+                        </Grid>
+                    </ListView.Header>
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="model:Customer">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="200"/>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="200"/>
+                                    <ColumnDefinition Width="100"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock HorizontalAlignment="Center" Text="{x:Bind CustomerId}" Grid.Column="0" Foreground="Black"/>
+                                <TextBlock HorizontalAlignment="Center" Text="{x:Bind CustomerName}" Grid.Column="1" Foreground="Black"/>
+                                <TextBlock HorizontalAlignment="Center" Text="{x:Bind PhoneNumber}" Grid.Column="2" Foreground="Black"/>
+                                <TextBlock HorizontalAlignment="Center" Text="{x:Bind Email}" Grid.Column="3" Foreground="Black"/>
+                                <TextBlock HorizontalAlignment="Center" Text="{x:Bind Points}" Grid.Column="4" Foreground="Black"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+
+                <ContentDialog x:Name="AddEditDialog" Title="Thêm/Sửa Khách Hàng" PrimaryButtonText="OK" SecondaryButtonText="Cancel" PrimaryButtonClick="AddEditDialogPrimaryButtonClick">
+                    <StackPanel>
+                        <TextBox x:Name="CustomerIdTextBox" PlaceholderText="Mã khách hàng"/>
+                        <TextBox x:Name="CustomerNameTextBox" PlaceholderText="Tên khách hàng"/>
+                        <TextBox x:Name="PhoneNumberTextBox" PlaceholderText="Số điện thoại"/>
+                        <TextBox x:Name="EmailTextBox" PlaceholderText="Email"/>
+                        <TextBox x:Name="PointsTextBox" PlaceholderText="Điểm"/>
+                    </StackPanel>
+                </ContentDialog>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,0,0,10">
+                    <Button Content="Trang trước" Click="PreviousPageButton_Click" Margin="5" Foreground="Black" Background="AntiqueWhite"/>
+                    <TextBlock x:Name="PageInfoTextBlock" Text="Trang 1" VerticalAlignment="Center" Margin="10,0" Foreground="Black"/>
+                    <Button Content="Trang tiếp theo" Click="NextPageButton_Click" Margin="5" Foreground="Black" Background="AntiqueWhite"/>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>

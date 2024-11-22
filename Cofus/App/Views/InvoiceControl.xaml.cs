@@ -148,5 +148,33 @@ public sealed partial class InvoiceControl : UserControl
         // Chỉ cho phép ký tự số
         args.Cancel = args.NewText.Any(c => !char.IsDigit(c));
     }
+    private void PhoneTextBox_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
+    {
+        QuantityTextBox_BeforeTextChanging(sender, args);
+        //Kiểm tra phải tồn tại khách hàng
+        QuantityTextBox_BeforeTextChanging(sender, args);
+
+        if (args.Cancel)
+        {
+            return;
+        }
+
+        // Check if the customer exists
+        //var phoneNumber = sender.Text + args.NewText;
+        //if (!ViewModel.CustomerExists(phoneNumber))
+        //{
+        //    args.Cancel = true;
+        //    var errorDialog = new ContentDialog
+        //    {
+        //        Title = "Lỗi",
+        //        Content = "Khách hàng không tồn tại.",
+        //        CloseButtonText = "OK"
+        //    };
+        //    errorDialog.XamlRoot = this.XamlRoot;
+        //    errorDialog.ShowAsync();
+        //}
+
+    }
+
 
 }

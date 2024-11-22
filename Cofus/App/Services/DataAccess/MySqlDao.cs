@@ -20,7 +20,6 @@ public class MySqlDao : IDao
                         $"uid={Environment.GetEnvironmentVariable("DB_USER")};" +
                         $"pwd={Environment.GetEnvironmentVariable("DB_PASSWORD")};";
     }
-
     private MySqlConnection GetConnection()
     {
         return new MySqlConnection(_connectionString);
@@ -220,6 +219,47 @@ public class MySqlDao : IDao
 
         return result.Count > 0 ? Convert.ToInt32(result[0]["PRICE"]) : -1;
     }
+    public string GetBeverageNameBySizeId(int beverageSizeId)
+    {
+        var query = @"
+        SELECT b.BEVERAGE_NAME 
+        FROM BEVERAGE b
+        INNER JOIN BEVERAGE_SIZE bs ON b.ID = bs.BEVERAGE_ID
+        WHERE bs.ID = @beverageSizeId";
+        var parameters = new List<MySqlParameter>
+        {
+            new MySqlParameter("@beverageSizeId", beverageSizeId)
+        };
+
+        var result = ExecuteSelectQuery(query, parameters);
+
+        return result.Count > 0 ? result[0]["BEVERAGE_NAME"].ToString() : null;
+    }
+
+    private FullObservableCollection<InvoiceItem> GetOrderDetails(int orderId)
+    {
+        var query = "SELECT * FROM ORDER_DETAILS WHERE ORDER_ID = @orderId";
+        var parameters = new List<MySqlParameter>
+        {
+            new MySqlParameter("@orderId", MySqlDbType.Int32) { Value = orderId }
+        };
+
+        var result = ExecuteSelectQuery(query, parameters);
+        var items = new FullObservableCollection<InvoiceItem>();
+
+        foreach (var row in result)
+        {
+            items.Add(new InvoiceItem
+            {
+                BeverageId = Convert.ToInt32(row["BEVERAGE_SIZE_ID"]),
+                Name = GetBeverageNameBySizeId(Convert.ToInt32(row["BEVERAGE_SIZE_ID"])),
+                Quantity = Convert.ToInt32(row["QUANTITY"]),
+                Price = Convert.ToInt32(row["PRICE"]),
+            });
+        }
+
+        return items;
+    }
 
     public FullObservableCollection<Invoice> GetPendingOrders()
     {
@@ -235,7 +275,8 @@ public class MySqlDao : IDao
                 InvoiceNumber = Convert.ToInt32(row["ORDER_ID"]),
                 TableNumber = row["RESERVED_TABLE_ID"] == DBNull.Value ? -1 : Convert.ToInt32(row["RESERVED_TABLE_ID"]),
                 CreatedTime = Convert.ToDateTime(row["ORDER_TIME"]),
-                PaymentMethod = row["PAYMENT_METHOD"].ToString()
+                PaymentMethod = row["PAYMENT_METHOD"].ToString(),
+                InvoiceItems = GetOrderDetails(Convert.ToInt32(row["ORDER_ID"]))
             });
         }
 
