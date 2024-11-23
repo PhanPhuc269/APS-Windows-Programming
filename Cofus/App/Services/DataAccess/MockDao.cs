@@ -10,7 +10,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace App;
 
-public class MockDao : IDao
+public class MockDao 
 {
     private readonly FullObservableCollection<Category> _categories;
     private readonly FullObservableCollection<Invoice> _pendingOrders;

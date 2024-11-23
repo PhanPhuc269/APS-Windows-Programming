@@ -148,32 +148,48 @@ public sealed partial class InvoiceControl : UserControl
         // Chỉ cho phép ký tự số
         args.Cancel = args.NewText.Any(c => !char.IsDigit(c));
     }
-    private void PhoneTextBox_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
+    private async void CustomerPhoneNumber_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
     {
-        QuantityTextBox_BeforeTextChanging(sender, args);
-        //Kiểm tra phải tồn tại khách hàng
-        QuantityTextBox_BeforeTextChanging(sender, args);
-
-        if (args.Cancel)
+        if (ViewModel.IsPaid)
         {
+            // Khôi phục giá trị ban đầu nếu hóa đơn đã thanh toán
+            sender.Text = ViewModel.Invoice.CustomerPhoneNumber;
             return;
         }
 
-        // Check if the customer exists
-        //var phoneNumber = sender.Text + args.NewText;
-        //if (!ViewModel.CustomerExists(phoneNumber))
-        //{
-        //    args.Cancel = true;
-        //    var errorDialog = new ContentDialog
-        //    {
-        //        Title = "Lỗi",
-        //        Content = "Khách hàng không tồn tại.",
-        //        CloseButtonText = "OK"
-        //    };
-        //    errorDialog.XamlRoot = this.XamlRoot;
-        //    errorDialog.ShowAsync();
-        //}
+        if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+        {
+            // Lọc chỉ cho phép nhập số
+            string input = sender.Text;
+            string filteredInput = new string(input.Where(char.IsDigit).ToArray());
 
+            if (input != filteredInput)
+            {
+                // Cập nhật lại văn bản chỉ chứa số
+                sender.Text = filteredInput;
+            }
+            else
+            {
+                // Fetch suggestions từ cơ sở dữ liệu
+                var suggestions = await FetchCustomerPhoneNumberSuggestionsAsync(filteredInput);
+                sender.ItemsSource = suggestions;
+            }
+        }
+    }
+
+
+    private void CustomerPhoneNumber_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+    {
+        if (args.ChosenSuggestion != null)
+        {
+            // Use the chosen suggestion
+            sender.Text = args.ChosenSuggestion.ToString();
+        }
+    }
+
+    private Task<List<string>> FetchCustomerPhoneNumberSuggestionsAsync(string query)
+    {
+        return App.GetService<IDao>().SuggestCustomerPhoneNumbers(query);
     }
 
 

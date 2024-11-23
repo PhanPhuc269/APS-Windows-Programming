@@ -292,18 +292,46 @@ public class MySqlDao : IDao
             return await command.ExecuteScalarAsync();
         }
     }
+    public Task<List<string>> SuggestCustomerPhoneNumbers(string keyword)
+    {
+        var query = @"
+        SELECT PHONE_NUMBER 
+        FROM CUSTOMERS
+        WHERE PHONE_NUMBER LIKE CONCAT('%', @keyword, '%')
+        LIMIT 10";
+
+        var parameters = new List<MySqlParameter>
+        {
+            new MySqlParameter("@keyword", keyword)
+        };
+
+        var result = ExecuteSelectQuery(query, parameters);
+
+        var phoneNumbers = new List<string>();
+
+        foreach (var row in result)
+        {
+            phoneNumbers.Add(row["PHONE_NUMBER"].ToString());
+        }
+
+        return Task.FromResult(phoneNumbers);
+
+    }
 
     public async Task<int> CreateOrder(Invoice invoice)
     {
         var query = @"
-                        INSERT INTO ORDERS (TOTAL_AMOUNT, ORDER_TIME, PAYMENT_METHOD) 
-                        VALUES (@total, @time, @method);
+                        INSERT INTO ORDERS (TOTAL_AMOUNT, ORDER_TIME, PAYMENT_METHOD, CONSUMED_POINTS, AMOUNT_DUE, EMPLOYEE_ID) 
+                        VALUES (@total, @time, @method, @points, @amountDue, @employee);
                         SELECT LAST_INSERT_ID();";
         var parameters = new List<MySqlParameter>
         {
             new MySqlParameter("@total", invoice.TotalPrice),
             new MySqlParameter("@time", invoice.CreatedTime),
-            new MySqlParameter("@method", invoice.PaymentMethod)
+            new MySqlParameter("@points", invoice.ConsumedPoints),
+            new MySqlParameter("@amountDue", invoice.AmountDue),
+            new MySqlParameter("@method", invoice.PaymentMethod),
+            new MySqlParameter("@employee", 1)
         };
         var orderId = Convert.ToInt32(await ExecuteScalarAsync(query, parameters));
 
@@ -341,7 +369,7 @@ public class MySqlDao : IDao
 
     public bool CompletePendingOrder(Invoice order)
     {
-        var query = "UPDATE ORDERS SET COMPLETED_TIME = @time WHERE ID = @invoice";
+        var query = "UPDATE ORDERS SET COMPLETED_TIME = @time WHERE ORDER_ID = @invoice";
         var parameters = new List<MySqlParameter>
         {
             new MySqlParameter("@invoice", order.InvoiceNumber),

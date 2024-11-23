@@ -73,6 +73,7 @@ public class Invoice : INotifyPropertyChanged
     {
         OnPropertyChanged(nameof(TotalQuantity));
         OnPropertyChanged(nameof(TotalPrice));
+        OnPropertyChanged(nameof(AmountDue));
     }
 
     // Phương thức để tính tổng số lượng
@@ -80,6 +81,16 @@ public class Invoice : INotifyPropertyChanged
 
     // Phương thức để tính tổng giá
     public int TotalPrice => InvoiceItems.Sum(item => item.Total);
+
+    public int ConsumedPoints
+    {
+        get; set;
+    }=0;
+    public int AmountDue => TotalPrice - ConsumedPoints;
+    public string? CustomerPhoneNumber
+    {
+        get; set;
+    }
 
     // Phương thức để thêm sản phẩm vào hóa đơn
     public void AddItem(InvoiceItem item)

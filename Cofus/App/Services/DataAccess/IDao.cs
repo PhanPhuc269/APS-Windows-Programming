@@ -13,6 +13,7 @@ public interface IDao
     Category GetCategory(string type);
     FullObservableCollection<Category> GetListTypeBeverage();
     FullObservableCollection<Invoice> GetPendingOrders();
+    Task<List<string>> SuggestCustomerPhoneNumbers(string keyword);
     Task<int> CreateOrder(Invoice invoice);
     Task AddOrderDetail(int orderId, InvoiceItem item);
     List<string> GetAllPaymentMethod();

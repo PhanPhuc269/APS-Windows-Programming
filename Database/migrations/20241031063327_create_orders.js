@@ -7,7 +7,9 @@ exports.up = function(knex) {
       table.datetime('ORDER_TIME');
       table.datetime('COMPLETED_TIME');
       table.integer('TOTAL_AMOUNT');
-      table.string('PAYMENT_METHOD')
+      table.string('PAYMENT_METHOD');
+      table.integer('CONSUMED_POINTS');
+      table.integer('AMOUNT_DUE');
       table.integer('EMPLOYEE_ID').unsigned().references('EMPLOYEE_ID').inTable('ACCOUNT');
     });
   };
@@ -15,4 +17,3 @@ exports.up = function(knex) {
   exports.down = function(knex) {
     return knex.schema.dropTableIfExists('ORDERS');
   };
-  

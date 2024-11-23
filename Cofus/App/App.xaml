@@ -14,7 +14,7 @@
                     <!-- Define theme colors -->
                     <!--<SolidColorBrush x:Key="TextControlBackgroundFocused" Color="White"/>-->
                     <SolidColorBrush x:Key="PrimaryColor" Color="#704232"/>
-                    <SolidColorBrush x:Key="SecondaryColor" Color="#704232cf"/>
+                    <SolidColorBrush x:Key="SecondaryColor" Color="#7e5b47"/>
                     <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#b26950"/>
                     <!--<SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#4bc6f2"/>-->
                     <!--<SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="#CCCCCC"/>-->
