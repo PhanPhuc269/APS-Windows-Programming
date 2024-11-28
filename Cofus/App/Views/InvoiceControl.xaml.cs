@@ -22,6 +22,36 @@ public sealed partial class InvoiceControl : UserControl
 
     private async void CheckoutButton_Click(object sender, RoutedEventArgs e)
     {
+        // Kiểm tra xem số điện thoại khách hàng có được nhập hay không
+        if (!string.IsNullOrWhiteSpace(ViewModel.Invoice.CustomerPhoneNumber))
+        {
+            // Kiểm tra xem số điện thoại khách hàng có tồn tại trong cơ sở dữ liệu hay không
+            var customerPhoneNumbers = await App.GetService<IDao>().SuggestCustomerPhoneNumbers(ViewModel.Invoice.CustomerPhoneNumber);
+            if (!customerPhoneNumbers.Contains(ViewModel.Invoice.CustomerPhoneNumber))
+            {
+                var errorDialog = new ContentDialog
+                {
+                    Title = "Lỗi",
+                    Content = "Số điện thoại khách hàng không tồn tại.",
+                    CloseButtonText = "OK"
+                };
+                errorDialog.XamlRoot = this.XamlRoot;
+                await errorDialog.ShowAsync();
+                return;
+            }
+        }
+        if (ViewModel.Invoice.InvoiceItems == null || !ViewModel.Invoice.InvoiceItems.Any())
+        {
+            var errorDialog = new ContentDialog
+            {
+                Title = "Lỗi",
+                Content = "Vui lòng chọn món.",
+                CloseButtonText = "OK"
+            };
+            errorDialog.XamlRoot = this.XamlRoot;
+            await errorDialog.ShowAsync();
+            return;
+        }
         // Hiển thị hộp thoại lựa chọn phương thức thanh toán
         var paymentMethodDialog = new ContentDialog
         {
@@ -173,7 +203,14 @@ public sealed partial class InvoiceControl : UserControl
                 // Fetch suggestions từ cơ sở dữ liệu
                 var suggestions = await FetchCustomerPhoneNumberSuggestionsAsync(filteredInput);
                 sender.ItemsSource = suggestions;
+                
             }
+        }
+        if(ViewModel.Invoice.CustomerPhoneNumber != null && ViewModel.Invoice.CustomerPhoneNumber != "")
+        {
+            // Cập nhật điểm tiêu dùng
+            int CurenPoints = App.GetService<IDao>().GetComsumedPoints(sender.Text);
+            ViewModel.ConsumedPoints = (CurenPoints > ViewModel.Invoice.TotalPrice && ViewModel.Invoice.TotalPrice!=0) ? ViewModel.Invoice.TotalPrice : CurenPoints;
         }
     }
 
@@ -184,6 +221,8 @@ public sealed partial class InvoiceControl : UserControl
         {
             // Use the chosen suggestion
             sender.Text = args.ChosenSuggestion.ToString();
+            int CurenPoints = App.GetService<IDao>().GetComsumedPoints(sender.Text);
+            ViewModel.ConsumedPoints= CurenPoints>ViewModel.Invoice.TotalPrice ? ViewModel.Invoice.TotalPrice : CurenPoints ;
         }
     }
 
@@ -192,5 +231,20 @@ public sealed partial class InvoiceControl : UserControl
         return App.GetService<IDao>().SuggestCustomerPhoneNumbers(query);
     }
 
-
+    private void ToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+    {
+        if (sender is ToggleSwitch toggleSwitch)
+        {
+            if ( ViewModel.ConsumedPoints <= 0 || (ViewModel.Invoice.InvoiceItems == null || !ViewModel.Invoice.InvoiceItems.Any())) toggleSwitch.IsOn = false;
+            else if (toggleSwitch.IsOn)
+            {
+                int CurenPoints = App.GetService<IDao>().GetComsumedPoints(ViewModel.Invoice.CustomerPhoneNumber);
+                ViewModel.Invoice.ConsumedPoints = CurenPoints > ViewModel.Invoice.TotalPrice ? ViewModel.Invoice.TotalPrice : CurenPoints;
+            }
+            else
+            {
+                ViewModel.Invoice.ConsumedPoints = 0;
+            }
+        }
+    }
 }

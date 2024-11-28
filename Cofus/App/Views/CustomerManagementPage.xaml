@@ -28,18 +28,18 @@
 
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock Text="Điểm từ" Foreground="White" VerticalAlignment="Center" Margin="5,0"/>
-                            <TextBox x:Name="MinPointsTextBox" PlaceholderText="Tối thiểu" Width="70" Background="White"/>
+                            <TextBox x:Name="MinPointsTextBox" PlaceholderText="Tối thiểu" Width="150" Background="White"/>
                             <TextBlock Text="đến" Foreground="White" VerticalAlignment="Center" Margin="5,0"/>
-                            <TextBox x:Name="MaxPointsTextBox" PlaceholderText="Tối đa" Width="70" Background="White"/>
+                            <TextBox x:Name="MaxPointsTextBox" PlaceholderText="Tối đa" Width="150" Background="White"/>
                         </StackPanel>
                     </StackPanel>
 
                     <!-- Points Conversion Section -->
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Background="#A1887F" Padding="10">
                         <TextBlock Text="Quy đổi điểm:" VerticalAlignment="Center" Foreground="White" Padding="5"/>
-                        <TextBlock Text="1 điểm =" VerticalAlignment="Center" Foreground="White" Padding="5"/>
-                        <TextBox x:Name="PointsToVNDTextBox" PlaceholderText="Nhập giá trị VND" Width="100" Background="White"/>
-                        <TextBlock Text="VND" VerticalAlignment="Center" Foreground="White" Padding="5"/>
+                        <TextBlock Text="1.000 điểm =" VerticalAlignment="Center" Foreground="White" Padding="5"/>
+                        <TextBlock Text="1.000 VND." VerticalAlignment="Center" Foreground="White" Padding="5"/>
+                        <TextBlock Text="Thưởng 10% số tiền cần thanh toán từ hóa đơn của khách hàng " VerticalAlignment="Center" Foreground="White" Padding="5"/>
                     </StackPanel>
 
                     <!-- Action Buttons Section -->
@@ -52,8 +52,8 @@
                     </StackPanel>
                 </StackPanel>
 
-                <ListView x:Name="InventoryListView" HorizontalAlignment="Center" BorderBrush="Black" BorderThickness="1" Background="WhiteSmoke" 
-                  ItemsSource="{x:Bind ViewModel.FilteredCustomers, Mode=OneWay}" SelectionChanged="InventoryListView_SelectionChanged">
+                <ListView x:Name="CustomersListView" HorizontalAlignment="Center" BorderBrush="Black" BorderThickness="1" Background="WhiteSmoke" 
+                  ItemsSource="{x:Bind ViewModel.Customers, Mode=OneWay}" SelectionChanged="CustomersListView_SelectionChanged">
                     <ListView.Header>
                         <Grid Padding="20,0,20,0">
                             <Grid.ColumnDefinitions>
@@ -92,7 +92,7 @@
 
                 <ContentDialog x:Name="AddEditDialog" Title="Thêm/Sửa Khách Hàng" PrimaryButtonText="OK" SecondaryButtonText="Cancel" PrimaryButtonClick="AddEditDialogPrimaryButtonClick">
                     <StackPanel>
-                        <TextBox x:Name="CustomerIdTextBox" PlaceholderText="Mã khách hàng"/>
+                        <TextBlock x:Name="CustomerIdTextBox"/>
                         <TextBox x:Name="CustomerNameTextBox" PlaceholderText="Tên khách hàng"/>
                         <TextBox x:Name="PhoneNumberTextBox" PlaceholderText="Số điện thoại"/>
                         <TextBox x:Name="EmailTextBox" PlaceholderText="Email"/>
@@ -102,7 +102,7 @@
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,0,0,10">
                     <Button Content="Trang trước" Click="PreviousPageButton_Click" Margin="5" Foreground="Black" Background="AntiqueWhite"/>
-                    <TextBlock x:Name="PageInfoTextBlock" Text="Trang 1" VerticalAlignment="Center" Margin="10,0" Foreground="Black"/>
+                    <TextBlock x:Name="PageInfoTextBlock" Text="" VerticalAlignment="Center" Margin="10,0" Foreground="Black"/>
                     <Button Content="Trang tiếp theo" Click="NextPageButton_Click" Margin="5" Foreground="Black" Background="AntiqueWhite"/>
                 </StackPanel>
             </StackPanel>

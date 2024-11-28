@@ -33,7 +33,7 @@
                 <DataTemplate x:DataType="model:Invoice">
                     <Border>
 
-                        <Grid >
+                        <Grid Background="#e9e3d3" CornerRadius="10" Margin="0,0,0,10" >
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
@@ -41,10 +41,8 @@
                             </Grid.ColumnDefinitions>
 
                             <!-- Thông tin đơn hàng -->
-                            <Grid Margin="2" Grid.Column="0" Background="{StaticResource SecondaryColor}" Padding="10"
-                                CornerRadius="10">
+                            <Grid Margin="2" Grid.Column="0" Background="#b39269" Padding="10" CornerRadius="10">
                                 <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
@@ -57,18 +55,16 @@
                                 <TextBlock Text="Mã đơn hàng:" FontSize="14" Foreground="White" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0"/>
                                 <TextBlock Text="{x:Bind InvoiceNumber}" FontSize="14" FontWeight="SemiBold" Grid.Column="1" Grid.Row="0"/>
 
-                                <TextBlock Text="Thời gian tạo:" FontSize="14" Foreground="Gray" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1" Margin="0,5,0,0"/>
+                                <TextBlock Text="Thời gian tạo:" FontSize="14" Foreground="White" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1" Margin="0,5,0,0"/>
                                 <TextBlock Text="{x:Bind CreatedTime, Converter={StaticResource DateTimeConverter}}" FontSize="14" FontWeight="Medium" Grid.Column="1" Grid.Row="1" Margin="0,5,0,0"/>
 
-                                <TextBlock Text="Tổng số lượng:" FontSize="14" Foreground="Gray" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2" Margin="0,5,0,0"/>
+                                <TextBlock Text="Tổng số lượng:" FontSize="14" Foreground="White" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2" Margin="0,5,0,0"/>
                                 <TextBlock Text="{x:Bind TotalQuantity}" FontSize="14" Grid.Column="1" Grid.Row="2" Margin="10,5,0,0"/>
 
-                                <TextBlock Text="Tổng tiền:" FontSize="14" Foreground="Gray" VerticalAlignment="Center" Grid.Column="0" Grid.Row="3" Margin="0,5,0,0"/>
-                                <TextBlock Text="{x:Bind TotalPrice, Converter={StaticResource IntToVnCurrencyConverter}}" FontSize="14" Grid.Column="1" Grid.Row="3" Margin="0,5,0,0"/>
                             </Grid>
 
                             <!-- Danh sách sản phẩm -->
-                            <Grid Grid.Column="1">
+                            <Grid Grid.Column="1" Padding="5" >
                                 <ScrollViewer>
                                     <ListView ItemsSource="{x:Bind InvoiceItems}" Margin="0,5,0,0">
                                         <ListView.Header>
@@ -82,8 +78,8 @@
 
                                                 <TextBlock Text="Tên sản phẩm" FontWeight="Bold" FontSize="14" Grid.Column="0" Margin="8,0,0,0"/>
                                                 <TextBlock Text="SL" FontWeight="Bold" FontSize="14" Grid.Column="1" HorizontalAlignment="Center"/>
-                                                <TextBlock Text="Đơn giá" FontWeight="Bold" FontSize="14" Grid.Column="2" HorizontalAlignment="Center"/>
-                                                <TextBlock Text="Thành tiền" FontWeight="Bold" FontSize="14" Grid.Column="3" HorizontalAlignment="Center"/>
+                                                <TextBlock Text="Size" FontWeight="Bold" FontSize="14" Grid.Column="2" HorizontalAlignment="Center"/>
+                                                <TextBlock Text="Note" FontWeight="Bold" FontSize="14" Grid.Column="3" HorizontalAlignment="Center"/>
                                             </Grid>
                                         </ListView.Header>
 
@@ -99,8 +95,8 @@
 
                                                     <TextBlock Grid.Column="0" Text="{x:Bind Name}" FontSize="14" Margin="3,0,0,0"/>
                                                     <TextBlock Grid.Column="1" Text="{x:Bind Quantity}" FontSize="14" HorizontalAlignment="Center"/>
-                                                    <TextBlock Grid.Column="2" Text="{x:Bind Price, Converter={StaticResource IntToVnCurrencyConverter}}" FontSize="14" HorizontalAlignment="Center"/>
-                                                    <TextBlock Grid.Column="3" Text="{x:Bind Total, Converter={StaticResource IntToVnCurrencyConverter}}" FontSize="14" HorizontalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="2" Text="{x:Bind Size}" FontSize="14" HorizontalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="3" Text="{x:Bind Note}" FontSize="14" HorizontalAlignment="Center"/>
                                                 </Grid>
                                             </DataTemplate>
                                         </ListView.ItemTemplate>
@@ -136,7 +132,7 @@
                         <StackPanel>
                             <TextBlock Text="{x:Bind InvoiceNumber}" FontSize="18" FontWeight="SemiBold"/>
                             <TextBlock Text="{x:Bind TableNumber}" FontSize="18" FontWeight="SemiBold"/>
-                            --><!--<TextBlock Text="Quantity: {x:Bind Quantity}" FontSize="14" Foreground="Gray"/>--><!--
+                            --><!--<TextBlock Text="Quantity: {x:Bind Quantity}" FontSize="14" Foreground="White"/>--><!--
                         </StackPanel>
                         <Button Content="Complete"
                                 Grid.Column="1"

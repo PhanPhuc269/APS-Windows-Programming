@@ -11,45 +11,16 @@ public partial class CustomerManagementViewModel : ObservableRecipient
     public CustomerManagementViewModel()
     {
         // Initialize the Customers collection
-        Customers = new FullObservableCollection<Customer>();
-
-        // Initialize sample data
-        Customers.Add(new Customer
-        {
-            CustomerId = 1,
-            CustomerName = "John Doe",
-            PhoneNumber = "1234567890",
-            Email = "john.doe@example.com",
-            Points = 100
-        });
-
-        Customers.Add(new Customer
-        {
-            CustomerId = 2,
-            CustomerName = "Jane Smith",
-            PhoneNumber = "0987654321",
-            Email = "jane.smith@example.com",
-            Points = 200
-        });
-
-        Customers.Add(new Customer
-        {
-            CustomerId = 3,
-            CustomerName = "Alice Johnson",
-            PhoneNumber = "5555555555",
-            Email = "alice.johnson@example.com",
-            Points = 150
-        });
-
-        FilteredCustomers = new FullObservableCollection<Customer>();
-        currentPage = 0;
+        currentPage = 1;
         UpdateCurrentPage();
     }
 
-    public FullObservableCollection<Customer> FilteredCustomers { get; set; }
-
     private int currentPage;
     private const int itemsPerPage = 10;
+    private string? searchName;
+    private string? searchPhoneNumber;
+    private int? MinPoints;
+    private int? MaxPoints;
 
     public int CurrentPage
     {
@@ -63,51 +34,63 @@ public partial class CustomerManagementViewModel : ObservableRecipient
             }
         }
     }
-
-    public void UpdateCurrentPage()
+    public int TotalPages
     {
-        FilteredCustomers.Clear();
-        var items = Customers.Skip(CurrentPage * itemsPerPage).Take(itemsPerPage).ToList();
-        foreach (var item in items)
+        get; set;
+    }
+
+
+    public string? SearchName
+    {
+        get => searchName;
+        set
         {
-            FilteredCustomers.Add(item);
+            if (searchName != value)
+            {
+                searchName = value;
+                UpdateCurrentPage();
+            }
         }
     }
 
-    public int TotalPages()
+    public string? SearchPhoneNumber
     {
-        return (int)Math.Ceiling((double)Customers.Count / itemsPerPage);
+        get => searchPhoneNumber;
+        set
+        {
+            if (searchPhoneNumber != value)
+            {
+                searchPhoneNumber = value;
+                UpdateCurrentPage();
+            }
+        }
+    }
+
+    public void UpdateCurrentPage()
+    {
+        var (customers, count) = App.GetService<IDao>().GetCustomers(currentPage, itemsPerPage, searchName, searchPhoneNumber, MinPoints, MaxPoints);
+        Customers = new FullObservableCollection<Customer>(customers);
+        TotalPages = (int)Math.Ceiling((double)count / itemsPerPage);
     }
 
     public void SearchCustomersByName(string searchText, int? minPoints, int? maxPoints)
     {
-        var filtered = Customers.Where(c => c.CustomerName.ToLower().Contains(searchText.ToLower()));
-        if (minPoints.HasValue)
-        {
-            filtered = filtered.Where(c => c.Points >= minPoints.Value);
-        }
+        SearchName = searchText;
+        if(minPoints.HasValue)
+            MinPoints = minPoints;
         if (maxPoints.HasValue)
-        {
-            filtered = filtered.Where(c => c.Points <= maxPoints.Value);
-        }
-        FilteredCustomers = new FullObservableCollection<Customer>(filtered);
-        currentPage = 0;
+            MaxPoints = maxPoints;
         UpdateCurrentPage();
     }
 
     public void SearchCustomersByPhoneNumber(string searchText, int? minPoints, int? maxPoints)
     {
-        var filtered = Customers.Where(c => c.PhoneNumber.ToLower().Contains(searchText.ToLower()));
+        SearchPhoneNumber = searchText;
         if (minPoints.HasValue)
-        {
-            filtered = filtered.Where(c => c.Points >= minPoints.Value);
-        }
+            MinPoints = minPoints;
         if (maxPoints.HasValue)
-        {
-            filtered = filtered.Where(c => c.Points <= maxPoints.Value);
-        }
-        FilteredCustomers = new FullObservableCollection<Customer>(filtered);
-        currentPage = 0;
+            MaxPoints = maxPoints;
+        // Implement filtering logic based on minPoints and maxPoints if needed
         UpdateCurrentPage();
     }
 }

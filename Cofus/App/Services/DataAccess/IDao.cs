@@ -20,7 +20,13 @@ public interface IDao
     bool CompletePendingOrder(Invoice order);
     FullObservableCollection<Product> GetAllBeverage();
     int GetProductPrice(int beverageId, string size);
-
+    int GetComsumedPoints(string phoneNumber);
+    void BonusPoints(int AmountDue, string CustomerPhone);
+    void ConsumePoints(int points, string customerPhone);
+    (FullObservableCollection<Customer> Customers, int TotalCount) GetCustomers(int pageNumber, int pageSize, string? name = null, string? phoneNumber = null, int? minPoints = null, int? maxPoints = null);
+    bool AddCustomer(Customer customer);
+    bool UpdateCustomer(Customer customer);
+    bool DeleteCustomer(int customerId);
     // Revenue
     Task<Revenue> GetRevenue(DateTime selectedDate, DateTime previousDate);
     Task<List<TopProduct>> GetTopProducts(DateTime selectedDate);

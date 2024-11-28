@@ -16,6 +16,7 @@
         <conv:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
         <conv:IntToVnCurrencyConverter x:Key="IntToVnCurrencyConverter"/>
         <conv:InverseBoolean x:Key="InverseBoolean"/>
+        <conv:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
     </UserControl.Resources>
     <Grid Background="White" VerticalAlignment="Bottom">
         <Grid.RowDefinitions>
@@ -100,6 +101,8 @@
                                              Style="{StaticResource TextBox}" 
                                              IsEnabled="{Binding DataContext.IsPaid, ElementName=RootUserControl, Mode=TwoWay, Converter={StaticResource InverseBoolean}}" 
                                              BeforeTextChanging="QuantityTextBox_BeforeTextChanging" />
+                                    
+                                    <!-- Hiển thị điểm thưởng -->
                                     <TextBlock Text="{x:Bind Price, Mode=OneWay, Converter={StaticResource IntToVnCurrencyConverter}}" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1" Foreground="Black"/>
                                     <TextBlock Text="{x:Bind Total, Mode=OneWay, Converter={StaticResource IntToVnCurrencyConverter}}" Grid.Column="3" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1" Foreground="Black"/>
                                     <!-- Nút xóa mục -->
@@ -136,7 +139,7 @@
                 <TextBlock Text="Tổng tiền: " FontWeight="Bold"  Margin="0,0,5,5" Foreground="Black" Grid.Column="0" Grid.Row="1"/>
                 <TextBlock Text="{x:Bind ViewModel.TotalPrice, Mode=OneWay, Converter={StaticResource IntToVnCurrencyConverter}}" FontWeight="Bold" Foreground="Black" Grid.Column="2" Grid.Row="1" HorizontalAlignment="Left"/>
                 <TextBlock Text="Điểm tiêu dùng: " FontWeight="Bold" Margin="0,0,5,0" Foreground="Black" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2"/>
-                <TextBox
+                <!--<TextBox
                      Width="100"
                     Height="8"
                      Text="{x:Bind ViewModel.Invoice.ConsumedPoints, Mode=TwoWay}"
@@ -145,8 +148,34 @@
                      PlaceholderText="Nhập điểm"
                      HorizontalAlignment="Left"
                      IsEnabled="{x:Bind ViewModel.IsPaid,Mode=OneWay, Converter={StaticResource InverseBoolean}}"
-                     VerticalAlignment="Center"  Grid.Column="1" Grid.Row="2" />
-                <TextBlock Text="{x:Bind ViewModel.Invoice.ConsumedPoints, Mode=OneWay, Converter={StaticResource IntToVnCurrencyConverter}}" FontWeight="Bold" Foreground="Black" Grid.Column="2" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                     VerticalAlignment="Center"  Grid.Column="1" Grid.Row="2" />-->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="2">
+                    <!-- Hiển thị điểm thưởng -->
+                    <TextBlock
+                     Text="{x:Bind ViewModel.ConsumedPoints, Mode=OneWay}"
+                     HorizontalAlignment="Left"
+                     Visibility="{x:Bind ViewModel.IsPaid, Mode=OneWay, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                     VerticalAlignment="Center"  />
+
+                    <!-- Nút bật/tắt để áp dụng điểm thưởng IsChecked="{Binding DataContext.IsApplied, ElementName=RootUserControl, Mode=TwoWay}" -->
+                    <ToggleSwitch
+                      OffContent="" OnContent="Applied"
+                      IsOn="{x:Bind ViewModel.AppliedPoint, Mode=TwoWay}"
+                      IsEnabled="{x:Bind ViewModel.IsPaid, Mode=OneWay, Converter={StaticResource InverseBoolean}}"
+                      Visibility="{x:Bind ViewModel.Invoice.CustomerPhoneNumber, Mode=OneWay, Converter={StaticResource StringToVisibilityConverter}}"
+                      HorizontalAlignment="Center" 
+                      VerticalAlignment="Center" 
+                      Margin="5,0,0,0"
+                       FontSize="13"
+                      Toggled="ToggleSwitch_Toggled"/>
+                </StackPanel>
+
+                <!--<TextBlock Text="{x:Bind ViewModel.Invoice.ConsumedPoints, Mode=OneWay, Converter={StaticResource IntToVnCurrencyConverter}}" FontWeight="Bold" Foreground="Black" Grid.Column="2" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Center"/>-->
+                <TextBlock FontWeight="Bold" Foreground="Black" Grid.Column="2" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <Run Text="-" />
+                    <Run Text="{x:Bind ViewModel.Invoice.ConsumedPoints, Mode=OneWay, Converter={StaticResource IntToVnCurrencyConverter}}" />
+                </TextBlock>
+
                 <Border Height="1" Background="Black" HorizontalAlignment="Stretch" Margin="0,20,0,10" Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="3" />
                 <TextBlock Text="Số tiền cần thanh toán: " FontWeight="Bold" Margin="0,0,5,0" Foreground="Black" Grid.Column="0" Grid.Row="4" />
                 <TextBlock Text="{x:Bind ViewModel.Invoice.AmountDue, Mode=OneWay, Converter={StaticResource IntToVnCurrencyConverter}}" FontWeight="Bold" Foreground="Black" Grid.Column="2" Grid.Row="4" />
@@ -170,6 +199,7 @@
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"/>
             </StackPanel>-->
+            
             <TextBlock
                     Visibility="{x:Bind ViewModel.IsPaid, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
                     Text="Đã thanh toán" 
