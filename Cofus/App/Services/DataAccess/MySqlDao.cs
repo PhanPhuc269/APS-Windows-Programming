@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using App.Model;
 using MySql.Data.MySqlClient;
 using DotNetEnv;
+using Microsoft.UI.Xaml.Controls.Primitives;
 
 namespace App;
 
@@ -458,25 +459,58 @@ public class MySqlDao : IDao
         return ExecuteNonQuery(query, parameters) > 0;
     }
 
+    public async Task<Revenue> GetRevenue(DateTime selectedDate)
+    {
+        var query = @"
+        SELECT 
+            SUM(o.TOTAL_AMOUNT) AS TotalRevenue, 
+            COUNT(o.ORDER_ID) AS OrderCount,
+            SUM(CASE WHEN o.PAYMENT_METHOD = 'Cash' THEN o.TOTAL_AMOUNT ELSE 0 END) AS CashAmount
+        FROM 
+            ORDERS o
+        WHERE 
+            DATE(o.ORDER_TIME) = @selectedDate";
+
+        var parameters = new List<MySqlParameter>
+        {
+            new MySqlParameter("@selectedDate", selectedDate)
+        };
+
+        var result = ExecuteSelectQuery(query, parameters);
+
+        if (result.Count > 0)
+        {
+            var row = result[0];
+            return new Revenue
+            {
+                TotalRevenue = row["TotalRevenue"] != DBNull.Value ? Convert.ToInt32(row["TotalRevenue"]) : 0,
+                OrderCount = row["OrderCount"] != DBNull.Value ? Convert.ToInt32(row["OrderCount"]) : 0,
+                CashAmount = row["CashAmount"] != DBNull.Value ? Convert.ToInt32(row["CashAmount"]) : 0
+            }; 
+        }
+
+        return new Revenue();
+    }
+
     public async Task<List<TopProduct>> GetTopProducts(DateTime selectedDate)
     {
         var query = @"
-            SELECT 
-                b.IMAGE_PATH AS ImageUrl, 
-                b.BEVERAGE_NAME AS Name, 
-                SUM(od.QUANTITY) AS Amount
-            FROM 
+            SELECT
+                b.IMAGE_PATH AS ImageUrl,
+                b.BEVERAGE_NAME AS Name,
+                SUM(od.SUBTOTAL) AS Revenue
+            FROM
                 ORDER_DETAILS od
-            INNER JOIN 
-                BEVERAGE b ON od.BEVERAGE_ID = b.ID
-            INNER JOIN 
-                ORDERS o ON od.ORDER_ID = o.ID
-            WHERE 
+            JOIN
+                BEVERAGE b ON od.BEVERAGE_SIZE_ID = b.ID
+            JOIN
+                ORDERS o ON od.ORDER_ID = o.ORDER_ID
+            WHERE
                 DATE(o.ORDER_TIME) = @selectedDate
-            GROUP BY 
-                b.ID
-            ORDER BY 
-                Amount DESC
+            GROUP BY
+                b.IMAGE_PATH, b.BEVERAGE_NAME
+            ORDER BY
+                Revenue DESC
             LIMIT 5";
 
         var parameters = new List<MySqlParameter>
@@ -494,65 +528,35 @@ public class MySqlDao : IDao
             {
                 ImageUrl = row["ImageUrl"].ToString(),
                 Name = row["Name"].ToString(),
-                Revenue = Convert.ToInt32(row["Amount"])
+                Revenue = Convert.ToInt32(row["Revenue"])
             });
         }
 
         return topProducts;
     }
-    public async Task<Revenue> GetRevenue(DateTime selectedDate, DateTime previousDate)
-    {
-        var query = @"
-        SELECT 
-            SUM(o.TOTAL_AMOUNT) AS TotalRevenue, 
-            COUNT(o.ID) AS OrderCount
-        FROM 
-            ORDERS o
-        WHERE 
-            o.ORDER_TIME BETWEEN @previousDate AND @selectedDate";
-
-        var parameters = new List<MySqlParameter>
-{
-    new MySqlParameter("@previousDate", previousDate),
-    new MySqlParameter("@selectedDate", selectedDate)
-};
-
-        var result = ExecuteSelectQuery(query, parameters);
-
-        if (result.Count > 0)
-        {
-            var row = result[0];
-            return new Revenue
-            {
-                TotalRevenue = row["TotalRevenue"] != DBNull.Value ? Convert.ToInt32(row["TotalRevenue"]) : 0,
-                OrderCount = row["OrderCount"] != DBNull.Value ? Convert.ToInt32(row["OrderCount"]) : 0
-            };
-        }
-
-        return new Revenue();
-    }
 
     public async Task<List<TopCategory>> GetTopCategories(DateTime selectedDate)
     {
         var query = @"
-            SELECT 
-                tb.CATEGORY AS Name, 
-                SUM(od.QUANTITY * od.PRICE) AS Revenue
-            FROM 
+            SELECT
+                t.CATEGORY AS Name,
+                SUM(od.SUBTOTAL) AS Revenue
+            FROM
                 ORDER_DETAILS od
-            INNER JOIN 
-                BEVERAGE b ON od.BEVERAGE_ID = b.ID
-            INNER JOIN 
-                TYPE_BEVERAGE tb ON b.CATEGORY_ID= tb.ID
-            INNER JOIN 
-                ORDERS o ON od.ORDER_ID = o.ID
-            WHERE 
+            JOIN
+                BEVERAGE b ON od.BEVERAGE_SIZE_ID = b.ID
+            JOIN
+                TYPE_BEVERAGE t ON b.CATEGORY_ID = t.ID
+            JOIN
+                ORDERS o ON od.ORDER_ID = o.ORDER_ID
+            WHERE
                 DATE(o.ORDER_TIME) = @selectedDate
-            GROUP BY 
-                tb.ID
-            ORDER BY 
+            GROUP BY
+                t.CATEGORY
+            ORDER BY
                 Revenue DESC
             LIMIT 5";
+
 
         var parameters = new List<MySqlParameter>
         {
@@ -579,21 +583,23 @@ public class MySqlDao : IDao
     {
         var query = @"
             SELECT 
-                b.BEVERAGE_NAME AS Name, 
+                b.IMAGE_PATH AS ImageUrl, 
+                b.BEVERAGE_NAME AS Name,
                 SUM(od.QUANTITY) AS Amount
             FROM 
                 ORDER_DETAILS od
-            INNER JOIN 
-                BEVERAGE b ON od.BEVERAGE_ID = b.ID
-            INNER JOIN 
-                ORDERS o ON od.ORDER_ID = o.ID
-            WHERE 
+            JOIN 
+                BEVERAGE b ON od.BEVERAGE_SIZE_ID = b.ID
+            JOIN
+                ORDERS o ON od.ORDER_ID = o.ORDER_ID
+            WHERE
                 DATE(o.ORDER_TIME) = @selectedDate
             GROUP BY 
-                b.ID
+                b.IMAGE_PATH, b.BEVERAGE_NAME
             ORDER BY 
                 Amount DESC
             LIMIT 5";
+
 
         var parameters = new List<MySqlParameter>
         {
@@ -608,6 +614,7 @@ public class MySqlDao : IDao
         {
             topSellers.Add(new TopSeller
             {
+                ImageUrl = row["ImageUrl"].ToString(),
                 Name = row["Name"].ToString(),
                 Amount = Convert.ToInt32(row["Amount"])
             });

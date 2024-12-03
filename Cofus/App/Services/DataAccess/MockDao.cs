@@ -248,7 +248,7 @@ public class MockDao : IDao
         return false;
     }
 
-    public async Task<Revenue> GetRevenue(DateTime selectedDate, DateTime previousDate)
+    public async Task<Revenue> GetRevenue(DateTime selectedDate)
     {
         await Task.Delay(10);
 

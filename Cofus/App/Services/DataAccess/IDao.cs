@@ -21,11 +21,10 @@ public interface IDao
     int GetProductPrice(int beverageId, string size);
 
     // Revenue
-    Task<Revenue> GetRevenue(DateTime selectedDate, DateTime previousDate);
+    Task<Revenue> GetRevenue(DateTime selectedDate);
     Task<List<TopProduct>> GetTopProducts(DateTime selectedDate);
     Task<List<TopCategory>> GetTopCategories(DateTime selectedDate);
     Task<List<TopSeller>> GetTopSellers(DateTime selectedDate);
-
 
     List<Material> GetAllMaterials();
     Material GetMaterialByCode(string code);
