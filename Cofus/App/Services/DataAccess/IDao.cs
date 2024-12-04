@@ -33,7 +33,7 @@ public interface IDao
     Task<List<TopCategory>> GetTopCategories(DateTime selectedDate);
     Task<List<TopSeller>> GetTopSellers(DateTime selectedDate);
 
-
+    // Quản lý nguyên liệu
     List<Material> GetAllMaterials();
     Material GetMaterialByCode(string code);
     bool AddMaterial(Material material);

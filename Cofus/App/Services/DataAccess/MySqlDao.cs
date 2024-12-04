@@ -586,7 +586,6 @@ public class MySqlDao : IDao
     }
 
 
-
     public List<Material> GetAllMaterials()
     {
         var query = "SELECT * FROM MATERIAL";
@@ -598,23 +597,27 @@ public class MySqlDao : IDao
         {
             materials.Add(new Material
             {
-                MaterialCode = row["ID"].ToString(),
+                MaterialCode = row["MATERIAL_CODE"].ToString(),
                 MaterialName = row["MATERIAL_NAME"].ToString(),
                 Quantity = Convert.ToInt32(row["QUANTITY"]),
-                UnitPrice = Convert.ToInt32(row["PRICE"])
+                Category = row["CATEGORY"].ToString(),
+                Unit = row["UNIT"].ToString(),
+                UnitPrice = Convert.ToInt32(row["UNIT_PRICE"]),
+                ImportDate = Convert.ToDateTime(row["IMPORT_DATE"]),
+                ExpirationDate = Convert.ToDateTime(row["EXPIRATION_DATE"])
             });
         }
 
         return materials;
     }
 
-    public Material GetMaterialByCode(string id)
+    public Material GetMaterialByCode(string code)
     {
-        var query = "SELECT * FROM MATERIAL WHERE ID = @id";
+        var query = "SELECT * FROM MATERIAL WHERE MATERIAL_CODE = @code";
         var parameters = new List<MySqlParameter>
-        {
-            new MySqlParameter("@id", id)
-        };
+    {
+        new MySqlParameter("@code", code)
+    };
 
         var result = ExecuteSelectQuery(query, parameters);
 
@@ -623,51 +626,76 @@ public class MySqlDao : IDao
         var row = result[0];
         return new Material
         {
-            MaterialCode = row["ID"].ToString(),
+            MaterialCode = row["MATERIAL_CODE"].ToString(),
             MaterialName = row["MATERIAL_NAME"].ToString(),
             Quantity = Convert.ToInt32(row["QUANTITY"]),
-            UnitPrice = Convert.ToInt32(row["PRICE"])
+            Category = row["CATEGORY"].ToString(),
+            Unit = row["UNIT"].ToString(),
+            UnitPrice = Convert.ToInt32(row["UNIT_PRICE"]),
+            ImportDate = Convert.ToDateTime(row["IMPORT_DATE"]),
+            ExpirationDate = Convert.ToDateTime(row["EXPIRATION_DATE"])
         };
     }
 
     public bool AddMaterial(Material material)
     {
-        var query = "INSERT INTO MATERIAL (ID, MATERIAL_NAME, QUANTITY, PRICE) VALUES (@id, @name, @quantity, @price)";
+        var query = "INSERT INTO MATERIAL (MATERIAL_CODE, MATERIAL_NAME, QUANTITY, CATEGORY, UNIT, UNIT_PRICE, IMPORT_DATE, EXPIRATION_DATE) VALUES (@code, @name, @quantity, @category, @unit, @unitPrice, @importDate, @expirationDate)";
         var parameters = new List<MySqlParameter>
-        {
-            new ("@id", material.MaterialCode),
-            new ("@name", material.MaterialName),
-            new ("@quantity", material.Quantity),
-            new ("@price", material.UnitPrice)
-        };
+    {
+        new ("@code", material.MaterialCode),
+        new ("@name", material.MaterialName),
+        new ("@quantity", material.Quantity),
+        new ("@category", material.Category),
+        new ("@unit", material.Unit),
+        new ("@unitPrice", material.UnitPrice),
+        new ("@importDate", material.ImportDate),
+        new ("@expirationDate", material.ExpirationDate)
+    };
 
         return ExecuteNonQuery(query, parameters) > 0;
     }
 
     public bool UpdateMaterial(Material material)
     {
-        var query = "UPDATE MATERIAL SET MATERIAL_NAME = @name, QUANTITY = @quantity, PRICE = @price WHERE ID = @id";
+        var query = "UPDATE MATERIAL SET MATERIAL_NAME = @name, QUANTITY = @quantity, CATEGORY = @category, UNIT = @unit, UNIT_PRICE = @unitPrice, IMPORT_DATE = @importDate, EXPIRATION_DATE = @expirationDate WHERE MATERIAL_CODE = @code";
         var parameters = new List<MySqlParameter>
-        {
-            new MySqlParameter("@id", material.MaterialCode),
-            new MySqlParameter("@name", material.MaterialName),
-            new MySqlParameter("@quantity", material.Quantity),
-            new MySqlParameter("@price", material.UnitPrice)
-        };
-
-        return ExecuteNonQuery(query, parameters) > 0;
-    }
-
-    public bool DeleteMaterial(string id)
     {
-        var query = "DELETE FROM MATERIAL WHERE ID = @id";
-        var parameters = new List<MySqlParameter>
-        {
-            new MySqlParameter("@id", id)
-        };
+        new MySqlParameter("@code", material.MaterialCode),
+        new MySqlParameter("@name", material.MaterialName),
+        new MySqlParameter("@quantity", material.Quantity),
+        new MySqlParameter("@category", material.Category),
+        new MySqlParameter("@unit", material.Unit),
+        new MySqlParameter("@unitPrice", material.UnitPrice),
+        new MySqlParameter("@importDate", material.ImportDate),
+        new MySqlParameter("@expirationDate", material.ExpirationDate)
+    };
 
         return ExecuteNonQuery(query, parameters) > 0;
     }
+
+    public bool DeleteMaterial(string code)
+    {
+        var query = "DELETE FROM MATERIAL WHERE MATERIAL_CODE = @code";
+        var parameters = new List<MySqlParameter>
+    {
+        new MySqlParameter("@code", code)
+    };
+
+        return ExecuteNonQuery(query, parameters) > 0;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public List<User> GetAllUsers()
     {
@@ -877,4 +905,17 @@ public class MySqlDao : IDao
 
         return topSellers;
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
