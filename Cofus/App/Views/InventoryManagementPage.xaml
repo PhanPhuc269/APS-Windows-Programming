@@ -9,82 +9,54 @@
 
     <Grid Padding="20">
         <StackPanel Orientation="Vertical" Spacing="10" Background="White" Padding="0,20,0,10">
-            <Grid RowDefinitions="Auto,Auto,Auto" Background="White" Padding="20">
-                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
-                    <TextBox x:Name="SearchBox" 
-                 PlaceholderText="Tìm kiếm nguyên liệu..." 
-                 Width="250" 
-                 Background="White" 
-                 BorderThickness="1"/>
-
-                    <ComboBox x:Name="CategoryFilter" 
-                  Width="150" 
-                  Background="White" 
-                  VerticalAlignment="Center"
-                  ItemsSource="{x:Bind ViewModel.Categories}" 
-                  SelectedItem="{x:Bind ViewModel.SelectedCategory, Mode=TwoWay}"/>
-
-                    <Button Content="Tìm kiếm" 
-                Click="SearchButton_Click" 
-                Background="#4A90E2" 
-                Foreground="White"/>
+            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,5*,*" Background="White">
+                <!-- Row 0, Column 0: Title -->
+                <StackPanel Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Text="Quản Lí" FontSize="18" FontWeight="Bold" />
                 </StackPanel>
 
-                <StackPanel Grid.Row="1" 
-                Orientation="Horizontal" 
-                HorizontalAlignment="Center" 
-                Spacing="10" 
-                Margin="0,15,0,15">
-                    <Button Content="Thêm" 
-                Click="AddButton_Click" 
-                Background="#2ECC71" 
-                Foreground="White"/>
-
-                    <Button Content="Sửa" 
-                Click="EditButton_Click" 
-                Background="#F39C12" 
-                Foreground="White"/>
-
-                    <Button Content="Xóa" 
-                Click="DeleteButton_Click" 
-                Background="#E74C3C" 
-                Foreground="White"/>
-
-                    <Button Content="Xem chi tiết" 
-                Click="DetailButton_Click" 
-                Background="#3498DB" 
-                Foreground="White"/>
-
-                    <Button Content="Xuất Excel" 
-                Click="ExportExcelButton_Click" 
-                Background="#1ABC9C" 
-                Foreground="White"/>
+                <!-- Row 0, Column 1: Search Box and Category Filter -->
+                <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBox x:Name="SearchBox" PlaceholderText="Tìm kiếm nguyên liệu..." Width="250" Background="White" BorderThickness="1" />
+                    <ComboBox x:Name="CategoryFilter" Width="150" Background="White" VerticalAlignment="Center" ItemsSource="{x:Bind ViewModel.Categories}" SelectedItem="{x:Bind ViewModel.SelectedCategory, Mode=TwoWay}" />
+                    <Button Content="Tìm kiếm" Click="SearchButton_Click" Background="#4A90E2" Foreground="White" VerticalAlignment="Center" />
                 </StackPanel>
 
-                <Grid Grid.Row="2" ColumnDefinitions="*,*,*,*" HorizontalAlignment="Center">
-                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                        <TextBlock Text="Hạn Sử Dụng Từ" 
-                   Foreground="Black" 
-                   Margin="0,0,0,10"/>
-                    </StackPanel>
+                <!-- Row 0, Column 2: Add and Edit Buttons -->
+                <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,15,0,15">
+                    <Button Content="Thêm" Click="AddButton_Click" Background="#2ECC71" Foreground="White" />
+                    <Button Content="Sửa" Click="EditButton_Click" Background="#F39C12" Foreground="White" />
+                </StackPanel>
 
-                    <StackPanel Grid.Column="1" Margin="0,0,10,0">
-                        <DatePicker x:Name="StartExpirationDatePicker" 
-                    Background="White"/>
-                    </StackPanel>
+                <!-- Row 1, Column 0: Nguyên Liệu -->
+                <Grid Grid.Row="1" Grid.Column="0" Margin="0">
+                    <TextBlock Text="Nguyên Liệu" FontSize="18" FontWeight="Bold" />
+                </Grid>
 
-                    <StackPanel Grid.Column="2" Margin="0,0,10,0">
-                        <TextBlock Text="Đến" 
-                   Foreground="Black" 
-                   Margin="0,0,0,0"/>
+                <!-- Row 1, Column 1: Expiration Date Range -->
+                <Grid Grid.Row="1" Grid.Column="1" ColumnDefinitions="*,3*,*,3*" HorizontalAlignment="Center">
+                    <StackPanel Grid.Column="0" Margin="5">
+                        <TextBlock Text="Hạn Sử Dụng Từ" Foreground="Black" Margin="0"/>
                     </StackPanel>
-
+                    <StackPanel Grid.Column="1" Margin="0,0,0,0">
+                        <DatePicker x:Name="StartExpirationDatePicker" Background="White" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Margin="5">
+                        <TextBlock Text="Đến" Foreground="Black" Margin="0"/>
+                    </StackPanel>
                     <StackPanel Grid.Column="3">
-                        <DatePicker x:Name="EndExpirationDatePicker" 
-                    Background="White"/>
+                        <DatePicker x:Name="EndExpirationDatePicker" Background="White" />
                     </StackPanel>
                 </Grid>
+
+                <!-- Row 1, Column 2: Delete and Export Buttons -->
+                <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0">
+                    <Button Content="Xóa" Click="DeleteButton_Click" Background="#E74C3C" Foreground="White" />
+                    <Button Content="Xuất Excel" Click="ExportExcelButton_Click" Background="#1ABC9C" Foreground="White" />
+                </StackPanel>
             </Grid>
+
+
 
 
 
@@ -152,9 +124,9 @@
             </ContentDialog>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,0,0,10">
-                <Button Content="Trang trước" Click="PreviousPageButton_Click" Margin="5" Foreground="Black" Background="AntiqueWhite"/>
+                <Button Content="Trước" Click="PreviousPageButton_Click" Margin="5" Foreground="Black" Background="AntiqueWhite"/>
                 <TextBlock x:Name="PageInfoTextBlock" Text="Trang 1" VerticalAlignment="Center" Margin="10,0" Foreground="Black"/>
-                <Button Content="Trang tiếp theo" Click="NextPageButton_Click" Margin="5" Foreground="Black" Background="AntiqueWhite"/>
+                <Button Content="Sau" Click="NextPageButton_Click" Margin="5" Foreground="Black" Background="AntiqueWhite"/>
             </StackPanel>
         </StackPanel>
     </Grid>

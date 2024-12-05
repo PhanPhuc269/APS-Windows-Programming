@@ -41,6 +41,7 @@ public interface IDao
     bool DeleteMaterial(string code);
 
 
+
     // Quản lý người dùng
     List<User> GetAllUsers();
     User GetUserByUsername(string username);
