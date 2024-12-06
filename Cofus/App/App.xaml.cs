@@ -10,8 +10,9 @@ using App.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml;
+
 using Windows.UI;
 
 namespace App;
@@ -71,6 +72,10 @@ public partial class App : Application
             services.AddSingleton<IFileService, FileService>();
 
             // Views and ViewModels
+            services.AddTransient<TimeKeepingViewModel>();
+            services.AddTransient<TimeKeepingPage>();
+            services.AddTransient<ListDetailsViewModel>();
+            services.AddTransient<ListDetailsPage>();
             services.AddTransient<InventoryManagementViewModel>();
             services.AddTransient<InventoryManagementPage>();
             services.AddTransient<RevenueViewModel>();

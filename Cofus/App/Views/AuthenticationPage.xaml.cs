@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
@@ -86,19 +86,30 @@ public sealed partial class AuthenticationPage : Page
                 localSettings.Values["password"] = encryptedPassword;
             }
 
+            // Chuyển đến trang chính của ứng dụng
             UIElement? shell = App.GetService<ShellPage>();
             App.MainWindow.Content = shell ?? new Frame();
+
+            // Hiển thị cửa sổ thông báo với username
+            await new ContentDialog()
+            {
+                XamlRoot = this.Content.XamlRoot,
+                Title = "Đăng nhập thành công",
+                Content = $"Xin chào, {user}!",
+                CloseButtonText = "OK"
+            }.ShowAsync();
         }
         else
         {
             await new ContentDialog()
             {
                 XamlRoot = this.Content.XamlRoot,
-                Content = "Incorrect username or password entered\n",
+                Content = "Tên người dùng hoặc mật khẩu không chính xác",
                 CloseButtonText = "OK"
             }.ShowAsync();
         }
     }
+
 
     private async void Signup_Click(object sender, RoutedEventArgs e)
     {
@@ -129,7 +140,7 @@ public sealed partial class AuthenticationPage : Page
             }.ShowAsync();
         }
     }
-
+    
     private async Task<string> EncryptPasswordAsync(string password)
     {
         var provider = new DataProtectionProvider("LOCAL=user");

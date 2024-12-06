@@ -116,6 +116,29 @@ public class MySqlDao : IDao
         return results;
     }
 
+    public async Task<int> ExecuteNonQueryAsync(string query, List<MySqlParameter> parameters)
+    {
+        int rowsAffected = 0;
+
+        try
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            using (var command = new MySqlCommand(query, connection))
+            {
+                command.Parameters.AddRange(parameters.ToArray());
+                await connection.OpenAsync();  // Sử dụng OpenAsync thay vì Open
+                rowsAffected = await command.ExecuteNonQueryAsync();  // Sử dụng ExecuteNonQueryAsync
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred: {ex.Message}");
+        }
+
+        return rowsAffected;
+    }
+
+
     // Command to modify data (INSERT, UPDATE, DELETE)
     public int ExecuteNonQuery(string query, List<MySqlParameter> parameters)
     {
@@ -224,7 +247,7 @@ public class MySqlDao : IDao
 
     public FullObservableCollection<Invoice> GetPendingOrders()
     {
-        var query = "SELECT * FROM ORDERS WHERE COMPLETED_TIME IS NULL";
+        var query = "SELECT * FROM ORDERS WHERE COMPLETED_TIME IS not NULL";
         var result = ExecuteSelectQuery(query);
 
         var orders = new FullObservableCollection<Invoice>();
@@ -236,12 +259,14 @@ public class MySqlDao : IDao
                 InvoiceNumber = Convert.ToInt32(row["ORDER_ID"]),
                 TableNumber = row["RESERVED_TABLE_ID"] == DBNull.Value ? -1 : Convert.ToInt32(row["RESERVED_TABLE_ID"]),
                 CreatedTime = Convert.ToDateTime(row["ORDER_TIME"]),
-                PaymentMethod = row["PAYMENT_METHOD"].ToString()
+                PaymentMethod = row["PAYMENT_METHOD"].ToString(),
+                CompleteTime = row["COMPLETED_TIME"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(row["COMPLETED_TIME"]),
             });
         }
 
         return orders;
     }
+
     public async Task<object> ExecuteScalarAsync(string query, List<MySqlParameter> parameters)
     {
         using (var connection = new MySqlConnection(_connectionString))
@@ -253,25 +278,80 @@ public class MySqlDao : IDao
         }
     }
 
+    private async Task UpdateStockAfterOrder(Invoice invoice)
+    {
+        foreach (var item in invoice.InvoiceItems)
+        {
+            var beverageSizeId = GetBeverageSizeId(item.BeverageId, item.Size);
+
+            // Giảm số lượng nguyên liệu trong kho
+            var recipeQuery = @"
+            SELECT MATERIAL_ID, QUANTITY
+            FROM RECIPE
+            WHERE BEVERAGE_SIZE_ID = @beverageSizeId";
+
+            var recipeParams = new List<MySqlParameter>
+        {
+            new MySqlParameter("@beverageSizeId", beverageSizeId)
+        };
+
+            var recipeResults = ExecuteSelectQuery(recipeQuery, recipeParams);
+
+            foreach (var row in recipeResults)
+            {
+                var materialId = Convert.ToInt32(row["MATERIAL_ID"]);
+                var quantityUsed = Convert.ToInt32(row["QUANTITY"]) * item.Quantity;
+
+                // Cập nhật kho (giảm số lượng nguyên liệu)
+                var updateStockQuery = @"
+                UPDATE MATERIAL
+                SET QUANTITY = QUANTITY - @quantityUsed
+                WHERE ID = @materialId";
+
+                var updateStockParams = new List<MySqlParameter>
+            {
+                new MySqlParameter("@quantityUsed", quantityUsed),
+                new MySqlParameter("@materialId", materialId)
+            };
+
+                await ExecuteNonQueryAsync(updateStockQuery, updateStockParams);
+            }
+        }
+    }
+
+
     public async Task<int> CreateOrder(Invoice invoice)
     {
+        // Tính thời gian dự kiến (COMPLETE_TIME)
+        var estimatedCompleteTime = DateTime.Now.AddMinutes(invoice.TotalQuantity * 3);
+
+        // Câu truy vấn SQL để tạo đơn hàng
         var query = @"
-                        INSERT INTO ORDERS (TOTAL_AMOUNT, ORDER_TIME, PAYMENT_METHOD) 
-                        VALUES (@total, @time, @method);
-                        SELECT LAST_INSERT_ID();";
+        INSERT INTO ORDERS (TOTAL_AMOUNT, ORDER_TIME, PAYMENT_METHOD, COMPLETED_TIME)
+        VALUES (@total, @time, @method, @completeTime);
+        SELECT LAST_INSERT_ID();";
+
+        // Thêm tham số vào danh sách
         var parameters = new List<MySqlParameter>
-        {
-            new MySqlParameter("@total", invoice.TotalPrice),
-            new MySqlParameter("@time", invoice.CreatedTime),
-            new MySqlParameter("@method", invoice.PaymentMethod)
-        };
+    {
+        new MySqlParameter("@total", invoice.TotalPrice),
+        new MySqlParameter("@time", DateTime.Now),  // Thời gian hiện tại từ C#
+        new MySqlParameter("@method", invoice.PaymentMethod),
+        new MySqlParameter("@completeTime", estimatedCompleteTime)  // Thêm tham số COMPLETE_TIME
+    };
+
+        // Thực hiện truy vấn SQL và lấy ID của đơn hàng mới
         var orderId = Convert.ToInt32(await ExecuteScalarAsync(query, parameters));
+
+        // Cập nhật kho sau khi tạo đơn hàng
+        await UpdateStockAfterOrder(invoice);
 
         return orderId;
     }
+
     public int GetBeverageSizeId(int beverageId, string size)
     {
-        var query = "SELECT ID FROM BEVERAGE_SIZE WHERE BEVERAGE_ID = @beverageId AND SIZE = @size";
+        var query = "SELECT BEVERAGE_ID FROM BEVERAGE_SIZE WHERE BEVERAGE_ID = @beverageId AND SIZE = @size";
         var parameters = new List<MySqlParameter>
         {
             new MySqlParameter("@beverageId", beverageId),
@@ -280,7 +360,7 @@ public class MySqlDao : IDao
 
         var result = ExecuteSelectQuery(query, parameters);
 
-        return result.Count > 0 ? Convert.ToInt32(result[0]["ID"]) : -1;
+        return result.Count > 0 ? Convert.ToInt32(result[0]["BEVERAGE_ID"]) : -1;
     }
 
     public async Task AddOrderDetail(int orderId, InvoiceItem item)
@@ -622,4 +702,25 @@ public class MySqlDao : IDao
 
         return topSellers;
     }
+
+    public User GetCurrentUser(string username)
+    {
+        var query = "SELECT * FROM USERS WHERE USERNAME = @username"; // Modify according to your database schema
+        var parameters = new List<MySqlParameter>
+        {
+            new MySqlParameter("@username", username)
+        };
+
+        var result = ExecuteSelectQuery(query, parameters);
+
+        var row = result[0];
+
+        return new User
+        {
+            Username = row["USERNAME"].ToString(),
+            Password = row["USER_PASSWORD"].ToString(),
+            AccessLevel = Convert.ToInt32(row["AccessLevel"])
+        };
+    }
 }
+

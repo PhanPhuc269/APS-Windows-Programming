@@ -55,6 +55,7 @@ public sealed partial class InvoiceControl : UserControl
                 return;
             }
 
+
             // Lấy phương thức thanh toán đã chọn
             var paymentMethod = comboBox.SelectedItem?.ToString();
             if (paymentMethod == null)
@@ -150,3 +151,4 @@ public sealed partial class InvoiceControl : UserControl
     }
 
 }
+

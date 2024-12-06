@@ -350,4 +350,10 @@ public class MockDao : IDao
         mockUsers.Add(user);
         return true;
     }
+
+    public User GetCurrentUser(string username)
+    {
+        return mockUsers.FirstOrDefault(u => u.Username == username);
+    }
+
 }
