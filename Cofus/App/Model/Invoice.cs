@@ -92,6 +92,12 @@ namespace App.Model
             OnPropertyChanged(nameof(TotalPrice));
         }
 
+    public void UpdateTotals()
+    {
+        OnPropertyChanged(nameof(TotalQuantity));
+        OnPropertyChanged(nameof(TotalPrice));
+        OnPropertyChanged(nameof(AmountDue));
+    }
         // Phương thức để tính tổng số lượng
         public int TotalQuantity => InvoiceItems.Sum(item => item.Quantity);
 
@@ -106,6 +112,23 @@ namespace App.Model
             InvoiceItems.Add(item);
         }
 
+    public int ConsumedPoints
+    {
+        get; set;
+    }=0;
+    public int AmountDue => TotalPrice - ConsumedPoints;
+    public string? CustomerPhoneNumber
+    {
+        get; set;
+    }
+
+    // Phương thức để thêm sản phẩm vào hóa đơn
+    public void AddItem(InvoiceItem item)
+    {
+        // Đăng ký sự kiện PropertyChanged để cập nhật khi sản phẩm được thay đổi
+        item.PropertyChanged += Item_PropertyChanged;
+        InvoiceItems.Add(item);
+    }
         // Phương thức để xóa sản phẩm khỏi hóa đơn
         public void RemoveItem(InvoiceItem item)
         {

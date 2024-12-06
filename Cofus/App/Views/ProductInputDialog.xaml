@@ -21,5 +21,6 @@
         <!-- Ô nhập ghi chú -->
         <TextBlock Text="Ghi chú:" />
         <TextBox x:Name="notesTextBox" />
+        <TextBlock x:Name="Notice"  Foreground="Red"/>
     </StackPanel>
 </ContentDialog>

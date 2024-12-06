@@ -17,6 +17,7 @@ public class PageService : IPageService
         Configure<SalePageViewModel, SalePage>();
         Configure<RevenueViewModel, RevenuePage>();
         Configure<InventoryManagementViewModel, InventoryManagementPage>();
+        Configure<CustomerManagementViewModel, CustomerManagementPage>();
         Configure<ListDetailsViewModel, ListDetailsPage>();
         Configure<TimeKeepingViewModel, TimeKeepingPage>();
     }

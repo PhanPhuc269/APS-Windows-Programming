@@ -7,7 +7,7 @@ exports.seed = function(knex) {
         { ID: 2, METHOD_NAME: 'Debit Card' },
         { ID: 3, METHOD_NAME: 'PayPal' },
         { ID: 4, METHOD_NAME: 'Cash' },
-        { ID: 5, METHOD_NAME: 'Bank Transfer' }
+        { ID: 5, METHOD_NAME: 'QR Code MoMo' }
       ]);
     });
 };

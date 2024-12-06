@@ -39,6 +39,17 @@ public class InvoiceControlViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(IsPaid));
         }
     }
+    public int? _consumedPoints;
+    public int? ConsumedPoints
+    {
+        get=> _consumedPoints;
+        set
+        {
+            _consumedPoints = value;
+            OnPropertyChanged(nameof(ConsumedPoints));
+        }
+    }
+    public bool AppliedPoint { get; set; } = false;
     public InvoiceControlViewModel()
     {
         Invoice = new Invoice();
@@ -97,11 +108,13 @@ public class InvoiceControlViewModel : INotifyPropertyChanged
 
         try
         {
+            Invoice.CreatedTime = CurrentDateTime;
             int orderId = await dao.CreateOrder(Invoice);
-
+            App.GetService<IDao>().ConsumePoints(Invoice.ConsumedPoints, Invoice.CustomerPhoneNumber);
             // Tạo một bản sao của collection để tránh lỗi
             var invoiceItemsCopy = Invoice.InvoiceItems.ToList();
-
+            IsPaid = true;
+            
             foreach (var item in invoiceItemsCopy)
             {
                 await dao.AddOrderDetail(orderId, item);
@@ -110,8 +123,15 @@ public class InvoiceControlViewModel : INotifyPropertyChanged
 
             // Dừng tăng thời gian
             _timer.Stop();
-            CurrentDateTime = Invoice.CreatedTime;
-            IsPaid = true;
+            if (AppliedPoint == true)
+            {
+
+            }
+            if(Invoice.CustomerPhoneNumber != null)
+            {
+                App.GetService<IDao>().BonusPoints(Invoice.AmountDue,Invoice.CustomerPhoneNumber);
+            }
+            
             return true;
         }
         catch (Exception ex)

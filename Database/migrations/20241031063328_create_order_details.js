@@ -7,6 +7,7 @@ exports.up = function(knex) {
       table.integer('QUANTITY');
       table.integer('PRICE');
       table.integer('SUBTOTAL');
+      table.string('NOTE');
     });
   };
   

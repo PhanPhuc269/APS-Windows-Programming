@@ -135,6 +135,9 @@
   <data name="Shell_InventoryManagement.Content" xml:space="preserve">
     <value>Quản lý kho</value>
   </data>
+  <data name="Shell_CustomerManagement.Content" xml:space="preserve">
+    <value>Quản lý khách hàng</value>
+  </data>
   <data name="Shell_Blank.Content" xml:space="preserve">
     <value>Blank</value>
   </data>
