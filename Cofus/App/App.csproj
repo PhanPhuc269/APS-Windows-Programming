@@ -47,14 +47,18 @@
     <PackageReference Include="DotNetEnv" Version="3.1.1" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.240923002" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageReference Include="MySql.Data" Version="9.1.0" />
     <PackageReference Include="MySql.EntityFrameworkCore" Version="8.0.8" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Npgsql" Version="8.0.5" />
     <PackageReference Include="PropertyChanged.Fody" Version="4.1.0">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="QRCoder" Version="1.6.0" />
+    <PackageReference Include="System.Text.Json" Version="9.0.0" />
     <PackageReference Include="WinUIEx" Version="2.4.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.0" />
   </ItemGroup>

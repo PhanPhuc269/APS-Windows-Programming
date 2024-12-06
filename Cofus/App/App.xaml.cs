@@ -1,4 +1,5 @@
-﻿using App.Activation;
+﻿using System.Net;
+using App.Activation;
 using App.Contracts.Services;
 using App.Core.Contracts.Services;
 using App.Core.Services;
@@ -70,6 +71,8 @@ public partial class App : Application
             // Core Services
             services.AddSingleton<ISampleDataService, SampleDataService>();
             services.AddSingleton<IFileService, FileService>();
+
+            services.AddSingleton<HttpCallbackListener>();
 
             // Views and ViewModels
             services.AddTransient<CustomerManagementViewModel>();
