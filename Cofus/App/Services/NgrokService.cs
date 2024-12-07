@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace App.Services;
 public class NgrokService
 {
-    private static readonly string NgrokPath = @"D:\phuc\C#\Project\Cofus\Cofus\App\Tools\ngrok.exe"; // Đường dẫn từ .env
+    private static readonly string NgrokPath = @"D:\APS-Windows-Programming_rvn\Cofus\App\Tools\ngrok.exe"; // Đường dẫn từ .env
     private const string NgrokPort = "5000"; // Cổng ứng dụng local đang chạy
 
     public static void StartNgrok()

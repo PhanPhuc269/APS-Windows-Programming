@@ -86,12 +86,6 @@ namespace App.Model
             }
         }
 
-        public void UpdateTotals()
-        {
-            OnPropertyChanged(nameof(TotalQuantity));
-            OnPropertyChanged(nameof(TotalPrice));
-        }
-
     public void UpdateTotals()
     {
         OnPropertyChanged(nameof(TotalQuantity));
@@ -122,13 +116,7 @@ namespace App.Model
         get; set;
     }
 
-    // Phương thức để thêm sản phẩm vào hóa đơn
-    public void AddItem(InvoiceItem item)
-    {
-        // Đăng ký sự kiện PropertyChanged để cập nhật khi sản phẩm được thay đổi
-        item.PropertyChanged += Item_PropertyChanged;
-        InvoiceItems.Add(item);
-    }
+
         // Phương thức để xóa sản phẩm khỏi hóa đơn
         public void RemoveItem(InvoiceItem item)
         {

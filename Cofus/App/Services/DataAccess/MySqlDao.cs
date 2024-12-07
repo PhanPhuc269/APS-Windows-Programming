@@ -302,7 +302,7 @@ public class MySqlDao : IDao
                 TableNumber = row["RESERVED_TABLE_ID"] == DBNull.Value ? -1 : Convert.ToInt32(row["RESERVED_TABLE_ID"]),
                 CreatedTime = Convert.ToDateTime(row["ORDER_TIME"]),
                 PaymentMethod = row["PAYMENT_METHOD"].ToString(),
-                InvoiceItems = GetOrderDetails(Convert.ToInt32(row["ORDER_ID"]))
+                InvoiceItems = GetOrderDetails(Convert.ToInt32(row["ORDER_ID"])),
                 CompleteTime = row["COMPLETED_TIME"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(row["COMPLETED_TIME"]),
             });
         }

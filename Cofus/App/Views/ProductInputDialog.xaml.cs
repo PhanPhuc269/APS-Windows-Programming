@@ -36,7 +36,9 @@ public sealed partial class ProductInputDialog : ContentDialog
 
     private async void ContentDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
-        // Kiểm tra số lượng có hợp lệ không
+        //bool = App.GetService<IDao>().
+
+        // Kiểm tra số lượng có hvalidợp lệ không
         if (!int.TryParse(quantityTextBox.Text, out int quantity) || quantity <= 0)
         {
             args.Cancel = true; // Ngăn không cho đóng dialog
