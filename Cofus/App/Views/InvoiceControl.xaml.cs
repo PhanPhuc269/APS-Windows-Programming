@@ -24,6 +24,8 @@ using System.Drawing;
 using Windows.UI.WebUI;
 using System.Web;
 using MySqlX.XDevAPI;
+using App.Services;
+using App.Helpers;
 
 
 namespace App.Views;
@@ -37,9 +39,6 @@ public sealed partial class InvoiceControl : UserControl
     {
         this.InitializeComponent();
         ViewModel = new InvoiceControlViewModel();
-
-        // Khởi động HTTP Listener để nhận callback từ MoMo
-        StartCallbackListener();
     }
 
     private async void CheckoutButton_Click(object sender, RoutedEventArgs e)
@@ -128,8 +127,14 @@ public sealed partial class InvoiceControl : UserControl
 
             try
             {
-                if(paymentMethod== "QR Code MoMo") await ShowMoMoQRCode();
-                if(paymentMethod== "Cash") await ShowVNPayQRCode();
+                if(paymentMethod== "QR Code MoMo")
+                {
+                    await ShowMoMoQRCode(); 
+                }
+                if (paymentMethod == "Cash")
+                {
+                    await ShowVNPayQRCode();
+                }
 
 
                 // Gọi phương thức Checkout trong ViewModel để xử lý thanh toán
@@ -633,31 +638,7 @@ public sealed partial class InvoiceControl : UserControl
     }
 
 
-    private HttpListener _listener;
     private CancellationTokenSource _cancellationTokenSource;
-    private void StartCallbackListener()
-    {
-        _listener = new HttpListener();
-        _listener.Prefixes.Add("http://localhost:5000/callback/");
-        _cancellationTokenSource = new CancellationTokenSource();
-        _listener.Start();
-
-        Task.Run(async () =>
-        {
-            while (!_cancellationTokenSource.Token.IsCancellationRequested)
-            {
-                try
-                {
-                    var context = await _listener.GetContextAsync();
-                    await HandleCallbackAsync(context);
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Listener Error: {ex.Message}");
-                }
-            }
-        });
-    }
 
     private async Task HandleCallbackAsync(HttpListenerContext context)
     {
@@ -754,127 +735,7 @@ public sealed partial class InvoiceControl : UserControl
         var computedSignature = GenerateSignature(rawData, secretKey);
         return computedSignature == callback.signature;
     }
-    //private async Task ShowVNPayQRCode()
-    //{
-    //    string terminalId = "EOASESC4"; // Mã Merchant (Terminal ID)
-    //    string secretKey = "6VN91W7ILCKUGFYYOQUEL2DWL37K8SV5"; // Secret Key
-    //    string orderId = GenerateUniqueOrderId(); // Tạo ID đơn hàng
-    //    string orderInfo = "Payment for Invoice"; // Thông tin đơn hàng
-    //    string amount = ViewModel.Invoice.AmountDue.ToString(); // Số tiền thanh toán
-    //    string returnUrl = "https://your-website.com/return"; // Địa chỉ trả về sau khi thanh toán
-    //    string cancelUrl = "https://your-website.com/cancel"; // Địa chỉ hủy thanh toán
-    //    string ipAddress = "127.0.0.1"; // Địa chỉ IP người dùng
-
-    //    VNPayPaymentProcessor paymentProcessor = new VNPayPaymentProcessor();
-    //    string response = await paymentProcessor.CreatePaymentAsync(terminalId, orderId, orderInfo, amount, returnUrl, cancelUrl, ipAddress, secretKey);
-
-
-    //    // Phân tích phản hồi từ VNPay để lấy URL QR code
-    //     var responseObject = JsonConvert.DeserializeObject<Dictionary<string, string>>(response);
-
-    //    string qrCodeUrl = responseObject["qr_code_url"];
-
-    //    // Tạo mã QR
-    //    WriteableBitmap writeableBitmap = await GenerateQRCodeAsync(qrCodeUrl);
-
-    //    if (writeableBitmap != null)
-    //    {
-    //        var qrImage = new Microsoft.UI.Xaml.Controls.Image
-    //        {
-    //            Source = writeableBitmap,
-    //            Width = 300,
-    //            Height = 300,
-    //            HorizontalAlignment = HorizontalAlignment.Center,
-    //            VerticalAlignment = VerticalAlignment.Center
-    //        };
-
-    //        var qrDialog = new ContentDialog
-    //        {
-    //            Title = "Please scan the QR code to pay",
-    //            Content = qrImage,
-    //            CloseButtonText = "Close",
-    //            XamlRoot = this.XamlRoot
-    //        };
-    //        await qrDialog.ShowAsync();
-    //        _currentDialog = qrDialog;
-    //    }
-    //    else
-    //    {
-    //        var errorDialog = new ContentDialog
-    //        {
-    //            Title = "Error",
-    //            Content = "Unable to generate QR code.",
-    //            CloseButtonText = "OK",
-    //            XamlRoot = this.XamlRoot
-    //        };
-    //        await errorDialog.ShowAsync();
-    //    }
-    //}
-
-    //class VNPayPaymentProcessor
-    //{
-    //    private static readonly string apiUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"; // URL của VNPay (sử dụng sandbox cho môi trường thử nghiệm)
-
-    //    public async Task<string> CreatePaymentAsync(string terminalId, string orderId, string orderInfo, string amount, string returnUrl, string cancelUrl, string ipAddress, string secretKey)
-    //    {
-    //        string txnTime = DateTime.UtcNow.ToString("yyyyMMddHHmmss"); // Thời gian giao dịch
-
-    //        // Tạo chuỗi dữ liệu yêu cầu
-
-    //        // Sinh chữ ký bảo mật
-    //        string data = $"vnp_Amount={amount}&vnp_Command=pay&vnp_CreateDate={txnTime}&vnp_CurrCode=VND&vnp_IpAddr={ipAddress}&vnp_Locale=vn&vnp_OrderInfo={orderInfo}&vnp_OrderType=other&vnp_ReturnUrl={returnUrl}&vnp_TmnCode={terminalId}&vnp_TxnRef={orderId}&vnp_Version=2.1.0";
-    //        string signature = GenerateSignature(data, secretKey);
-
-    //        // Tạo yêu cầu thanh toán
-    //        var paymentRequest = new
-    //        {
-    //            vnp_Amount = amount,
-    //            vnp_Command = "pay",
-    //            vnp_CreateDate = txnTime,
-    //            vnp_CurrCode = "VND",
-    //            vnp_IpAddr = "127.0.0.1",
-    //            vnp_Locale = "vn",
-    //            vnp_OrderInfo = "thanh",
-    //            vnp_OrderType = "other",
-    //            vnp_ReturnUrl = "https://domainmerchant.vn/ReturnUrl",
-    //            vnp_TmnCode = terminalId,
-    //            vnp_TxnRef = orderId,
-    //            vnp_Version = "2.1.0",
-    //            vnp_SecureHash = signature
-    //        };
-
-    //        // Chuyển yêu cầu thành chuỗi JSON
-    //        string jsonRequest = JsonConvert.SerializeObject(paymentRequest);
-
-    //        using (System.Net.Http.HttpClient client = new System.Net.Http.HttpClient())
-    //        {
-    //            var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
-    //            System.Net.Http.HttpResponseMessage response = await client.PostAsync(apiUrl, content);
-
-    //            if (response.IsSuccessStatusCode)
-    //            {
-    //                string jsonResponse = await response.Content.ReadAsStringAsync();
-
-    //                return jsonResponse;
-    //            }
-    //            else
-    //            {
-    //                throw new Exception("Payment processing failed.");
-    //            }
-    //        }
-    //    }
-
-    //    // Hàm tạo chữ ký bảo mật (HMACSHA256)
-    //    private string GenerateSignature(string data, string secretKey)
-    //    {
-    //        using (var hmac = new HMACSHA512(Encoding.UTF8.GetBytes(secretKey)))
-    //        {
-    //            byte[] hashValue = hmac.ComputeHash(Encoding.UTF8.GetBytes(data));
-    //            return BitConverter.ToString(hashValue).Replace("-", "").ToLower();
-    //        }
-    //    }
-
-    //}
+    
     async public Task ShowVNPayQRCode()
     {
         // Cấu hình thanh toán
@@ -991,7 +852,6 @@ public sealed partial class InvoiceControl : UserControl
     }
 
 
-    // Phương thức trích xuất token từ URL (ví dụ: từ "https://sandbox.vnpayment.vn/paymentv2/Transaction/PaymentMethod.html?token=b335ad60c1164de8b011da4b5ac2d825")
     private string GetTokenFromUrl(string url)
     {
         var uri = new Uri(url);
@@ -1047,4 +907,5 @@ public sealed partial class InvoiceControl : UserControl
         return hash.ToString();
     }
 
+   
 }
