@@ -604,13 +604,40 @@ public class MySqlDao : IDao
                 Unit = row["UNIT"].ToString(),
                 UnitPrice = Convert.ToInt32(row["UNIT_PRICE"]),
                 ImportDate = Convert.ToDateTime(row["IMPORT_DATE"]),
-                ExpirationDate = Convert.ToDateTime(row["EXPIRATION_DATE"])
+                ExpirationDate = Convert.ToDateTime(row["EXPIRATION_DATE"]),
+                Threshold = Convert.ToInt32(row["NOTIFYCATION_THRESHOLD"])
             });
         }
 
         return materials;
     }
+    
+    public List<Material> getAllThreshold()
+    {
+        var query = "SELECT * FROM MATERIAL";
+        var result = ExecuteSelectQuery(query);
 
+        var materials = new List<Material>();
+
+        foreach (var row in result)
+        {
+            materials.Add(new Material
+            {
+                MaterialCode = row["MATERIAL_CODE"].ToString(),
+                MaterialName = row["MATERIAL_NAME"].ToString(),
+                Quantity = Convert.ToInt32(row["QUANTITY"]),
+                Category = row["CATEGORY"].ToString(),
+                Unit = row["UNIT"].ToString(),
+                UnitPrice = Convert.ToInt32(row["UNIT_PRICE"]),
+                ImportDate = Convert.ToDateTime(row["IMPORT_DATE"]),
+                ExpirationDate = Convert.ToDateTime(row["EXPIRATION_DATE"]),
+                Threshold = Convert.ToInt32(row["NOTIFYCATION_THRESHOLD"])
+            });
+        }
+
+        return materials;
+
+    }
     public Material GetMaterialByCode(string code)
     {
         var query = "SELECT * FROM MATERIAL WHERE MATERIAL_CODE = @code";
@@ -906,6 +933,16 @@ public class MySqlDao : IDao
         return topSellers;
     }
 
+    public bool UpdateMaterialThreshold(string materialCode, int newThreshold)
+    {
+        using var connection = GetConnection();
+        connection.Open();
+        var query = "UPDATE materials SET Thresold = @Thresold WHERE MaterialCode = @MaterialCode";
+        using var command = new MySqlCommand(query, connection);
+        command.Parameters.AddWithValue("@Thresold", newThreshold);
+        command.Parameters.AddWithValue("@MaterialCode", materialCode);
+        return command.ExecuteNonQuery() > 0;
+    }
 
 
 

@@ -90,7 +90,30 @@ namespace App.ViewModels
         {
             get; set;
         }
+        public void SetNotificationThreshold(string materialCode, int newThreshold)
+        {
 
-        
+            var material = AllMaterials.FirstOrDefault(m => m.MaterialCode == materialCode);
+            if (material != null)
+            {
+                material.Threshold = newThreshold;
+                App.GetService<IDao>().UpdateMaterialThreshold(materialCode, newThreshold);
+                if (material.IsBelowThreshold)
+                {
+                    // Display notification
+                    ShowNotification($"Material {material.MaterialName} is below the threshold!");
+                }
+            }
+        }
+
+        private void ShowNotification(string message)
+        {
+            // Display notification
+
+
+
+        }
+
+
     }
 }

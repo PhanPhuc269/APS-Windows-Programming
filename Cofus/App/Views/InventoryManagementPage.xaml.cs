@@ -32,13 +32,22 @@ public sealed partial class InventoryManagementPage : Page
         ViewModel.SearchMaterials(searchText, startExpirationDate, endExpirationDate);
     }
 
-
     private async void AddButton_Click(object sender, RoutedEventArgs e)
     {
         ClearInputFields();
         AddEditDialog.Title = "Thêm Nguyên Liệu";
         ImportDatePicker.Visibility = Visibility.Visible;
         await AddEditDialog.ShowAsync();
+    }
+    private async void ShowNotification(string message)
+    {
+        var dialog = new ContentDialog
+        {
+            Title = "Notification",
+            Content = message,
+            CloseButtonText = "OK"
+        };
+        await dialog.ShowAsync();
     }
 
     private async void EditButton_Click(object sender, RoutedEventArgs e)
@@ -54,6 +63,11 @@ public sealed partial class InventoryManagementPage : Page
             UnitPriceTextBox.Text = selectedMaterial.UnitPrice.ToString();
             ImportDatePicker.Visibility = Visibility.Collapsed;
             ExpirationDatePicker.Date = new DateTimeOffset(selectedMaterial.ExpirationDate);
+
+            if (selectedMaterial.Quantity <= selectedMaterial.Threshold)
+            {
+                ShowNotification("Sắp hết nguyên liệu");
+            }
 
             AddEditDialog.Title = "Sửa Nguyên Liệu";
             await AddEditDialog.ShowAsync();
@@ -143,6 +157,7 @@ public sealed partial class InventoryManagementPage : Page
         ImportDatePicker.Date = DateTimeOffset.Now;
         ExpirationDatePicker.Date = DateTimeOffset.Now.AddMonths(1);
     }
+
     private void PreviousPageButton_Click(object sender, RoutedEventArgs e)
     {
         if (ViewModel.CurrentPage > 0)
@@ -162,6 +177,7 @@ public sealed partial class InventoryManagementPage : Page
             PageInfoTextBlock.Text = $"Trang {ViewModel.CurrentPage + 1} ";
         }
     }
+
     private async void ExportExcelButton_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -245,12 +261,24 @@ public sealed partial class InventoryManagementPage : Page
             });
         }
     }
+    private async void Set_Notification_Threshold_Click(object sender, RoutedEventArgs e)
+    {
+        MaterialsListView.Visibility = Visibility.Visible;
+        await EditMaterialsDialog.ShowAsync();
+    }
 
-
+    private void UpdateThresholdButton_Click(object sender, RoutedEventArgs e)
+    {
+        foreach (var material in ViewModel.AllMaterials)
+        {
+            ViewModel.SetNotificationThreshold(material.MaterialCode, material.Threshold);
+        }
+    }
 
 
     private void InventoryListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         // Logic to handle selection change
     }
+
 }

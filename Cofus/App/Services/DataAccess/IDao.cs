@@ -35,10 +35,15 @@ public interface IDao
 
     // Quản lý nguyên liệu
     List<Material> GetAllMaterials();
+
+    List<Material> getAllThreshold();
     Material GetMaterialByCode(string code);
     bool AddMaterial(Material material);
     bool UpdateMaterial(Material material);
     bool DeleteMaterial(string code);
+
+    // Thông báo ngưỡng hết nguyn lịu
+    bool UpdateMaterialThreshold(string materialCode, int newThreshold);
 
 
 

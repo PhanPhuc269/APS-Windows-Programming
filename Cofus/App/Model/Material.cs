@@ -13,6 +13,8 @@ namespace App.Model
         private int unitPrice;
         private DateTime importDate;
         private DateTime expirationDate;
+        private int threshold;
+
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -124,7 +126,20 @@ namespace App.Model
                 }
             }
         }
+        public bool IsBelowThreshold => Quantity <= Threshold;
 
+        public int Threshold
+        {
+            get => threshold;
+            set
+            {
+                if (threshold != value)
+                {
+                    threshold = value;
+                    OnPropertyChanged(nameof(Threshold));
+                }
+            }
+        }
         public string FormattedImportDate => ImportDate.ToString("dd/MM/yyyy");
         public string FormattedExpirationDate => ExpirationDate.ToString("dd/MM/yyyy");
     }
