@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using App.Model;
 using MySql.Data.MySqlClient;
 using DotNetEnv;
+using Microsoft.UI.Xaml.Controls.Primitives;
 
 namespace App;
 
@@ -113,6 +114,29 @@ public class MySqlDao : IDao
 
         return results;
     }
+
+    public async Task<int> ExecuteNonQueryAsync(string query, List<MySqlParameter> parameters)
+    {
+        int rowsAffected = 0;
+
+        try
+        {
+            using (var connection = new MySqlConnection(_connectionString))
+            using (var command = new MySqlCommand(query, connection))
+            {
+                command.Parameters.AddRange(parameters.ToArray());
+                await connection.OpenAsync();  // Sử dụng OpenAsync thay vì Open
+                rowsAffected = await command.ExecuteNonQueryAsync();  // Sử dụng ExecuteNonQueryAsync
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred: {ex.Message}");
+        }
+
+        return rowsAffected;
+    }
+
 
     // Command to modify data (INSERT, UPDATE, DELETE)
     public int ExecuteNonQuery(string query, List<MySqlParameter> parameters)
@@ -265,7 +289,7 @@ public class MySqlDao : IDao
 
     public FullObservableCollection<Invoice> GetPendingOrders()
     {
-        var query = "SELECT * FROM ORDERS WHERE COMPLETED_TIME IS NULL";
+        var query = "SELECT * FROM ORDERS WHERE COMPLETED_TIME IS not NULL";
         var result = ExecuteSelectQuery(query);
 
         var orders = new FullObservableCollection<Invoice>();
@@ -278,12 +302,14 @@ public class MySqlDao : IDao
                 TableNumber = row["RESERVED_TABLE_ID"] == DBNull.Value ? -1 : Convert.ToInt32(row["RESERVED_TABLE_ID"]),
                 CreatedTime = Convert.ToDateTime(row["ORDER_TIME"]),
                 PaymentMethod = row["PAYMENT_METHOD"].ToString(),
-                InvoiceItems = GetOrderDetails(Convert.ToInt32(row["ORDER_ID"]))
+                InvoiceItems = GetOrderDetails(Convert.ToInt32(row["ORDER_ID"])),
+                CompleteTime = row["COMPLETED_TIME"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(row["COMPLETED_TIME"]),
             });
         }
 
         return orders;
     }
+
     public async Task<object> ExecuteScalarAsync(string query, List<MySqlParameter> parameters)
     {
         using (var connection = new MySqlConnection(_connectionString))
@@ -320,11 +346,57 @@ public class MySqlDao : IDao
 
     }
 
+    private async Task UpdateStockAfterOrder(Invoice invoice)
+    {
+        foreach (var item in invoice.InvoiceItems)
+        {
+            var beverageSizeId = GetBeverageSizeId(item.BeverageId, item.Size);
+
+            // Giảm số lượng nguyên liệu trong kho
+            var recipeQuery = @"
+            SELECT MATERIAL_ID, QUANTITY
+            FROM RECIPE
+            WHERE BEVERAGE_SIZE_ID = @beverageSizeId";
+
+            var recipeParams = new List<MySqlParameter>
+        {
+            new MySqlParameter("@beverageSizeId", beverageSizeId)
+        };
+
+            var recipeResults = ExecuteSelectQuery(recipeQuery, recipeParams);
+
+            foreach (var row in recipeResults)
+            {
+                var materialId = Convert.ToInt32(row["MATERIAL_ID"]);
+                var quantityUsed = Convert.ToInt32(row["QUANTITY"]) * item.Quantity;
+
+                // Cập nhật kho (giảm số lượng nguyên liệu)
+                var updateStockQuery = @"
+                UPDATE MATERIAL
+                SET QUANTITY = QUANTITY - @quantityUsed
+                WHERE ID = @materialId";
+
+                var updateStockParams = new List<MySqlParameter>
+            {
+                new MySqlParameter("@quantityUsed", quantityUsed),
+                new MySqlParameter("@materialId", materialId)
+            };
+
+                await ExecuteNonQueryAsync(updateStockQuery, updateStockParams);
+            }
+        }
+    }
+
+
     public async Task<int> CreateOrder(Invoice invoice)
     {
+        // Tính thời gian dự kiến (COMPLETE_TIME)
+        var estimatedCompleteTime = DateTime.Now.AddMinutes(invoice.TotalQuantity * 3);
+
+        // Câu truy vấn SQL để tạo đơn hàng
         var query = @"
-                        INSERT INTO ORDERS (TOTAL_AMOUNT, ORDER_TIME, PAYMENT_METHOD, CONSUMED_POINTS, AMOUNT_DUE, EMPLOYEE_ID) 
-                        VALUES (@total, @time, @method, @points, @amountDue, @employee);
+                        INSERT INTO ORDERS (TOTAL_AMOUNT, ORDER_TIME, PAYMENT_METHOD, CONSUMED_POINTS, AMOUNT_DUE, EMPLOYEE_ID, COMPLETED_TIME) 
+                        VALUES (@total, @time, @method, @points, @amountDue, @employee, @completeTime);
                         SELECT LAST_INSERT_ID();";
         var parameters = new List<MySqlParameter>
         {
@@ -333,15 +405,21 @@ public class MySqlDao : IDao
             new ("@points", invoice.ConsumedPoints),
             new ("@amountDue", invoice.AmountDue),
             new ("@method", invoice.PaymentMethod),
-            new ("@employee", 1)
+            new ("@employee", 1),
+            new ("@completeTime", estimatedCompleteTime)  // Thêm tham số COMPLETE_TIME
         };
+
         var orderId = Convert.ToInt32(await ExecuteScalarAsync(query, parameters));
+
+        // Cập nhật kho sau khi tạo đơn hàng
+        await UpdateStockAfterOrder(invoice);
 
         return orderId;
     }
+
     public int GetBeverageSizeId(int beverageId, string size)
     {
-        var query = "SELECT ID FROM BEVERAGE_SIZE WHERE BEVERAGE_ID = @beverageId AND SIZE = @size";
+        var query = "SELECT BEVERAGE_ID FROM BEVERAGE_SIZE WHERE BEVERAGE_ID = @beverageId AND SIZE = @size";
         var parameters = new List<MySqlParameter>
         {
             new MySqlParameter("@beverageId", beverageId),
@@ -350,7 +428,7 @@ public class MySqlDao : IDao
 
         var result = ExecuteSelectQuery(query, parameters);
 
-        return result.Count > 0 ? Convert.ToInt32(result[0]["ID"]) : -1;
+        return result.Count > 0 ? Convert.ToInt32(result[0]["BEVERAGE_ID"]) : -1;
     }
 
     public async Task AddOrderDetail(int orderId, InvoiceItem item)
@@ -720,25 +798,58 @@ public class MySqlDao : IDao
         return ExecuteNonQuery(query, parameters) > 0;
     }
 
+    public async Task<Revenue> GetRevenue(DateTime selectedDate)
+    {
+        var query = @"
+        SELECT 
+            SUM(o.TOTAL_AMOUNT) AS TotalRevenue, 
+            COUNT(o.ORDER_ID) AS OrderCount,
+            SUM(CASE WHEN o.PAYMENT_METHOD = 'Cash' THEN o.TOTAL_AMOUNT ELSE 0 END) AS CashAmount
+        FROM 
+            ORDERS o
+        WHERE 
+            DATE(o.ORDER_TIME) = @selectedDate";
+
+        var parameters = new List<MySqlParameter>
+        {
+            new MySqlParameter("@selectedDate", selectedDate)
+        };
+
+        var result = ExecuteSelectQuery(query, parameters);
+
+        if (result.Count > 0)
+        {
+            var row = result[0];
+            return new Revenue
+            {
+                TotalRevenue = row["TotalRevenue"] != DBNull.Value ? Convert.ToInt32(row["TotalRevenue"]) : 0,
+                OrderCount = row["OrderCount"] != DBNull.Value ? Convert.ToInt32(row["OrderCount"]) : 0,
+                CashAmount = row["CashAmount"] != DBNull.Value ? Convert.ToInt32(row["CashAmount"]) : 0
+            }; 
+        }
+
+        return new Revenue();
+    }
+
     public async Task<List<TopProduct>> GetTopProducts(DateTime selectedDate)
     {
         var query = @"
-            SELECT 
-                b.IMAGE_PATH AS ImageUrl, 
-                b.BEVERAGE_NAME AS Name, 
-                SUM(od.QUANTITY) AS Amount
-            FROM 
+            SELECT
+                b.IMAGE_PATH AS ImageUrl,
+                b.BEVERAGE_NAME AS Name,
+                SUM(od.SUBTOTAL) AS Revenue
+            FROM
                 ORDER_DETAILS od
-            INNER JOIN 
-                BEVERAGE b ON od.BEVERAGE_ID = b.ID
-            INNER JOIN 
-                ORDERS o ON od.ORDER_ID = o.ID
-            WHERE 
+            JOIN
+                BEVERAGE b ON od.BEVERAGE_SIZE_ID = b.ID
+            JOIN
+                ORDERS o ON od.ORDER_ID = o.ORDER_ID
+            WHERE
                 DATE(o.ORDER_TIME) = @selectedDate
-            GROUP BY 
-                b.ID
-            ORDER BY 
-                Amount DESC
+            GROUP BY
+                b.IMAGE_PATH, b.BEVERAGE_NAME
+            ORDER BY
+                Revenue DESC
             LIMIT 5";
 
         var parameters = new List<MySqlParameter>
@@ -756,65 +867,35 @@ public class MySqlDao : IDao
             {
                 ImageUrl = row["ImageUrl"].ToString(),
                 Name = row["Name"].ToString(),
-                Revenue = Convert.ToInt32(row["Amount"])
+                Revenue = Convert.ToInt32(row["Revenue"])
             });
         }
 
         return topProducts;
     }
-    public async Task<Revenue> GetRevenue(DateTime selectedDate, DateTime previousDate)
-    {
-        var query = @"
-        SELECT 
-            SUM(o.TOTAL_AMOUNT) AS TotalRevenue, 
-            COUNT(o.ID) AS OrderCount
-        FROM 
-            ORDERS o
-        WHERE 
-            o.ORDER_TIME BETWEEN @previousDate AND @selectedDate";
-
-        var parameters = new List<MySqlParameter>
-{
-    new MySqlParameter("@previousDate", previousDate),
-    new MySqlParameter("@selectedDate", selectedDate)
-};
-
-        var result = ExecuteSelectQuery(query, parameters);
-
-        if (result.Count > 0)
-        {
-            var row = result[0];
-            return new Revenue
-            {
-                TotalRevenue = row["TotalRevenue"] != DBNull.Value ? Convert.ToInt32(row["TotalRevenue"]) : 0,
-                OrderCount = row["OrderCount"] != DBNull.Value ? Convert.ToInt32(row["OrderCount"]) : 0
-            };
-        }
-
-        return new Revenue();
-    }
 
     public async Task<List<TopCategory>> GetTopCategories(DateTime selectedDate)
     {
         var query = @"
-            SELECT 
-                tb.CATEGORY AS Name, 
-                SUM(od.QUANTITY * od.PRICE) AS Revenue
-            FROM 
+            SELECT
+                t.CATEGORY AS Name,
+                SUM(od.SUBTOTAL) AS Revenue
+            FROM
                 ORDER_DETAILS od
-            INNER JOIN 
-                BEVERAGE b ON od.BEVERAGE_ID = b.ID
-            INNER JOIN 
-                TYPE_BEVERAGE tb ON b.CATEGORY_ID= tb.ID
-            INNER JOIN 
-                ORDERS o ON od.ORDER_ID = o.ID
-            WHERE 
+            JOIN
+                BEVERAGE b ON od.BEVERAGE_SIZE_ID = b.ID
+            JOIN
+                TYPE_BEVERAGE t ON b.CATEGORY_ID = t.ID
+            JOIN
+                ORDERS o ON od.ORDER_ID = o.ORDER_ID
+            WHERE
                 DATE(o.ORDER_TIME) = @selectedDate
-            GROUP BY 
-                tb.ID
-            ORDER BY 
+            GROUP BY
+                t.CATEGORY
+            ORDER BY
                 Revenue DESC
             LIMIT 5";
+
 
         var parameters = new List<MySqlParameter>
         {
@@ -841,21 +922,23 @@ public class MySqlDao : IDao
     {
         var query = @"
             SELECT 
-                b.BEVERAGE_NAME AS Name, 
+                b.IMAGE_PATH AS ImageUrl, 
+                b.BEVERAGE_NAME AS Name,
                 SUM(od.QUANTITY) AS Amount
             FROM 
                 ORDER_DETAILS od
-            INNER JOIN 
-                BEVERAGE b ON od.BEVERAGE_ID = b.ID
-            INNER JOIN 
-                ORDERS o ON od.ORDER_ID = o.ID
-            WHERE 
+            JOIN 
+                BEVERAGE b ON od.BEVERAGE_SIZE_ID = b.ID
+            JOIN
+                ORDERS o ON od.ORDER_ID = o.ORDER_ID
+            WHERE
                 DATE(o.ORDER_TIME) = @selectedDate
             GROUP BY 
-                b.ID
+                b.IMAGE_PATH, b.BEVERAGE_NAME
             ORDER BY 
                 Amount DESC
             LIMIT 5";
+
 
         var parameters = new List<MySqlParameter>
         {
@@ -870,6 +953,7 @@ public class MySqlDao : IDao
         {
             topSellers.Add(new TopSeller
             {
+                ImageUrl = row["ImageUrl"].ToString(),
                 Name = row["Name"].ToString(),
                 Amount = Convert.ToInt32(row["Amount"])
             });
@@ -877,4 +961,25 @@ public class MySqlDao : IDao
 
         return topSellers;
     }
+
+    public User GetCurrentUser(string username)
+    {
+        var query = "SELECT * FROM USERS WHERE USERNAME = @username"; // Modify according to your database schema
+        var parameters = new List<MySqlParameter>
+        {
+            new MySqlParameter("@username", username)
+        };
+
+        var result = ExecuteSelectQuery(query, parameters);
+
+        var row = result[0];
+
+        return new User
+        {
+            Username = row["USERNAME"].ToString(),
+            Password = row["USER_PASSWORD"].ToString(),
+            AccessLevel = Convert.ToInt32(row["AccessLevel"])
+        };
+    }
 }
+

@@ -107,6 +107,7 @@ public sealed partial class InvoiceControl : UserControl
                 return;
             }
 
+
             // Lấy phương thức thanh toán đã chọn
             var paymentMethod = comboBox.SelectedItem?.ToString();
             if (paymentMethod == null)
@@ -127,18 +128,66 @@ public sealed partial class InvoiceControl : UserControl
 
             try
             {
-                if(paymentMethod== "QR Code MoMo")
+                bool isPaid=false;
+                ContentDialog checkoutDia;
+                if (paymentMethod== "QR Code MoMo")
                 {
-                    await ShowMoMoQRCode(); 
+                    checkoutDia = await ShowMoMoQRCode1();
+                    var dialogResult = ContentDialogResult.None;
+                    dialogResult = await checkoutDia.ShowAsync();
+                    if (dialogResult == ContentDialogResult.Primary)
+                    {
+                        isPaid = true;
+                    }
+                    else
+                    {
+                        isPaid = false;
+                    }
                 }
-                if (paymentMethod == "Cash")
+                if (paymentMethod == "VNPay")
                 {
-                    await ShowVNPayQRCode();
+                    checkoutDia = await ShowVNPayQRCode();
+                    var dialogResult = ContentDialogResult.None;
+                    dialogResult = await checkoutDia.ShowAsync();
+                    if (dialogResult == ContentDialogResult.Primary)
+                    {
+                        isPaid = true;
+                    }
+                    else
+                    {
+                        isPaid = false;
+                    }
+                }
+                if (paymentMethod == "VietQRPayment")
+                {
+                    VietQRPayment vietQRPayment = new VietQRPayment();
+                    var token = GenerateUniqueOrderId(); // Tạo mã đơn hàng duy nhất
+                    var qrUrl = vietQRPayment.GenerateVietQR(ViewModel.Invoice, token); // Tạo URL mã QR
+                    
+                    // Hiển thị ContentDialog chứa mã QR
+                    checkoutDia = await OpenPaymentWebViewDialog(qrUrl, true);
+
+                    // Mở dialog (đối với WebView hoặc bất kỳ cách nào hiển thị mã QR)
+                    var dialogTask = checkoutDia.ShowAsync(); // Chờ dialog hiển thị
+
+                    // Kiểm tra trạng thái thanh toán bất đồng bộ
+                    isPaid = await vietQRPayment.WaitForPaymentAsync(ViewModel.Invoice, token);
+
+                    // Kiểm tra nếu thanh toán đã thành công, và nếu thành công, đóng dialog
+                    if (isPaid)
+                    {
+                        checkoutDia.Hide(); // Đóng dialog khi thanh toán thành công
+                    }
+                    await dialogTask;
+
                 }
 
-
-                // Gọi phương thức Checkout trong ViewModel để xử lý thanh toán
-                var isSuccess = await ViewModel.Checkout();
+                var isSuccess = false;
+                if (isPaid == true)
+                {
+                    // Gọi phương thức Checkout trong ViewModel để xử lý thanh toán
+                    isSuccess = await ViewModel.Checkout();
+                }
 
                 if (isSuccess)
                 {
@@ -159,8 +208,8 @@ public sealed partial class InvoiceControl : UserControl
                     // Thông báo lỗi nếu có lỗi xảy ra
                     var errorDialog = new ContentDialog
                     {
-                        Title = "Lỗi thanh toán",
-                        Content = "Đã có lỗi xảy ra trong quá trình thanh toán.",
+                        Title = "Thanh toán không thành công",
+                        Content = "Thanh toán bị hủy hoặc xảy ra vấn đề.",
                         CloseButtonText = "OK"
                     };
 
@@ -293,15 +342,16 @@ public sealed partial class InvoiceControl : UserControl
     {
         get; set;
     }
+
     private async Task<string> GenerateMoMoQRCodeAsync()
     {
         var invoice = ViewModel.Invoice;
         DotNetEnv.Env.Load(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\..\..\App\.env"));
         // Cấu hình thông tin MoMo
-        var partnerCode = "MOMOBKUN20180529";
-        var accessKey = "klm05TvNBzhg7h7j";
-        var secretKey = "at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa";
-        var endpoint = "https://test-payment.momo.vn/v2/gateway/api/create"; // Sandbox URL
+        var partnerCode = $"{Environment.GetEnvironmentVariable("MOMO_PARTNER_CODE")}"; 
+        var accessKey = $"{Environment.GetEnvironmentVariable("MOMO_ACCESS_KEY")}";
+        var secretKey = $"{Environment.GetEnvironmentVariable("MOMO_SECRET_KEY")}";
+        var endpoint = $"{Environment.GetEnvironmentVariable("MOMO_ENDPOINT")}"; // Sandbox URL
 
         // Thông tin thanh toán
         var orderId = GenerateUniqueOrderId();
@@ -344,49 +394,56 @@ public sealed partial class InvoiceControl : UserControl
         {
             var responseContent = await response.Content.ReadAsStringAsync();
             var paymentResponse = System.Text.Json.JsonSerializer.Deserialize<MoMoResponse>(responseContent);
-
-            //var diff = new MoMoPaymentProcessor();
-            //string qrCodeUrl=await diff.ProcessPaymentAsync("MOMO", "F8BBA842ECF85", "K951B6PE1waDMi640xX08PD3vg6EkVlz", orderId, orderInfo, returnUrl, notifyUrl, requestId, amount, "");
-            //var writeableBitmap = await diff.GenerateQRCodeAsync(qrCodeUrl);
-            //if (writeableBitmap != null)
-            //{
-            //    var qrImage = new Microsoft.UI.Xaml.Controls.Image
-            //    {
-            //        Source = writeableBitmap,
-            //        Width = 300,
-            //        Height = 300,
-            //        HorizontalAlignment = HorizontalAlignment.Center,
-            //        VerticalAlignment = VerticalAlignment.Center
-            //    };
-
-            //    var qrDialog = new ContentDialog
-            //    {
-            //        Title = "Please scan the QR code to pay",
-            //        Content = qrImage,
-            //        CloseButtonText = "Close",
-            //        XamlRoot = this.XamlRoot
-            //    };
-            //    await qrDialog.ShowAsync();
-            //    _currentDialog = qrDialog;
-            //}
-            //else
-            //{
-            //    var errorDialog = new ContentDialog
-            //    {
-            //        Title = "Error",
-            //        Content = "Unable to generate QR code.",
-            //        CloseButtonText = "OK",
-            //        XamlRoot = this.XamlRoot
-            //    };
-            //    await errorDialog.ShowAsync();
-            //}
-            // Trả về URL hoặc QR code để hiển thị
             return paymentResponse?.qrCodeUrl; // Dùng URL trả về cho QR
         }
 
 
         return null;
     }
+    private async Task<ContentDialog> ShowMoMoQRCode1()
+    {
+        try
+        {
+            // Initialize the MoMoPaymentProcessor
+            var paymentProcessor = new MoMoPaymentProcessor();
+            var invoice = ViewModel.Invoice;
+            DotNetEnv.Env.Load(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\..\..\App\.env"));
+            // Cấu hình thông tin MoMo
+            var partnerCode = $"{Environment.GetEnvironmentVariable("MOMO_PARTNER_CODE")}";
+            var accessKey = $"{Environment.GetEnvironmentVariable("MOMO_ACCESS_KEY")}";
+            var secretKey = $"{Environment.GetEnvironmentVariable("MOMO_SECRET_KEY")}";
+            var endpoint = $"{Environment.GetEnvironmentVariable("MOMO_ENDPOINT")}"; // Sandbox URL
+
+            // Thông tin thanh toán
+            var orderId = GenerateUniqueOrderId();
+            OrderId = orderId;
+            var orderInfo = $"Thanh toán hóa đơn #{orderId}";
+            var amount = invoice.AmountDue.ToString();
+            var notifyUrl = $"{Environment.GetEnvironmentVariable("MOMO_ENDPOINT_URL")}"; // URL nhận thông báo từ MoMo
+            var returnUrl = $"{Environment.GetEnvironmentVariable("MOMO_ENDPOINT_NOTICEURL")}"; // URL sau khi thanh toán thành công
+            var requestId = Guid.NewGuid().ToString();
+            var extraData = "";
+
+            // Generate the MoMo QR code URL
+            string requestUrl = await paymentProcessor.ProcessPaymentAsync(partnerCode, accessKey, secretKey, orderId, orderInfo, returnUrl, notifyUrl, requestId, amount, extraData);
+            //string requestUrl = await paymentProcessor.ProcessPaymentAsync("MOMO", "F8BBA842ECF85", "K951B6PE1waDMi640xX08PD3vg6EkVlz", orderId, orderInfo, returnUrl, notifyUrl, requestId, amount, "");
+            if (!string.IsNullOrEmpty(requestUrl))
+            {
+                return await OpenPaymentWebViewDialog(requestUrl);
+
+            }
+            else
+            {
+                Debug.WriteLine("Failed to generate QR code URL.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error showing MoMo QR code: {ex.Message}");
+        }
+        return null;
+    }
+
     public class MoMoPaymentProcessor
     {
         private static readonly string apiUrl = "https://test-payment.momo.vn/gw_payment/transactionProcessor";
@@ -471,9 +528,9 @@ public sealed partial class InvoiceControl : UserControl
                 var paymentResponse = System.Text.Json.JsonSerializer.Deserialize<dynamic>(responseContent);
 
                 // Extract the qrCodeUrl from the JSON response
-                if (paymentResponse.TryGetProperty("qrCodeUrl", out JsonElement qrCodeUrlElement))
+                if (paymentResponse.TryGetProperty("payUrl", out JsonElement payUrlElement))
                 {
-                    return qrCodeUrlElement.GetString();
+                    return payUrlElement.GetString();
                 }
                 return null;
             }
@@ -521,21 +578,7 @@ public sealed partial class InvoiceControl : UserControl
             return false;
         }
     }
-    private string SaveQRCodeToFile(string data, string filePath)
-    {
-        // Tạo QR code từ chuỗi dữ liệu
-        QRCodeGenerator qrGenerator = new QRCodeGenerator();
-        QRCodeData qrCodeData = qrGenerator.CreateQrCode(data, QRCodeGenerator.ECCLevel.Q);
-        BitmapByteQRCode byteQRCode = new BitmapByteQRCode(qrCodeData);
 
-        // Lấy hình ảnh QR code dưới dạng byte[]
-        byte[] qrCodeBytes = byteQRCode.GetGraphic(20);
-
-        // Lưu byte[] thành file
-        File.WriteAllBytes(filePath, qrCodeBytes);
-
-        return filePath; // Trả về đường dẫn file đã lưu
-    }
     private async Task ShowMoMoQRCode()
     {
         var qrCodeData = await GenerateMoMoQRCodeAsync();
@@ -640,93 +683,7 @@ public sealed partial class InvoiceControl : UserControl
 
     private CancellationTokenSource _cancellationTokenSource;
 
-    private async Task HandleCallbackAsync(HttpListenerContext context)
-    {
-        var request = context.Request;
-
-        using (var reader = new StreamReader(request.InputStream, request.ContentEncoding))
-        {
-            var callbackData = await reader.ReadToEndAsync();
-            Debug.WriteLine($"MoMo Callback Data: {callbackData}");
-
-            // Xử lý dữ liệu callback
-            var isTransactionSuccessful = await ProcessMoMoCallbackAsync(callbackData);
-
-            // Gửi phản hồi HTTP 200 OK cho MoMo
-            var response = context.Response;
-            var responseString = isTransactionSuccessful ? "SUCCESS" : "FAILED";
-            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
-            response.ContentLength64 = buffer.Length;
-            await response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
-            response.OutputStream.Close();
-        }
-    }
     private ContentDialog _currentDialog;
-    private async Task<bool> ProcessMoMoCallbackAsync(string callbackData)
-    {
-        try
-        {
-            // Phân tích JSON từ MoMo
-            var callbackJson = System.Text.Json.JsonSerializer.Deserialize<MoMoCallbackResponse>(callbackData);
-
-            // Kiểm tra chữ ký hợp lệ
-            //if (!VerifyMoMoSignature(callbackJson))
-            //{
-            //    Debug.WriteLine("Invalid MoMo Signature");
-            //    return false;
-            //}
-
-            // Cập nhật trạng thái giao dịch dựa trên `resultCode`
-            if (callbackJson.resultCode == 0)
-            {
-                Debug.WriteLine($"Transaction Success for OrderId: {callbackJson.orderId}");
-                // Gọi phương thức Checkout trong ViewModel để xử lý thanh toán
-                var isSuccess = await ViewModel.Checkout();
-
-                if (isSuccess)
-                {
-                    //Đóng dialog hiện tại nếu có
-
-
-                    // Thông báo khi thanh toán thành công
-                    var dialog = new ContentDialog
-                    {
-                        Title = "Thanh toán thành công",
-                        Content = $"Hóa đơn của bạn đã được lưu. Phương thức thanh toán: {ViewModel.Invoice.PaymentMethod}.",
-                        CloseButtonText = "OK"
-                    };
-                    dialog.XamlRoot = this.XamlRoot;
-                    await dialog.ShowAsync();
-                    // Gửi yêu cầu đóng tab
-
-                }
-                else
-                {
-                    // Thông báo lỗi nếu có lỗi xảy ra
-                    var errorDialog = new ContentDialog
-                    {
-                        Title = "Lỗi thanh toán",
-                        Content = "Đã có lỗi xảy ra trong quá trình thanh toán.",
-                        CloseButtonText = "OK"
-                    };
-
-                    errorDialog.XamlRoot = this.XamlRoot;
-                    await errorDialog.ShowAsync();
-                }
-                return true;
-            }
-            else
-            {
-                Debug.WriteLine($"Transaction Failed for OrderId: {callbackJson.orderId}");
-                return false;
-            }
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Error processing callback: {ex.Message}");
-            return false;
-        }
-    }
 
     private bool VerifyMoMoSignature(MoMoCallbackResponse callback)
     {
@@ -736,18 +693,20 @@ public sealed partial class InvoiceControl : UserControl
         return computedSignature == callback.signature;
     }
     
-    async public Task ShowVNPayQRCode()
+    async public Task<ContentDialog> ShowVNPayQRCode()
     {
+        DotNetEnv.Env.Load(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\..\..\App\.env"));
+
         // Cấu hình thanh toán
-        string vnp_TmnCode = "EOASESC4";  // Mã website VNPAY
-        string secretKey = "PHOSRMU09ADV8IIETWZS2KEFKUA7ELKQ";  // Chuỗi bí mật VNPAY
-        string vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";  // URL thanh toán VNPAY
-        string vnp_ReturnUrl = "https://sandbox.vnpayment.vn/tryitnow/Home/VnPayReturn";  // URL trả về
-        string vnp_IpAddr = "127.0.0.1";  // IP của khách hàng
+        string vnp_TmnCode = $"{Environment.GetEnvironmentVariable("VNP_TMNCODE")}";  // Mã website VNPAY
+        string secretKey = $"{Environment.GetEnvironmentVariable("SECRET_KEY")}";  // Chuỗi bí mật VNPAY
+        string vnp_Url = $"{Environment.GetEnvironmentVariable("VNP_URL")}";  // URL thanh toán VNPAY
+        string vnp_ReturnUrl = $"{Environment.GetEnvironmentVariable("VNP_RETURN_URL")}";  // URL trả về
+        string vnp_IpAddr = $"{Environment.GetEnvironmentVariable("VNP_IP_ADDR")}";  // IP của khách hàng
         string vnp_TxnRef = GenerateUniqueOrderId();  // Mã giao dịch (duy nhất)
-        string vnp_OrderInfo = "Thanh toan";  // Mô tả đơn hàng
+        string vnp_OrderInfo = $"Thanh toan hoa don {ViewModel.Invoice.InvoiceNumber}";  // Mô tả đơn hàng
         string vnp_OrderType = "billpayment";  // Loại đơn hàng
-        int vnp_Amount = 30000;  // Số tiền (VNĐ)
+        int vnp_Amount = ViewModel.Invoice.AmountDue;  // Số tiền (VNĐ)
 
 
         // Ví dụ về request data
@@ -769,18 +728,18 @@ public sealed partial class InvoiceControl : UserControl
         };
 
         // Chuỗi bí mật của bạn từ VNPAY
-        string vnpHashSecret = "6VN91W7ILCKUGFYYOQUEL2DWL37K8SV5";
+        string vnpHashSecret = $"{Environment.GetEnvironmentVariable("VNP_HASHSECRET")}";
 
         // Base URL của VNPAY
-        string baseUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+        string baseUrl = $"{Environment.GetEnvironmentVariable("VNP_URL")}";
 
         // Tạo URL thanh toán
         string requestUrl = CreateRequestUrl(baseUrl, vnpHashSecret, requestData);
-        await OpenPaymentWebViewDialog(requestUrl);
+        return await OpenPaymentWebViewDialog(requestUrl);
 
     }
 
-    public async Task OpenPaymentWebViewDialog(string token)
+    public async Task<ContentDialog> OpenPaymentWebViewDialog(string token, bool autoCheck=false)
     {
         string url = $"{token}";  // URL thanh toán
 
@@ -810,54 +769,18 @@ public sealed partial class InvoiceControl : UserControl
         {
             Title = "Payment",
             Content = grid,
-            CloseButtonText = "Close",
+            PrimaryButtonText = "Xác nhận đã thanh toán",
+            CloseButtonText = "Hủy",
             XamlRoot = this.XamlRoot,
             Width = 900,  // Set the desired width of the dialog
             Height = 700  // Set the desired height of the dialog
         };
+        dialog.IsPrimaryButtonEnabled = !autoCheck;
 
-        // Hiển thị ContentDialog
-        await dialog.ShowAsync();
+        return dialog;
+
     }
 
-    public async Task<string> GetTokenFromVnpay(string requestUrl)
-    {
-        // Create an instance of HttpClientHandler
-        HttpClientHandler handler = new HttpClientHandler
-        {
-            AllowAutoRedirect = true // Set AllowAutoRedirect to true
-        };
-
-        // Create an instance of HttpClient with the handler
-        System.Net.Http.HttpClient client = new System.Net.Http.HttpClient(handler);
-
-        // Create a HttpRequestMessage
-        var requestMessage = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Get, requestUrl);
-
-        // Send the request and get the response
-        System.Net.Http.HttpResponseMessage response = await client.SendAsync(requestMessage);
-
-        // Check the status of the response
-        if (response.IsSuccessStatusCode)
-        {
-            // Get the final URL after redirection
-            Uri finalUrl = response.RequestMessage.RequestUri;
-            string token = GetTokenFromUrl(finalUrl.ToString());
-
-            return token;
-        }
-
-        // If there is an error sending the request, return null
-        return null;
-    }
-
-
-    private string GetTokenFromUrl(string url)
-    {
-        var uri = new Uri(url);
-        var queryParams = System.Web.HttpUtility.ParseQueryString(uri.Query);
-        return queryParams["token"];
-    }
     public string CreateRequestUrl(string baseUrl, string vnpHashSecret, Dictionary<string, string> requestData)
     {
         var data = new StringBuilder();
@@ -909,3 +832,4 @@ public sealed partial class InvoiceControl : UserControl
 
    
 }
+

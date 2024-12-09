@@ -118,6 +118,7 @@ public class InvoiceControlViewModel : INotifyPropertyChanged
             foreach (var item in invoiceItemsCopy)
             {
                 await dao.AddOrderDetail(orderId, item);
+
             }
 
             // Dừng tăng thời gian
@@ -140,4 +141,6 @@ public class InvoiceControlViewModel : INotifyPropertyChanged
             return false;
         }
     }
+
+
 }

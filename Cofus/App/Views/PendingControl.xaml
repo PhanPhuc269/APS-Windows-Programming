@@ -46,6 +46,7 @@
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="2*"/>
@@ -58,9 +59,13 @@
                                 <TextBlock Text="Thời gian tạo:" FontSize="14" Foreground="White" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1" Margin="0,5,0,0"/>
                                 <TextBlock Text="{x:Bind CreatedTime, Converter={StaticResource DateTimeConverter}}" FontSize="14" FontWeight="Medium" Grid.Column="1" Grid.Row="1" Margin="0,5,0,0"/>
 
+
                                 <TextBlock Text="Tổng số lượng:" FontSize="14" Foreground="White" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2" Margin="0,5,0,0"/>
                                 <TextBlock Text="{x:Bind TotalQuantity}" FontSize="14" Grid.Column="1" Grid.Row="2" Margin="10,5,0,0"/>
 
+                                <TextBlock Text="Thời gian còn lại:" FontSize="14" Foreground="Gray" VerticalAlignment="Center" Grid.Column="0" Grid.Row="3" Margin="0,5,0,0"/>
+                                <TextBlock Text="{x:Bind RemainingTime}" FontSize="14" Grid.Column="1" Grid.Row="3" Margin="5,5,0,0"/>
+                              
                             </Grid>
 
                             <!-- Danh sách sản phẩm -->

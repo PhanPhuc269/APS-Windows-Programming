@@ -28,11 +28,10 @@ public interface IDao
     bool UpdateCustomer(Customer customer);
     bool DeleteCustomer(int customerId);
     // Revenue
-    Task<Revenue> GetRevenue(DateTime selectedDate, DateTime previousDate);
+    Task<Revenue> GetRevenue(DateTime selectedDate);
     Task<List<TopProduct>> GetTopProducts(DateTime selectedDate);
     Task<List<TopCategory>> GetTopCategories(DateTime selectedDate);
     Task<List<TopSeller>> GetTopSellers(DateTime selectedDate);
-
 
     List<Material> GetAllMaterials();
     Material GetMaterialByCode(string code);

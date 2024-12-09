@@ -248,7 +248,7 @@ public class MockDao
         return false;
     }
 
-    public async Task<Revenue> GetRevenue(DateTime selectedDate, DateTime previousDate)
+    public async Task<Revenue> GetRevenue(DateTime selectedDate)
     {
         await Task.Delay(10);
 
@@ -350,4 +350,10 @@ public class MockDao
         mockUsers.Add(user);
         return true;
     }
+
+    public User GetCurrentUser(string username)
+    {
+        return mockUsers.FirstOrDefault(u => u.Username == username);
+    }
+
 }

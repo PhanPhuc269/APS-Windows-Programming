@@ -76,6 +76,10 @@ public partial class App : Application
             // Views and ViewModels
             services.AddTransient<CustomerManagementViewModel>();
             services.AddTransient<CustomerManagementPage>();
+            services.AddTransient<TimeKeepingViewModel>();
+            services.AddTransient<TimeKeepingPage>();
+            services.AddTransient<ListDetailsViewModel>();
+            services.AddTransient<ListDetailsPage>();
             services.AddTransient<InventoryManagementViewModel>();
             services.AddTransient<InventoryManagementPage>();
             services.AddTransient<RevenueViewModel>();
