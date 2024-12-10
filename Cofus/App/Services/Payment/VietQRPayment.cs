@@ -6,6 +6,7 @@ using QRCoder;
 using System.Net;
 using App.Model;
 using System.Text.Json.Serialization;
+using Microsoft.UI.Xaml.Controls;
 
 namespace App;
 
@@ -18,6 +19,23 @@ public class VietQRPayment
     private bool _isSuccess = false;
 
     // Tạo mã QR thanh toán VietQR
+
+    public async Task<ContentDialog> ShowMoMoQRCode(Invoice invoice)
+    {
+        try
+        {
+            var token = GenerateUniqueID.GenerateUniqueOrderID(); // Tạo mã đơn hàng duy nhất
+            var qrUrl = GenerateVietQR(invoice, token); // Tạo URL mã QR
+
+            // Hiển thị ContentDialog chứa mã QR
+            return await OpenDialog.OpenPaymentWebViewDialog(qrUrl, true);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Lỗi khi tạo mã QR: " + ex.Message);
+            return null;
+        }
+    }
     public string GenerateVietQR(Invoice invoice, string token)
     {
         decimal price = invoice.AmountDue;

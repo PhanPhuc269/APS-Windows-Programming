@@ -26,6 +26,7 @@ using System.Web;
 using MySqlX.XDevAPI;
 using App.Services;
 using App.Helpers;
+using App.Services.Payment;
 
 
 namespace App.Views;
@@ -132,7 +133,8 @@ public sealed partial class InvoiceControl : UserControl
                 ContentDialog checkoutDia;
                 if (paymentMethod== "MoMo")
                 {
-                    checkoutDia = await ShowMoMoQRCode1();
+                    checkoutDia = await MoMoPayment.ShowMoMoQRCode(ViewModel.Invoice);
+                    checkoutDia.XamlRoot = this.XamlRoot;
                     var dialogResult = ContentDialogResult.None;
                     dialogResult = await checkoutDia.ShowAsync();
                     if (dialogResult == ContentDialogResult.Primary)
@@ -146,7 +148,8 @@ public sealed partial class InvoiceControl : UserControl
                 }
                 if (paymentMethod == "VNPay")
                 {
-                    checkoutDia = await ShowVNPayQRCode();
+                    checkoutDia = await VNPayPayment.ShowVNPayQRCode(ViewModel.Invoice);
+                    checkoutDia.XamlRoot=this.XamlRoot;
                     var dialogResult = ContentDialogResult.None;
                     dialogResult = await checkoutDia.ShowAsync();
                     if (dialogResult == ContentDialogResult.Primary)
@@ -180,6 +183,93 @@ public sealed partial class InvoiceControl : UserControl
                     }
                     await dialogTask;
 
+                }
+                if (paymentMethod == "Cash")
+                {
+                    // Create a dialog to input the received amount
+                    // Tạo một tham chiếu đến TextBox
+                    TextBox receivedAmountTextBox = new TextBox { PlaceholderText = "Amount" };
+
+                    ContentDialog cashDialog = new ContentDialog
+                    {
+                        Title = "Cash Payment",
+                        Content = new StackPanel
+                        {
+                            Children =
+                            {
+                                new TextBlock { Text = "Enter the amount received:" },
+                                receivedAmountTextBox // Thêm TextBox trực tiếp vào đây
+                            }
+                        },
+                        PrimaryButtonText = "Confirm",
+                        CloseButtonText = "Cancel",
+                        XamlRoot = this.XamlRoot
+                    };
+
+                    var dialogResult = await cashDialog.ShowAsync();
+
+                    if (dialogResult == ContentDialogResult.Primary)
+                    {
+                        // Truy cập giá trị trực tiếp từ TextBox
+                        if (decimal.TryParse(receivedAmountTextBox.Text, out decimal receivedAmount))
+                        {
+                            decimal totalAmount = ViewModel.Invoice.TotalPrice;
+                            decimal change = receivedAmount - totalAmount;
+
+                            if (change >= 0)
+                            {
+                                // Đánh dấu hóa đơn là đã thanh toán
+                                ViewModel.Invoice.MarkAsPaid();
+
+                                // Hiển thị thông báo thành công
+                                ContentDialog successDialog = new ContentDialog
+                                {
+                                    Title = "Payment Successful",
+                                    Content = $"Payment received. Change: {change:C}",
+                                    CloseButtonText = "OK",
+                                    XamlRoot = this.XamlRoot
+                                };
+
+                                
+                                var dr = ContentDialogResult.None;
+                                dr = await successDialog.ShowAsync();
+                                if (dialogResult == ContentDialogResult.Primary)
+                                {
+                                    isPaid = true;
+                                }
+                                else
+                                {
+                                    isPaid = false;
+                                }
+                            }
+                            else
+                            {
+                                // Hiển thị lỗi nếu số tiền không đủ
+                                ContentDialog errorDialog = new ContentDialog
+                                {
+                                    Title = "Insufficient Amount",
+                                    Content = "The received amount is less than the total amount.",
+                                    CloseButtonText = "OK",
+                                    XamlRoot = this.XamlRoot
+                                };
+
+                                await errorDialog.ShowAsync();
+                            }
+                        }
+                        else
+                        {
+                            // Hiển thị lỗi nếu nhập không hợp lệ
+                            ContentDialog errorDialog = new ContentDialog
+                            {
+                                Title = "Invalid Input",
+                                Content = "Please enter a valid amount.",
+                                CloseButtonText = "OK",
+                                XamlRoot = this.XamlRoot
+                            };
+
+                            await errorDialog.ShowAsync();
+                        }
+                    }
                 }
 
                 var isSuccess = false;
@@ -405,7 +495,7 @@ public sealed partial class InvoiceControl : UserControl
         try
         {
             // Initialize the MoMoPaymentProcessor
-            var paymentProcessor = new MoMoPaymentProcessor();
+            var paymentProcessor = new MoMoPayment();
             var invoice = ViewModel.Invoice;
             DotNetEnv.Env.Load(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\..\..\App\.env"));
             // Cấu hình thông tin MoMo
@@ -444,98 +534,6 @@ public sealed partial class InvoiceControl : UserControl
         return null;
     }
 
-    public class MoMoPaymentProcessor
-    {
-        private static readonly string apiUrl = "https://test-payment.momo.vn/gw_payment/transactionProcessor";
-        private string GenerateSignature(string rawData, string secretKey)
-        {
-            using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(secretKey));
-            var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(rawData));
-            return BitConverter.ToString(hash).Replace("-", "").ToLower();
-        }
-
-        public async Task<WriteableBitmap> GenerateQRCodeAsync(string data)
-        {
-            try
-            {
-                // Tạo đối tượng QRCodeGenerator
-                QRCodeGenerator qrGenerator = new QRCodeGenerator();
-
-                // Chuyển đổi dữ liệu thành QRCodeData
-                QRCodeData qrCodeData = qrGenerator.CreateQrCode(data, QRCodeGenerator.ECCLevel.Q);
-
-                // Tạo đối tượng QRCode từ QRCodeData
-                QRCode qrCode = new QRCode(qrCodeData);
-
-                // Tạo ảnh QR code dưới dạng System.Drawing.Bitmap
-                Bitmap qrCodeBitmap = qrCode.GetGraphic(20); // 20 là độ lớn các block trong mã QR
-
-                // Chuyển đổi Bitmap thành byte[] (chuyển đổi Bitmap thành MemoryStream)
-                using (var ms = new MemoryStream())
-                {
-                    qrCodeBitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Png); // Lưu Bitmap vào MemoryStream dưới dạng PNG
-                    byte[] qrCodeBytes = ms.ToArray(); // Lấy mảng byte từ MemoryStream
-
-                    // Chuyển đổi byte[] thành WriteableBitmap
-                    using (var stream = new MemoryStream(qrCodeBytes))
-                    {
-                        var writeableBitmap = new WriteableBitmap(300, 300); // Đặt kích thước phù hợp
-                        await writeableBitmap.SetSourceAsync(stream.AsRandomAccessStream()); // Đặt nguồn cho WriteableBitmap
-                        return writeableBitmap;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error generating QR code: {ex.Message}");
-                return null;
-            }
-        }
-
-
-        public async Task<string> ProcessPaymentAsync(string partnerCode, string accessKey, string secretKey, string orderId, string orderInfo, string returnUrl, string notifyUrl, string requestId, string amount, string extraData)
-        {
-            // Tạo chuỗi cần ký
-            var rawSignature = $"partnerCode={partnerCode}&accessKey={accessKey}&requestId={requestId}&amount={amount}&orderId={orderId}&orderInfo={orderInfo}&returnUrl={returnUrl}&notifyUrl={notifyUrl}&extraData={extraData}";
-            // Ký chuỗi bằng HMAC SHA256
-            string signature = GenerateSignature(rawSignature, secretKey);
-
-            // Dữ liệu thanh toán
-            var paymentRequest = new
-            {
-                partnerCode,
-                accessKey,
-                requestId,
-                amount,
-                orderId,
-                orderInfo,
-                returnUrl,
-                notifyUrl,
-                extraData,
-                requestType = "captureMoMoWallet",
-                signature
-            };
-
-            using (var client = new System.Net.Http.HttpClient())
-            {
-                var json = System.Text.Json.JsonSerializer.Serialize(paymentRequest);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                var response = await client.PostAsync(apiUrl, content);
-                response.EnsureSuccessStatusCode();
-
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var paymentResponse = System.Text.Json.JsonSerializer.Deserialize<dynamic>(responseContent);
-
-                // Extract the qrCodeUrl from the JSON response
-                if (paymentResponse.TryGetProperty("payUrl", out JsonElement payUrlElement))
-                {
-                    return payUrlElement.GetString();
-                }
-                return null;
-            }
-        }
-    }
     public async Task<WriteableBitmap> GenerateQRCodeAsync(string data)
     {
         try
