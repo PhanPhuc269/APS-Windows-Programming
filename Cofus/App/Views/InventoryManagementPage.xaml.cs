@@ -303,6 +303,7 @@ public sealed partial class InventoryManagementPage : Page
     {
         foreach (var material in ViewModel.AllMaterials)
         {
+            int temp = material.Threshold;
             var thresholdTextBox = FindChild<TextBox>(MaterialsListView, material.MaterialCode);
             if (thresholdTextBox == null)
             {
@@ -316,15 +317,13 @@ public sealed partial class InventoryManagementPage : Page
                 continue;
             }
 
-            if (material.Threshold != newThreshold)
-            {
+            
                 material.Threshold = newThreshold;
                 var success = App.GetService<IDao>().UpdateMaterialThreshold(material.MaterialCode, newThreshold);
                 if (!success)
                 {
                     ShowNotification($"Failed to update threshold for {material.MaterialName}");
                 }
-            }
         }
 
         ShowNotification("Thresholds updated successfully.");
@@ -356,37 +355,6 @@ public sealed partial class InventoryManagementPage : Page
     }
 
 
-    private T FindChildRecursive<T>(DependencyObject parent, string childName, string materialCode, int maxDepth)
-        where T : DependencyObject
-    {
-        if (parent == null || maxDepth <= 0) return null;
-
-        if (parent is T targetType)
-        {
-            if (!string.IsNullOrEmpty(childName) &&
-                parent is FrameworkElement fe &&
-                fe.Name != childName)
-                return null;
-
-            if (!string.IsNullOrEmpty(materialCode) &&
-                parent is TextBox textBox &&
-                textBox.Text != materialCode)
-                return null;
-
-            return targetType;
-        }
-
-        int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
-        for (int i = 0; i < childrenCount; i++)
-        {
-            var child = VisualTreeHelper.GetChild(parent, i);
-            var result = FindChildRecursive<T>(child, childName, materialCode, maxDepth - 1);
-            if (result != null)
-                return result;
-        }
-
-        return null;
-    }
 
 
 
