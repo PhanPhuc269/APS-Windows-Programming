@@ -286,6 +286,28 @@ public class MySqlDao : IDao
 
         return items;
     }
+    public async Task<int> GetMaxAvailableQuantityAsync(int beverageSizeId)
+    {
+        string query = @"
+            SELECT 
+              FLOOR(MIN(MATERIAL.QUANTITY / RECIPE.QUANTITY)) AS MAX_BEVERAGE_COUNT
+            FROM 
+              RECIPE
+            JOIN 
+              MATERIAL ON RECIPE.MATERIAL_ID = MATERIAL.ID
+            WHERE 
+              RECIPE.BEVERAGE_SIZE_ID = @BeverageSizeId
+            GROUP BY 
+              RECIPE.BEVERAGE_SIZE_ID";
+
+        var parameters = new List<MySqlParameter>
+        {
+            new MySqlParameter("@BeverageSizeId", beverageSizeId)
+        };
+
+        var result = await ExecuteScalarAsync(query, parameters);
+        return Convert.ToInt32(result);
+    }
 
     public FullObservableCollection<Invoice> GetPendingOrders()
     {
@@ -416,7 +438,7 @@ public class MySqlDao : IDao
 
     public int GetBeverageSizeId(int beverageId, string size)
     {
-        var query = "SELECT BEVERAGE_ID FROM BEVERAGE_SIZE WHERE BEVERAGE_ID = @beverageId AND SIZE = @size";
+        var query = "SELECT ID FROM BEVERAGE_SIZE WHERE BEVERAGE_ID = @beverageId AND SIZE = @size";
         var parameters = new List<MySqlParameter>
         {
             new MySqlParameter("@beverageId", beverageId),
@@ -425,7 +447,7 @@ public class MySqlDao : IDao
 
         var result = ExecuteSelectQuery(query, parameters);
 
-        return result.Count > 0 ? Convert.ToInt32(result[0]["BEVERAGE_ID"]) : -1;
+        return result.Count > 0 ? Convert.ToInt32(result[0]["ID"]) : -1;
     }
 
     public async Task AddOrderDetail(int orderId, InvoiceItem item)
