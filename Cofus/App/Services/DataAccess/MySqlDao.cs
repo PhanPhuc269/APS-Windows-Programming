@@ -937,7 +937,7 @@ public class MySqlDao : IDao
     {
         using var connection = GetConnection();
         connection.Open();
-        var query = "UPDATE materials SET Thresold = @Thresold WHERE MaterialCode = @MaterialCode";
+        var query = "UPDATE material SET NOTIFYCATION_THRESHOLD = @Thresold WHERE MATERIAL_CODE = @MaterialCode";
         using var command = new MySqlCommand(query, connection);
         command.Parameters.AddWithValue("@Thresold", newThreshold);
         command.Parameters.AddWithValue("@MaterialCode", materialCode);

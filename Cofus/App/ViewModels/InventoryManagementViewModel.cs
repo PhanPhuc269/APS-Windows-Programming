@@ -4,6 +4,7 @@ using App.Model;
 using System.Linq;
 using System;
 using System.ComponentModel;
+using Microsoft.UI.Xaml.Controls;
 
 namespace App.ViewModels
 {
@@ -98,20 +99,8 @@ namespace App.ViewModels
             {
                 material.Threshold = newThreshold;
                 App.GetService<IDao>().UpdateMaterialThreshold(materialCode, newThreshold);
-                if (material.IsBelowThreshold)
-                {
-                    // Display notification
-                    ShowNotification($"Material {material.MaterialName} is below the threshold!");
-                }
+                
             }
-        }
-
-        private void ShowNotification(string message)
-        {
-            // Display notification
-
-
-
         }
 
 

@@ -39,16 +39,30 @@ public sealed partial class InventoryManagementPage : Page
         ImportDatePicker.Visibility = Visibility.Visible;
         await AddEditDialog.ShowAsync();
     }
+    private bool _isDialogOpen = false;
+
     private async void ShowNotification(string message)
     {
-        var dialog = new ContentDialog
+        try
         {
-            Title = "Notification",
-            Content = message,
-            CloseButtonText = "OK"
-        };
-        await dialog.ShowAsync();
+            var dialog = new ContentDialog
+            {
+                Title = "Thông báo",
+                Content = message,
+                CloseButtonText = "OK",
+                DefaultButton = ContentDialogButton.Close,
+                XamlRoot = this.XamlRoot // Thay thế this.Content.XamlRoot
+            };
+
+            await dialog.ShowAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Lỗi hiển thị dialog: {ex.Message}");
+        }
     }
+
+
 
     private async void EditButton_Click(object sender, RoutedEventArgs e)
     {
@@ -63,12 +77,7 @@ public sealed partial class InventoryManagementPage : Page
             UnitPriceTextBox.Text = selectedMaterial.UnitPrice.ToString();
             ImportDatePicker.Visibility = Visibility.Collapsed;
             ExpirationDatePicker.Date = new DateTimeOffset(selectedMaterial.ExpirationDate);
-
-            if (selectedMaterial.Quantity <= selectedMaterial.Threshold)
-            {
-                ShowNotification("Sắp hết nguyên liệu");
-            }
-
+                        
             AddEditDialog.Title = "Sửa Nguyên Liệu";
             await AddEditDialog.ShowAsync();
         }
@@ -109,8 +118,7 @@ public sealed partial class InventoryManagementPage : Page
             detailDialog.ShowAsync();
         }
     }
-
-    private void AddEditDialogPrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+    private async void AddEditDialogPrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
         var newMaterial = new Material
         {
@@ -141,10 +149,16 @@ public sealed partial class InventoryManagementPage : Page
                 existingMaterial.UnitPrice = newMaterial.UnitPrice;
                 existingMaterial.ExpirationDate = newMaterial.ExpirationDate;
             }
+            if (existingMaterial.Threshold > newMaterial.Quantity)
+            {
+                AddEditDialog.Hide(); // Ensure the AddEditDialog is closed
+                ShowNotification($"Số lượng nguyên liệu {newMaterial.MaterialName} hiện tại dưới ngưỡng cảnh báo");
+            }
         }
 
         ViewModel.UpdateCurrentPage();
     }
+
 
     private void ClearInputFields()
     {
@@ -264,7 +278,44 @@ public sealed partial class InventoryManagementPage : Page
     private async void Set_Notification_Threshold_Click(object sender, RoutedEventArgs e)
     {
         MaterialsListView.Visibility = Visibility.Visible;
+
         await EditMaterialsDialog.ShowAsync();
+
+        bool showNotification = false;
+        string notificationMessage = string.Empty;
+
+        foreach (var material in ViewModel.AllMaterials)
+        {
+            if (material.Quantity < material.Threshold)
+            {
+                showNotification = true;
+                notificationMessage += $"Số lượng nguyên liệu {material.MaterialName} hiện tại dưới ngưỡng cảnh báo\n";
+            }
+        }
+
+        EditMaterialsDialog.Hide();
+
+        if (showNotification)
+        {
+            ShowNotification(notificationMessage);
+        }
+    }
+
+
+
+    private int GetUpdatedThresholdForMaterial(string materialCode)
+    {
+        // Assuming you have a TextBox named ThresholdTextBox in the EditMaterialsDialog
+        // and a way to map the materialCode to the corresponding TextBox
+        var thresholdTextBox = EditMaterialsDialog.FindName($"ThresholdTextBox_{materialCode}") as TextBox;
+
+        if (thresholdTextBox != null && int.TryParse(thresholdTextBox.Text, out int updatedThreshold))
+        {
+            return updatedThreshold;
+        }
+
+        // Return a default value or handle the case where the TextBox is not found or the value is invalid
+        return 0; // Replace with actual default value or error handling
     }
 
     private void UpdateThresholdButton_Click(object sender, RoutedEventArgs e)
