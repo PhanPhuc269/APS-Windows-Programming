@@ -130,7 +130,7 @@ public sealed partial class InvoiceControl : UserControl
             {
                 bool isPaid=false;
                 ContentDialog checkoutDia;
-                if (paymentMethod== "QR Code MoMo")
+                if (paymentMethod== "MoMo")
                 {
                     checkoutDia = await ShowMoMoQRCode1();
                     var dialogResult = ContentDialogResult.None;

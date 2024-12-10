@@ -7,7 +7,7 @@ exports.seed = function(knex) {
         { ID: 2, METHOD_NAME: 'VietQR' },
         { ID: 3, METHOD_NAME: 'VNPay' },
         { ID: 4, METHOD_NAME: 'Cash' },
-        { ID: 5, METHOD_NAME: 'QR Code MoMo' }
+        { ID: 5, METHOD_NAME: 'MoMo' }
       ]);
     });
 };
