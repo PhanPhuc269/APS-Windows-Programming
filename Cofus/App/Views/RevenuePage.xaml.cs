@@ -17,14 +17,36 @@ namespace App.Views
             ViewModel = new RevenueViewModel();
             this.DataContext = ViewModel;
 
-            // Load data asynchronously when the page is loaded
-            LoadData();
+            ViewModel.SelectedDate = DateTime.Today;
+            DatePicker.SelectedDate = ViewModel.SelectedDate;  // Cập nhật lại cho DatePicker
+
+
+            // Gọi LoadRevenueData mặc định với ngày hiện tại
+            LoadData(ViewModel.SelectedDate);
         }
 
-        private async void LoadData()
+        // Đảm bảo khi ngày thay đổi sẽ gọi lại LoadRevenueData
+        private async void DatePicker_DateChanged(object sender, DatePickerValueChangedEventArgs e)
         {
-            // Chỉ gọi một phương thức LoadRevenueData để tải tất cả dữ liệu
-            await ViewModel.LoadRevenueData(DateTime.Today);
+            // Kiểm tra nếu NewDate có giá trị
+            if (e.NewDate != null)
+            {
+                // Cập nhật ngày được chọn trong ViewModel
+                ViewModel.SelectedDate = e.NewDate.Date;
+
+                // Gọi phương thức LoadRevenueData với ngày mới
+                await ViewModel.LoadRevenueData(ViewModel.SelectedDate);
+
+                // Cập nhật lại giá trị cho DatePicker (đảm bảo DatePicker hiển thị đúng)
+                DatePicker.SelectedDate = ViewModel.SelectedDate;
+            }
+        }
+
+
+        // Thay đổi phương thức LoadData để sử dụng ngày được chọn
+        private async void LoadData(DateTime selectedDate)
+        {
+            await ViewModel.LoadRevenueData(selectedDate);
         }
     }
 }

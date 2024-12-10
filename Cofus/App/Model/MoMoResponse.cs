@@ -5,19 +5,19 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace App.Model;
-
-public class User
+public class MoMoResponse
 {
-    public string Username
+    public string qrCodeUrl
     {
         get; set;
     }
-    public string Password
+    public int resultCode
     {
         get; set;
     }
-    public int AccessLevel
+    public string message
     {
         get; set;
     }
+    // Add other properties as needed based on the MoMo API response
 }

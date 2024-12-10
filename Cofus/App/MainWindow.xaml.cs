@@ -1,18 +1,20 @@
 ﻿using App.Helpers;
 
 using Windows.UI.ViewManagement;
+using System.Diagnostics;
+using App.Services;
 
 namespace App;
 
 public sealed partial class MainWindow : WindowEx
 {
-    private Microsoft.UI.Dispatching.DispatcherQueue dispatcherQueue;
-
-    private UISettings settings;
+    private readonly Microsoft.UI.Dispatching.DispatcherQueue dispatcherQueue;
+    private readonly UISettings settings;
 
     public MainWindow()
     {
         InitializeComponent();
+
 
         AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets/WindowIcon.ico"));
         Content = null;
@@ -23,6 +25,7 @@ public sealed partial class MainWindow : WindowEx
         settings = new UISettings();
         settings.ColorValuesChanged += Settings_ColorValuesChanged; // cannot use FrameworkElement.ActualThemeChanged event
     }
+
 
     // this handles updating the caption button colors correctly when indows system theme is changed
     // while the app is open
@@ -35,3 +38,4 @@ public sealed partial class MainWindow : WindowEx
         });
     }
 }
+

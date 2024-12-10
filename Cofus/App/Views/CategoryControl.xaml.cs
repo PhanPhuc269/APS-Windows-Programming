@@ -41,7 +41,7 @@ public sealed partial class CategoryControl : UserControl
         if (e.ClickedItem is Product product)
         {
             // Tạo ProductInputDialog mới
-            var dialog = new ProductInputDialog();
+            var dialog = new ProductInputDialog(product.Id);
             dialog.XamlRoot = this.XamlRoot;
             var result = await dialog.ShowAsync();
 

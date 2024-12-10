@@ -4,10 +4,10 @@ exports.seed = function(knex) {
     .then(function() {
       return knex('PAYMENT_METHOD').insert([
         { ID: 1, METHOD_NAME: 'Credit Card' },
-        { ID: 2, METHOD_NAME: 'Debit Card' },
-        { ID: 3, METHOD_NAME: 'PayPal' },
+        { ID: 2, METHOD_NAME: 'VietQR' },
+        { ID: 3, METHOD_NAME: 'VNPay' },
         { ID: 4, METHOD_NAME: 'Cash' },
-        { ID: 5, METHOD_NAME: 'Bank Transfer' }
+        { ID: 5, METHOD_NAME: 'QR Code MoMo' }
       ]);
     });
 };

@@ -138,4 +138,16 @@
   <data name="Shell_CustomerManagement.Content" xml:space="preserve">
     <value>Quản lý khách hàng</value>
   </data>
+  <data name="Shell_Blank.Content" xml:space="preserve">
+    <value>Blank</value>
+  </data>
+  <data name="Shell_ListDetails.Content" xml:space="preserve">
+    <value>ListDetails</value>
+  </data>
+  <data name="TimeKeeping_NoSelection.Text" xml:space="preserve">
+    <value>Select an item from the list.</value>
+  </data>
+  <data name="Shell_TimeKeeping.Content" xml:space="preserve">
+    <value>TimeKeeping</value>
+  </data>
 </root>
