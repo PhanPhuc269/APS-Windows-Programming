@@ -7,6 +7,8 @@ using System.Net;
 using App.Model;
 using System.Text.Json.Serialization;
 
+namespace App;
+
 public class VietQRPayment
 {
     private readonly string _bankId = "MB"; // ID ngân hàng

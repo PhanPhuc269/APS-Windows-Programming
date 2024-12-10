@@ -296,15 +296,16 @@ public class MySqlDao : IDao
 
         foreach (var row in result)
         {
-            orders.Add(new Invoice
+            var invoice = new Invoice
             {
                 InvoiceNumber = Convert.ToInt32(row["ORDER_ID"]),
                 TableNumber = row["RESERVED_TABLE_ID"] == DBNull.Value ? -1 : Convert.ToInt32(row["RESERVED_TABLE_ID"]),
                 CreatedTime = Convert.ToDateTime(row["ORDER_TIME"]),
                 PaymentMethod = row["PAYMENT_METHOD"].ToString(),
                 InvoiceItems = GetOrderDetails(Convert.ToInt32(row["ORDER_ID"])),
-                //CompleteTime = row["COMPLETED_TIME"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(row["COMPLETED_TIME"]),
-            });
+            };
+            invoice.EstimateTime = invoice.CreatedTime.AddMinutes(3 * invoice.TotalQuantity);
+            orders.Add(invoice);
         }
 
         return orders;
@@ -416,7 +417,7 @@ public class MySqlDao : IDao
 
     public int GetBeverageSizeId(int beverageId, string size)
     {
-        var query = "SELECT BEVERAGE_ID FROM BEVERAGE_SIZE WHERE BEVERAGE_ID = @beverageId AND SIZE = @size";
+        var query = "SELECT ID FROM BEVERAGE_SIZE WHERE BEVERAGE_ID = @beverageId AND SIZE = @size";
         var parameters = new List<MySqlParameter>
         {
             new MySqlParameter("@beverageId", beverageId),
@@ -425,7 +426,7 @@ public class MySqlDao : IDao
 
         var result = ExecuteSelectQuery(query, parameters);
 
-        return result.Count > 0 ? Convert.ToInt32(result[0]["BEVERAGE_ID"]) : -1;
+        return result.Count > 0 ? Convert.ToInt32(result[0]["ID"]) : -1;
     }
 
     public async Task AddOrderDetail(int orderId, InvoiceItem item)

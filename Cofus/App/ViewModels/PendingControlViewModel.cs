@@ -1,80 +1,126 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using App.Model;
 using Microsoft.UI.Xaml;
 
-namespace App.ViewModels
+namespace App.ViewModels;
+
+public class PendingControlViewModel : INotifyPropertyChanged
 {
-    public class PendingControlViewModel : INotifyPropertyChanged
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    private DispatcherTimer _timer;
+
+    private FullObservableCollection<Invoice> _pendingInvoices;
+    public FullObservableCollection<Invoice> PendingInvoices
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private FullObservableCollection<Invoice> _pendingInvoices;
-        public FullObservableCollection<Invoice> PendingInvoices
+        get => _pendingInvoices;
+        set
         {
-            get
+            if (_pendingInvoices != value)
             {
-                return _pendingInvoices;
-            }
-            set
-            {
-                if (_pendingInvoices != value)
+                if (_pendingInvoices != null)
                 {
-                    _pendingInvoices = value;
-                    OnPropertyChanged(nameof(PendingInvoices));
+                    _pendingInvoices.CollectionChanged -= PendingInvoices_CollectionChanged;
+                    foreach (var invoice in _pendingInvoices)
+                    {
+                        invoice.PropertyChanged -= Invoice_PropertyChanged;
+                    }
                 }
-            }
-        }
 
-        private DispatcherTimer _timer;
+                _pendingInvoices = value;
 
-        public PendingControlViewModel()
-        {
-            // Lấy dữ liệu từ DAO
-            IDao dao = App.GetService<IDao>();
-            PendingInvoices = dao.GetPendingOrders();
-
-            // Khởi tạo Timer để cập nhật mỗi giây
-            _timer = new DispatcherTimer();
-            _timer.Interval = TimeSpan.FromSeconds(1);  // Mỗi giây
-            _timer.Tick += Timer_Tick;
-            _timer.Start();
-        }
-
-        private void Timer_Tick(object sender, object e)
-        {
-            // Cập nhật thời gian còn lại của mỗi hóa đơn
-            foreach (var invoice in PendingInvoices)
-            {
-                // Truy cập `RemainingTimeFormatted` sẽ tự động tính toán và hiển thị thời gian còn lại theo định dạng hh:mm:ss
-                var remainingTime = invoice.RemainingTime;
-
-                // Nếu thời gian còn lại bằng 00:00:00, bạn có thể làm gì đó (ví dụ: đánh dấu hóa đơn đã hết hạn)
-                if (remainingTime == "00:00:00")
+                if (_pendingInvoices != null)
                 {
-                    // Thực hiện hành động khi hóa đơn hết thời gian
-                    // Ví dụ: Đánh dấu hóa đơn đã hết thời gian hoặc thực hiện các thay đổi UI
+                    _pendingInvoices.CollectionChanged += PendingInvoices_CollectionChanged;
+                    foreach (var invoice in _pendingInvoices)
+                    {
+                        invoice.PropertyChanged += Invoice_PropertyChanged;
+                    }
                 }
+
+                OnPropertyChanged(nameof(PendingInvoices));
             }
-
-            // Sau khi tính toán lại thời gian còn lại, thông báo UI cập nhật
-            OnPropertyChanged(nameof(PendingInvoices));
         }
+    }
 
-
-        // Phương thức để hoàn thành đơn hàng
-        public void CompleteOrder(Invoice order)
+    private Dictionary<int, string> _remainingTimes = new();
+    public Dictionary<int, string> RemainingTimes
+    {
+        get => _remainingTimes;
+        set
         {
-            PendingInvoices.Remove(order);
-            order.CompleteTime = DateTime.Now;
-            App.GetService<IDao>().CompletePendingOrder(order);
+            _remainingTimes = value;
+            OnPropertyChanged(nameof(RemainingTimes));
+        }
+    }
+
+    public PendingControlViewModel()
+    {
+        IDao dao = App.GetService<IDao>();
+        PendingInvoices = dao.GetPendingOrders();
+
+        _timer = new DispatcherTimer();
+        _timer.Interval = TimeSpan.FromSeconds(1);
+        _timer.Tick += Timer_Tick;
+        _timer.Start();
+    }
+
+    private void Timer_Tick(object sender, object e)
+    {
+        foreach (var invoice in PendingInvoices)
+        {
+            if (invoice.EstimateTime.HasValue)
+            {
+                // Update the dictionary with the new RemainingTime
+                RemainingTimes[invoice.InvoiceNumber] = invoice.RemainingTime;
+            }
+         }
+
+        // Notify UI to update RemainingTime bindings
+        OnPropertyChanged(nameof(RemainingTimes));
+    }
+
+    private void PendingInvoices_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.NewItems != null)
+        {
+            foreach (Invoice invoice in e.NewItems)
+            {
+                invoice.PropertyChanged += Invoice_PropertyChanged;
+            }
         }
 
-        // Hàm thông báo khi có sự thay đổi thuộc tính
-        protected virtual void OnPropertyChanged(string propertyName)
+        if (e.OldItems != null)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            foreach (Invoice invoice in e.OldItems)
+            {
+                invoice.PropertyChanged -= Invoice_PropertyChanged;
+            }
         }
+    }
+
+    private void Invoice_PropertyChanged(object sender, PropertyChangedEventArgs e)
+    {
+        var invoice = sender as Invoice;
+
+        if (e.PropertyName == nameof(Invoice.TotalPrice))
+        {
+            Console.WriteLine($"Invoice {invoice?.InvoiceNumber} TotalPrice updated: {invoice?.TotalPrice}");
+        }
+    }
+
+    public void CompleteOrder(Invoice order)
+    {
+        PendingInvoices.Remove(order);
+        order.CompleteTime = DateTime.Now;
+        App.GetService<IDao>().CompletePendingOrder(order);
+    }
+
+    public virtual void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

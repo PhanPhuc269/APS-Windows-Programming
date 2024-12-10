@@ -49,14 +49,9 @@ namespace App.Model
         {
             // Khởi tạo InvoiceItems
             InvoiceItems = new FullObservableCollection<InvoiceItem>();
-
-            EstimateTime= DateTime.Now.AddMinutes(3);
-
             // Đăng ký sự kiện CollectionChanged để cập nhật tổng số lượng và tổng giá khi danh sách thay đổi
             InvoiceItems.CollectionChanged += OnInvoiceItemsChanged;
 
-            // Khởi tạo Timer để tự động cập nhật thời gian còn lại mỗi giây
-            StartRemainingTimeTimer();
         }
 
         private void OnInvoiceItemsChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -93,12 +88,12 @@ namespace App.Model
             }
         }
 
-    public void UpdateTotals()
-    {
-        OnPropertyChanged(nameof(TotalQuantity));
-        OnPropertyChanged(nameof(TotalPrice));
-        OnPropertyChanged(nameof(AmountDue));
-    }
+        public void UpdateTotals()
+        {
+            OnPropertyChanged(nameof(TotalQuantity));
+            OnPropertyChanged(nameof(TotalPrice));
+            OnPropertyChanged(nameof(AmountDue));
+        }
         // Phương thức để tính tổng số lượng
         public int TotalQuantity => InvoiceItems.Sum(item => item.Quantity);
 
@@ -113,15 +108,15 @@ namespace App.Model
             InvoiceItems.Add(item);
         }
 
-    public int ConsumedPoints
-    {
-        get; set;
-    }=0;
-    public int AmountDue => TotalPrice - ConsumedPoints;
-    public string? CustomerPhoneNumber
-    {
-        get; set;
-    }
+        public int ConsumedPoints
+        {
+            get; set;
+        }=0;
+        public int AmountDue => TotalPrice - ConsumedPoints;
+        public string? CustomerPhoneNumber
+        {
+            get; set;
+        }
 
 
         // Phương thức để xóa sản phẩm khỏi hóa đơn
@@ -131,25 +126,15 @@ namespace App.Model
             item.PropertyChanged -= Item_PropertyChanged;
             InvoiceItems.Remove(item);
         }
-
-        private async void StartRemainingTimeTimer()
+        public void UpdateRemainingTime()
         {
-            while (true)
-            {
-                // Nếu hóa đơn có thời gian hoàn thành, tính toán và cập nhật thời gian còn lại
-                if (EstimateTime.HasValue)
-                {
-                    OnPropertyChanged(nameof(RemainingTime));
-                }
-                // Chờ một giây trước khi cập nhật lại thời gian
-                await Task.Delay(1000);
-            }
+             OnPropertyChanged(nameof(RemainingTime));
         }
-
         public string RemainingTime
         {
             get
             {
+
                 // Nếu CompleteTime có giá trị và thời gian hiện tại trước thời gian hoàn thành
                 if (EstimateTime.HasValue)
                 {

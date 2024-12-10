@@ -27,6 +27,7 @@ public sealed partial class PendingControl : UserControl
     {
         this.InitializeComponent();
         ViewModel = new PendingControlViewModel();
+        PendingOrdersListView.DataContext = ViewModel.RemainingTimes;
     }
 
     private void CompleteOrderButton_Click(object sender, RoutedEventArgs e)
