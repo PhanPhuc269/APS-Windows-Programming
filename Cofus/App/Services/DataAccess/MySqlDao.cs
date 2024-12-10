@@ -935,20 +935,14 @@ public class MySqlDao : IDao
     }
     public bool UpdateMaterialThreshold(string materialCode, int newThreshold)
     {
-        var query = @"UPDATE material 
-                  SET NOTIFYCATION_THRESHOLD = @Threshold 
-                  WHERE MATERIAL_CODE = @MaterialCode";
-
-        var parameters = new List<MySqlParameter>
-    {
-        new ("@Threshold", newThreshold),
-        new ("@MaterialCode", materialCode)
-    };
-
-        int rowsAffected = ExecuteNonQuery(query, parameters);
-        return rowsAffected > 0;
+        using var connection = GetConnection();
+        connection.Open();
+        var query = "UPDATE material SET NOTIFYCATION_THRESHOLD = @Threshold WHERE MATERIAL_CODE = @MaterialCode";
+        using var command = new MySqlCommand(query, connection);
+        command.Parameters.Add(new MySqlParameter("@Threshold", newThreshold));
+        command.Parameters.Add(new MySqlParameter("@MaterialCode", materialCode));
+        return command.ExecuteNonQuery() > 0;
     }
-
 
 
 

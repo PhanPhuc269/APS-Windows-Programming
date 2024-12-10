@@ -303,7 +303,7 @@ public sealed partial class InventoryManagementPage : Page
     {
         foreach (var material in ViewModel.AllMaterials)
         {
-            var thresholdTextBox = FindChild<TextBox>(MaterialsListView, "ThresholdTextBox.Text", material.MaterialCode);
+            var thresholdTextBox = FindChild<TextBox>(MaterialsListView, "ThresholdTextBox", material.MaterialCode);
             if (thresholdTextBox == null)
             {
                 System.Diagnostics.Debug.WriteLine($"ThresholdTextBox for material {material.MaterialCode} not found.");
