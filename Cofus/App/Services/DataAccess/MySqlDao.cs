@@ -286,6 +286,28 @@ public class MySqlDao : IDao
 
         return items;
     }
+    public async Task<int> GetMaxAvailableQuantityAsync(int beverageSizeId)
+    {
+        string query = @"
+            SELECT 
+              FLOOR(MIN(MATERIAL.QUANTITY / RECIPE.QUANTITY)) AS MAX_BEVERAGE_COUNT
+            FROM 
+              RECIPE
+            JOIN 
+              MATERIAL ON RECIPE.MATERIAL_ID = MATERIAL.ID
+            WHERE 
+              RECIPE.BEVERAGE_SIZE_ID = @BeverageSizeId
+            GROUP BY 
+              RECIPE.BEVERAGE_SIZE_ID";
+
+        var parameters = new List<MySqlParameter>
+        {
+            new MySqlParameter("@BeverageSizeId", beverageSizeId)
+        };
+
+        var result = await ExecuteScalarAsync(query, parameters);
+        return Convert.ToInt32(result);
+    }
 
     public FullObservableCollection<Invoice> GetPendingOrders()
     {
