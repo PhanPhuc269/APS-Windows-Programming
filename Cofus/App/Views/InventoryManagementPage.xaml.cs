@@ -303,7 +303,7 @@ public sealed partial class InventoryManagementPage : Page
     {
         foreach (var material in ViewModel.AllMaterials)
         {
-            var thresholdTextBox = FindChild<TextBox>(MaterialsListView, "ThresholdTextBox", material.MaterialCode);
+            var thresholdTextBox = FindChild<TextBox>(MaterialsListView, material.MaterialCode);
             if (thresholdTextBox == null)
             {
                 System.Diagnostics.Debug.WriteLine($"ThresholdTextBox for material {material.MaterialCode} not found.");
@@ -329,41 +329,32 @@ public sealed partial class InventoryManagementPage : Page
 
         ShowNotification("Thresholds updated successfully.");
     }
-
-    private T FindChild<T>(DependencyObject parent, string childName = null, string materialCode = null)
+    private T FindChild<T>(DependencyObject parent, string materialCode)
     where T : DependencyObject
     {
         if (parent == null) return null;
 
-        // If parent is already of the target type and meets the conditions, return it
-        if (parent is T targetType)
-        {
-            if (!string.IsNullOrEmpty(childName) &&
-                parent is FrameworkElement fe &&
-                fe.Name != childName)
-                return null;
-
-            if (!string.IsNullOrEmpty(materialCode) &&
-                parent is TextBox textBox &&
-                textBox.Text != materialCode)
-                return null;
-
-            return targetType;
-        }
-
-        // Recursively search through the children
         T foundChild = null;
+
         int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
         for (int i = 0; i < childrenCount; i++)
         {
             var child = VisualTreeHelper.GetChild(parent, i);
-            foundChild = FindChildRecursive<T>(child, childName, materialCode, 5);
-            if (foundChild != null)
+            T childType = child as T;
+            if (childType == null)
+            {
+                foundChild = FindChild<T>(child, materialCode);
+                if (foundChild != null) break;
+            }
+            else if (child is FrameworkElement frameworkElement && frameworkElement.Tag?.ToString() == materialCode)
+            {
+                foundChild = (T)child;
                 break;
+            }
         }
-
         return foundChild;
     }
+
 
     private T FindChildRecursive<T>(DependencyObject parent, string childName, string materialCode, int maxDepth)
         where T : DependencyObject

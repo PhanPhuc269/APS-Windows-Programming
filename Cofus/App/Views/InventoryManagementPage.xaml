@@ -136,7 +136,7 @@
                                 <TextBox x:Name="McodeTextBox" Text="{x:Bind MaterialCode}" Grid.Column="0" IsReadOnly="True"/>
                                 <TextBox Text="{x:Bind MaterialName}" Grid.Column="1" IsReadOnly="True"/>
                                 <TextBox Text="{x:Bind Quantity}" Grid.Column="2" IsReadOnly="True"/>
-                                <TextBox x:Name="ThresholdTextBox" Text="{x:Bind Threshold, Mode=TwoWay}" Grid.Column="3"/>
+                                <TextBox Tag="{x:Bind MaterialCode}" Text="{x:Bind Threshold, Mode=TwoWay}" Grid.Column="3"/>
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
