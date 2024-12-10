@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using ClosedXML.Excel; // Thêm thư viện này vào file
 using System.IO;
+using Microsoft.UI.Xaml.Media;
 
 namespace App.Views;
 
@@ -79,6 +80,7 @@ public sealed partial class InventoryManagementPage : Page
             ExpirationDatePicker.Date = new DateTimeOffset(selectedMaterial.ExpirationDate);
                         
             AddEditDialog.Title = "Sửa Nguyên Liệu";
+            
             await AddEditDialog.ShowAsync();
         }
     }
@@ -148,6 +150,7 @@ public sealed partial class InventoryManagementPage : Page
                 existingMaterial.Unit = newMaterial.Unit;
                 existingMaterial.UnitPrice = newMaterial.UnitPrice;
                 existingMaterial.ExpirationDate = newMaterial.ExpirationDate;
+                App.GetService<IDao>().UpdateMaterial(newMaterial);
             }
             if (existingMaterial.Threshold > newMaterial.Quantity)
             {
@@ -278,28 +281,122 @@ public sealed partial class InventoryManagementPage : Page
     private async void Set_Notification_Threshold_Click(object sender, RoutedEventArgs e)
     {
         MaterialsListView.Visibility = Visibility.Visible;
-
         await EditMaterialsDialog.ShowAsync();
-
-        bool showNotification = false;
-        string notificationMessage = string.Empty;
-
-        foreach (var material in ViewModel.AllMaterials)
-        {
-            if (material.Quantity < material.Threshold)
-            {
-                showNotification = true;
-                notificationMessage += $"Số lượng nguyên liệu {material.MaterialName} hiện tại dưới ngưỡng cảnh báo\n";
-            }
-        }
+        var materialsBelowThreshold = ViewModel.AllMaterials
+            .Where(material => material.Quantity < material.Threshold)
+            .ToList();
 
         EditMaterialsDialog.Hide();
 
-        if (showNotification)
+        if (materialsBelowThreshold.Any())
         {
+            string notificationMessage = "Các nguyên liệu dưới ngưỡng cảnh báo:\n";
+            foreach (var material in materialsBelowThreshold)
+            {
+                notificationMessage += $"- {material.MaterialName} (Số lượng: {material.Quantity}, Ngưỡng: {material.Threshold})\n";
+            }
+
             ShowNotification(notificationMessage);
         }
     }
+    private async void UpdateThresholdButton_Click(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+    {
+        foreach (var material in ViewModel.AllMaterials)
+        {
+            var thresholdTextBox = FindChild<TextBox>(MaterialsListView, "ThresholdTextBox.Text", material.MaterialCode);
+            if (thresholdTextBox == null)
+            {
+                System.Diagnostics.Debug.WriteLine($"ThresholdTextBox for material {material.MaterialCode} not found.");
+                continue;
+            }
+
+            if (!int.TryParse(thresholdTextBox.Text, out int newThreshold))
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to parse threshold for material {material.MaterialCode}.");
+                continue;
+            }
+
+            if (material.Threshold != newThreshold)
+            {
+                material.Threshold = newThreshold;
+                var success = App.GetService<IDao>().UpdateMaterialThreshold(material.MaterialCode, newThreshold);
+                if (!success)
+                {
+                    ShowNotification($"Failed to update threshold for {material.MaterialName}");
+                }
+            }
+        }
+
+        ShowNotification("Thresholds updated successfully.");
+    }
+
+    private T FindChild<T>(DependencyObject parent, string childName = null, string materialCode = null)
+    where T : DependencyObject
+    {
+        if (parent == null) return null;
+
+        // If parent is already of the target type and meets the conditions, return it
+        if (parent is T targetType)
+        {
+            if (!string.IsNullOrEmpty(childName) &&
+                parent is FrameworkElement fe &&
+                fe.Name != childName)
+                return null;
+
+            if (!string.IsNullOrEmpty(materialCode) &&
+                parent is TextBox textBox &&
+                textBox.Text != materialCode)
+                return null;
+
+            return targetType;
+        }
+
+        // Recursively search through the children
+        T foundChild = null;
+        int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
+        for (int i = 0; i < childrenCount; i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            foundChild = FindChildRecursive<T>(child, childName, materialCode, 5);
+            if (foundChild != null)
+                break;
+        }
+
+        return foundChild;
+    }
+
+    private T FindChildRecursive<T>(DependencyObject parent, string childName, string materialCode, int maxDepth)
+        where T : DependencyObject
+    {
+        if (parent == null || maxDepth <= 0) return null;
+
+        if (parent is T targetType)
+        {
+            if (!string.IsNullOrEmpty(childName) &&
+                parent is FrameworkElement fe &&
+                fe.Name != childName)
+                return null;
+
+            if (!string.IsNullOrEmpty(materialCode) &&
+                parent is TextBox textBox &&
+                textBox.Text != materialCode)
+                return null;
+
+            return targetType;
+        }
+
+        int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
+        for (int i = 0; i < childrenCount; i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            var result = FindChildRecursive<T>(child, childName, materialCode, maxDepth - 1);
+            if (result != null)
+                return result;
+        }
+
+        return null;
+    }
+
 
 
 
@@ -318,18 +415,10 @@ public sealed partial class InventoryManagementPage : Page
         return 0; // Replace with actual default value or error handling
     }
 
-    private void UpdateThresholdButton_Click(object sender, RoutedEventArgs e)
-    {
-        foreach (var material in ViewModel.AllMaterials)
-        {
-            ViewModel.SetNotificationThreshold(material.MaterialCode, material.Threshold);
-        }
-    }
-
-
     private void InventoryListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         // Logic to handle selection change
     }
+   
 
 }

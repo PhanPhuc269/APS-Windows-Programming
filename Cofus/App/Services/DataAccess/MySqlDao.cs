@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using App.Model;
 using MySql.Data.MySqlClient;
 using DotNetEnv;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace App;
 
@@ -932,20 +933,50 @@ public class MySqlDao : IDao
 
         return topSellers;
     }
-
     public bool UpdateMaterialThreshold(string materialCode, int newThreshold)
     {
-        using var connection = GetConnection();
-        connection.Open();
-        var query = "UPDATE material SET NOTIFYCATION_THRESHOLD = @Thresold WHERE MATERIAL_CODE = @MaterialCode";
-        using var command = new MySqlCommand(query, connection);
-        command.Parameters.AddWithValue("@Thresold", newThreshold);
-        command.Parameters.AddWithValue("@MaterialCode", materialCode);
-        return command.ExecuteNonQuery() > 0;
+        var query = @"UPDATE material 
+                  SET NOTIFYCATION_THRESHOLD = @Threshold 
+                  WHERE MATERIAL_CODE = @MaterialCode";
+
+        var parameters = new List<MySqlParameter>
+    {
+        new ("@Threshold", newThreshold),
+        new ("@MaterialCode", materialCode)
+    };
+
+        int rowsAffected = ExecuteNonQuery(query, parameters);
+        return rowsAffected > 0;
     }
 
 
 
+
+    public List<Material> GetAllMaterialsOutStock()
+    {
+        var query = "SELECT * FROM MATERIAL WHERE QUANTITY < NOTIFYCATION_THRESHOLD";
+        var result = ExecuteSelectQuery(query);
+
+        var materials = new List<Material>();
+
+        foreach (var row in result)
+        {
+            materials.Add(new Material
+            {
+                MaterialCode = row["MATERIAL_CODE"].ToString(),
+                MaterialName = row["MATERIAL_NAME"].ToString(),
+                Quantity = Convert.ToInt32(row["QUANTITY"]),
+                Category = row["CATEGORY"].ToString(),
+                Unit = row["UNIT"].ToString(),
+                UnitPrice = Convert.ToInt32(row["UNIT_PRICE"]),
+                ImportDate = Convert.ToDateTime(row["IMPORT_DATE"]),
+                ExpirationDate = Convert.ToDateTime(row["EXPIRATION_DATE"]),
+                Threshold = Convert.ToInt32(row["NOTIFYCATION_THRESHOLD"])
+            });
+        }
+
+        return materials;
+    }
 
 
 

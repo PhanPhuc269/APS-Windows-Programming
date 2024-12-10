@@ -108,10 +108,7 @@
             </ListView>
 
             <!-- Add ListView for editing materials in a ContentDialog -->
-            <ContentDialog x:Name="EditMaterialsDialog"
-               Title="Edit Materials"
-               PrimaryButtonText="Save"
-               SecondaryButtonText="Cancel">
+            <ContentDialog x:Name="EditMaterialsDialog" Title="Edit Materials" PrimaryButtonText="Cập nhật Ngưỡng" SecondaryButtonText="Cancel" PrimaryButtonClick="UpdateThresholdButton_Click">
                 <ListView x:Name="MaterialsListView" ItemsSource="{x:Bind ViewModel.AllMaterials}">
                     <ListView.Header>
                         <Grid Padding="20,0,20,0">
@@ -136,16 +133,17 @@
                                     <ColumnDefinition Width="60"/>
                                     <ColumnDefinition Width="60"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBox Text="{x:Bind MaterialCode}" Grid.Column="0" IsReadOnly="True"/>
+                                <TextBox x:Name="McodeTextBox" Text="{x:Bind MaterialCode}" Grid.Column="0" IsReadOnly="True"/>
                                 <TextBox Text="{x:Bind MaterialName}" Grid.Column="1" IsReadOnly="True"/>
                                 <TextBox Text="{x:Bind Quantity}" Grid.Column="2" IsReadOnly="True"/>
-                                <TextBox x:Name="ThresholdTextBox" Text="{x:Bind Threshold}" Grid.Column="3"/>
+                                <TextBox x:Name="ThresholdTextBox" Text="{x:Bind Threshold, Mode=TwoWay}" Grid.Column="3"/>
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
             </ContentDialog>
-            
+
+
 
             <ContentDialog x:Name="AddEditDialog" Title="Thêm/Sửa Nguyên Liệu" PrimaryButtonText="OK" SecondaryButtonText="Cancel" PrimaryButtonClick="AddEditDialogPrimaryButtonClick">
                 <StackPanel>

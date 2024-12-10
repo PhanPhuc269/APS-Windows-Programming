@@ -44,7 +44,8 @@ public interface IDao
 
     // Thông báo ngưỡng hết nguyn lịu
     bool UpdateMaterialThreshold(string materialCode, int newThreshold);
-
+    List<Material> GetAllMaterialsOutStock();
+    
 
 
     // Quản lý người dùng
