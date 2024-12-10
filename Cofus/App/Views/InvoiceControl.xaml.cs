@@ -158,7 +158,7 @@ public sealed partial class InvoiceControl : UserControl
                         isPaid = false;
                     }
                 }
-                if (paymentMethod == "VietQRPayment")
+                if (paymentMethod == "VietQR")
                 {
                     VietQRPayment vietQRPayment = new VietQRPayment();
                     var token = GenerateUniqueOrderId(); // Tạo mã đơn hàng duy nhất

@@ -15,6 +15,9 @@
     <EnableMsixTooling>true</EnableMsixTooling>
     <WindowsSdkPackageVersion>10.0.19041.38</WindowsSdkPackageVersion>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Views\TimeKeepingPage.xaml.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <None Remove="Assets\Coffus-Background-Start.png" />
@@ -28,6 +31,11 @@
     <None Remove="Views\PendingControl.xaml" />
     <None Remove="Views\ProductInputDialog.xaml" />
     <None Remove="Views\SalePage.xaml" />
+    <None Remove="Views\TimeKeepingPage.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Remove="Views\TimeKeepingPage.xaml" />
   </ItemGroup>
 
   <ItemGroup>
