@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using ClosedXML.Excel; // Thêm thư viện này vào file
 using System.IO;
+using Microsoft.UI.Xaml.Media;
 
 namespace App.Views;
 
@@ -32,7 +33,6 @@ public sealed partial class InventoryManagementPage : Page
         ViewModel.SearchMaterials(searchText, startExpirationDate, endExpirationDate);
     }
 
-
     private async void AddButton_Click(object sender, RoutedEventArgs e)
     {
         ClearInputFields();
@@ -40,6 +40,30 @@ public sealed partial class InventoryManagementPage : Page
         ImportDatePicker.Visibility = Visibility.Visible;
         await AddEditDialog.ShowAsync();
     }
+    private bool _isDialogOpen = false;
+
+    private async void ShowNotification(string message)
+    {
+        try
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "Thông báo",
+                Content = message,
+                CloseButtonText = "OK",
+                DefaultButton = ContentDialogButton.Close,
+                XamlRoot = this.XamlRoot // Thay thế this.Content.XamlRoot
+            };
+
+            await dialog.ShowAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Lỗi hiển thị dialog: {ex.Message}");
+        }
+    }
+
+
 
     private async void EditButton_Click(object sender, RoutedEventArgs e)
     {
@@ -54,8 +78,9 @@ public sealed partial class InventoryManagementPage : Page
             UnitPriceTextBox.Text = selectedMaterial.UnitPrice.ToString();
             ImportDatePicker.Visibility = Visibility.Collapsed;
             ExpirationDatePicker.Date = new DateTimeOffset(selectedMaterial.ExpirationDate);
-
+                        
             AddEditDialog.Title = "Sửa Nguyên Liệu";
+            
             await AddEditDialog.ShowAsync();
         }
     }
@@ -95,8 +120,7 @@ public sealed partial class InventoryManagementPage : Page
             detailDialog.ShowAsync();
         }
     }
-
-    private void AddEditDialogPrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+    private async void AddEditDialogPrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
         var newMaterial = new Material
         {
@@ -126,11 +150,18 @@ public sealed partial class InventoryManagementPage : Page
                 existingMaterial.Unit = newMaterial.Unit;
                 existingMaterial.UnitPrice = newMaterial.UnitPrice;
                 existingMaterial.ExpirationDate = newMaterial.ExpirationDate;
+                App.GetService<IDao>().UpdateMaterial(newMaterial);
+            }
+            if (existingMaterial.Threshold > newMaterial.Quantity)
+            {
+                AddEditDialog.Hide(); // Ensure the AddEditDialog is closed
+                ShowNotification($"Số lượng nguyên liệu {newMaterial.MaterialName} hiện tại dưới ngưỡng cảnh báo");
             }
         }
 
         ViewModel.UpdateCurrentPage();
     }
+
 
     private void ClearInputFields()
     {
@@ -143,6 +174,7 @@ public sealed partial class InventoryManagementPage : Page
         ImportDatePicker.Date = DateTimeOffset.Now;
         ExpirationDatePicker.Date = DateTimeOffset.Now.AddMonths(1);
     }
+
     private void PreviousPageButton_Click(object sender, RoutedEventArgs e)
     {
         if (ViewModel.CurrentPage > 0)
@@ -162,6 +194,7 @@ public sealed partial class InventoryManagementPage : Page
             PageInfoTextBlock.Text = $"Trang {ViewModel.CurrentPage + 1} ";
         }
     }
+
     private async void ExportExcelButton_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -245,12 +278,106 @@ public sealed partial class InventoryManagementPage : Page
             });
         }
     }
+    private async void Set_Notification_Threshold_Click(object sender, RoutedEventArgs e)
+    {
+        MaterialsListView.Visibility = Visibility.Visible;
+        await EditMaterialsDialog.ShowAsync();
+        var materialsBelowThreshold = ViewModel.AllMaterials
+            .Where(material => material.Quantity < material.Threshold)
+            .ToList();
+
+        EditMaterialsDialog.Hide();
+
+        if (materialsBelowThreshold.Any())
+        {
+            string notificationMessage = "Các nguyên liệu dưới ngưỡng cảnh báo:\n";
+            foreach (var material in materialsBelowThreshold)
+            {
+                notificationMessage += $"- {material.MaterialName} (Số lượng: {material.Quantity}, Ngưỡng: {material.Threshold})\n";
+            }
+
+            ShowNotification(notificationMessage);
+        }
+    }
+    private async void UpdateThresholdButton_Click(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+    {
+        foreach (var material in ViewModel.AllMaterials)
+        {
+            int temp = material.Threshold;
+            var thresholdTextBox = FindChild<TextBox>(MaterialsListView, material.MaterialCode);
+            if (thresholdTextBox == null)
+            {
+                System.Diagnostics.Debug.WriteLine($"ThresholdTextBox for material {material.MaterialCode} not found.");
+                continue;
+            }
+
+            if (!int.TryParse(thresholdTextBox.Text, out int newThreshold))
+            {
+                System.Diagnostics.Debug.WriteLine($"Failed to parse threshold for material {material.MaterialCode}.");
+                continue;
+            }
+
+            
+                material.Threshold = newThreshold;
+                var success = App.GetService<IDao>().UpdateMaterialThreshold(material.MaterialCode, newThreshold);
+                if (!success)
+                {
+                    ShowNotification($"Failed to update threshold for {material.MaterialName}");
+                }
+        }
+
+        ShowNotification("Thresholds updated successfully.");
+    }
+    private T FindChild<T>(DependencyObject parent, string materialCode)
+    where T : DependencyObject
+    {
+        if (parent == null) return null;
+
+        T foundChild = null;
+
+        int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
+        for (int i = 0; i < childrenCount; i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            T childType = child as T;
+            if (childType == null)
+            {
+                foundChild = FindChild<T>(child, materialCode);
+                if (foundChild != null) break;
+            }
+            else if (child is FrameworkElement frameworkElement && frameworkElement.Tag?.ToString() == materialCode)
+            {
+                foundChild = (T)child;
+                break;
+            }
+        }
+        return foundChild;
+    }
 
 
 
+
+
+
+    private int GetUpdatedThresholdForMaterial(string materialCode)
+    {
+        // Assuming you have a TextBox named ThresholdTextBox in the EditMaterialsDialog
+        // and a way to map the materialCode to the corresponding TextBox
+        var thresholdTextBox = EditMaterialsDialog.FindName($"ThresholdTextBox_{materialCode}") as TextBox;
+
+        if (thresholdTextBox != null && int.TryParse(thresholdTextBox.Text, out int updatedThreshold))
+        {
+            return updatedThreshold;
+        }
+
+        // Return a default value or handle the case where the TextBox is not found or the value is invalid
+        return 0; // Replace with actual default value or error handling
+    }
 
     private void InventoryListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         // Logic to handle selection change
     }
+   
+
 }

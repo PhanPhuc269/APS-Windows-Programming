@@ -10,7 +10,7 @@ exports.up = function(knex) {
       table.integer('UNIT_PRICE').notNullable();
       table.datetime('IMPORT_DATE').notNullable();
       table.datetime('EXPIRATION_DATE').notNullable();
-      
+      table.integer('NOTIFYCATION_THRESHOLD').notNullable();
     });
   };
   

@@ -9,40 +9,56 @@
 
     <Grid Padding="20">
         <StackPanel Orientation="Vertical" Spacing="10" Background="White" Padding="0,20,0,10">
-            <StackPanel Orientation="Vertical">
-                <StackPanel Orientation="Horizontal" Spacing="10" Background="White" HorizontalAlignment="Center" Padding="20">
-                    <TextBox x:Name="SearchBox" Foreground="Black" PlaceholderText="Tìm kiếm nguyên liệu..." Width="200" Background="Brown"/>
-                    <Button Content="Tìm kiếm" Click="SearchButton_Click" Background="Brown"/>
-
-                    <ComboBox x:Name="CategoryFilter" Width="150" Background="Brown" VerticalAlignment="Center"
-          ItemsSource="{x:Bind ViewModel.Categories}" 
-          SelectedItem="{x:Bind ViewModel.SelectedCategory, Mode=TwoWay}">
-                        <ComboBoxItem Content="Tất cả"/>
-                    </ComboBox>
-
-                    <Button Content="Thêm" Click="AddButton_Click" Background="Brown"/>
-                    <Button Content="Sửa" Click="EditButton_Click" Background="Brown"/>
-                    <Button Content="Xóa" Click="DeleteButton_Click" Background="Brown"/>
-                    <Button Content="Xem chi tiết" Click="DetailButton_Click" Background="Brown"/>
-                    <Button Content="Xuất Excel" Click="ExportExcelButton_Click" Background="Brown"/>
+            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,5*,*" Background="#e9cda8">
+                <!-- Row 0, Column 0: Title -->
+                <StackPanel Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="Quản Lí" FontSize="25" FontWeight="Bold" Foreground="#571304"/>
                 </StackPanel>
-                <StackPanel Background="White" HorizontalAlignment="Center" Padding="10,0,10,0">
-                    <TextBlock Text="Hạn sử dụng" Foreground="Black" Padding="0,0,0,10" VerticalAlignment="Center"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Padding="20,10,0,20" Background="White" HorizontalAlignment="Center">
-                    <StackPanel Orientation="Vertical">
-                        <TextBlock Text="Từ ngày" Foreground="Black" Padding="0,0,0,10" VerticalAlignment="Center"/>
-                        <DatePicker x:Name="StartExpirationDatePicker" Background="Brown" Foreground="Black" HorizontalAlignment="Center"/>
+                <!-- Row 0, Column 1: Search Box and Category Filter with Full Background -->
+                <Grid Grid.Row="0" Grid.Column="1" Background="#571304">
+                    <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBox x:Name="SearchBox" PlaceholderText="Tìm kiếm nguyên liệu..." Width="250" Background="White" BorderThickness="1" />
+                        <ComboBox x:Name="CategoryFilter" Width="150" Background="White" VerticalAlignment="Center" ItemsSource="{x:Bind ViewModel.Categories}" SelectedItem="{x:Bind ViewModel.SelectedCategory, Mode=TwoWay}" />
+                        <Button Content="Tìm kiếm" Click="SearchButton_Click" Background="#8D6E63" Foreground="White" VerticalAlignment="Center" />
+                        <Button Content="Cài đặt Ngưỡng Cảnh Báo" Click="Set_Notification_Threshold_Click" Background="#8D6E63" Foreground="White" VerticalAlignment="Center" />
                     </StackPanel>
-                    <StackPanel Orientation="Vertical">
-                        <TextBlock Text="Đến ngày" Foreground="Black" Padding="0,0,0,10" VerticalAlignment="Center"/>
-                        <DatePicker x:Name="EndExpirationDatePicker" Background="Brown" Foreground="Black" HorizontalAlignment="Center"/>
-                    </StackPanel>
+                </Grid>
+                <!-- Row 0, Column 2: Add and Edit Buttons -->
+                <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,15,0,15">
+                    <Button Content="Thêm" Click="AddButton_Click" Background="#5D4037" Foreground="White" />
+                    <Button Content="Sửa" Click="EditButton_Click" Background="#5D4037" Foreground="White" />
                 </StackPanel>
-            </StackPanel>
+
+                <!-- Row 1, Column 0: Nguyên Liệu -->
+                <StackPanel Grid.Row="1" Grid.Column="0"  VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="Nguyên Liệu" FontSize="25" FontWeight="Bold" Foreground="#571304"/>
+                </StackPanel>
+
+                <!-- Row 1, Column 1: Expiration Date Range with Full Background -->
+                <Grid Grid.Row="1" Grid.Column="1" Background="#571304" ColumnDefinitions="2*,4*,*,4*" VerticalAlignment="Stretch" Padding="0,0,0,20">
+                    <StackPanel Grid.Column="0" Margin="5" VerticalAlignment="Center">
+                        <TextBlock Text="Hạn Sử Dụng Từ" Foreground="White" Margin="0" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="0,0,0,0" VerticalAlignment="Center">
+                        <DatePicker x:Name="StartExpirationDatePicker" Background="White" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Margin="5" VerticalAlignment="Center">
+                        <TextBlock Text="Đến" Foreground="White" Margin="0" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="3" VerticalAlignment="Center">
+                        <DatePicker x:Name="EndExpirationDatePicker" Background="White" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- Row 1, Column 2: Delete and Export Buttons -->
+                <StackPanel Grid.Row="1" Grid.Column="2" Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0">
+                    <Button Content="Xóa" Click="DeleteButton_Click" Background="#5D4037" Foreground="White" />
+                    <Button Content="Xuất Excel" Click="ExportExcelButton_Click" Background="#5D4037" Foreground="White" />
+                </StackPanel>
+            </Grid>
 
             <ListView x:Name="InventoryListView" HorizontalAlignment="Center" BorderBrush="Black" BorderThickness="1" Background="WhiteSmoke" 
-                      ItemsSource="{x:Bind ViewModel.FilteredMaterials, Mode=OneWay}" SelectionChanged="InventoryListView_SelectionChanged">
+                      ItemsSource="{x:Bind ViewModel.FilteredMaterials, Mode=OneWay}" SelectionChanged="InventoryListView_SelectionChanged" Padding="0,20,0,20" Margin="0,10,0,0">
                 <ListView.Header>
                     <Grid Padding="20,0,20,0">
                         <Grid.ColumnDefinitions>
@@ -91,6 +107,44 @@
                 </ListView.ItemTemplate>
             </ListView>
 
+            <!-- Add ListView for editing materials in a ContentDialog -->
+            <ContentDialog x:Name="EditMaterialsDialog" Title="Edit Materials" PrimaryButtonText="Cập nhật Ngưỡng" SecondaryButtonText="Cancel" PrimaryButtonClick="UpdateThresholdButton_Click">
+                <ListView x:Name="MaterialsListView" ItemsSource="{x:Bind ViewModel.AllMaterials}">
+                    <ListView.Header>
+                        <Grid Padding="20,0,20,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="60"/>
+                                <ColumnDefinition Width="140"/>
+                                <ColumnDefinition Width="60"/>
+                                <ColumnDefinition Width="60"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock HorizontalAlignment="Center" Text="Mã" Grid.Column="0" Foreground="Black" FontWeight="Bold"/>
+                            <TextBlock HorizontalAlignment="Center" Text="Tên nguyên liệu" Grid.Column="1" Foreground="Black" FontWeight="Bold"/>
+                            <TextBlock HorizontalAlignment="Center" Text="Số lượng" Grid.Column="2" Foreground="Black" FontWeight="Bold"/>
+                            <TextBlock HorizontalAlignment="Center" Text="Mức" Grid.Column="3" Foreground="Black" FontWeight="Bold"/>
+                        </Grid>
+                    </ListView.Header>
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="model:Material">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="60"/>
+                                    <ColumnDefinition Width="140"/>
+                                    <ColumnDefinition Width="60"/>
+                                    <ColumnDefinition Width="60"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="McodeTextBox" Text="{x:Bind MaterialCode}" Grid.Column="0" IsReadOnly="True"/>
+                                <TextBox Text="{x:Bind MaterialName}" Grid.Column="1" IsReadOnly="True"/>
+                                <TextBox Text="{x:Bind Quantity}" Grid.Column="2" IsReadOnly="True"/>
+                                <TextBox Tag="{x:Bind MaterialCode}" Text="{x:Bind Threshold, Mode=TwoWay}" Grid.Column="3"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </ContentDialog>
+
+
+
             <ContentDialog x:Name="AddEditDialog" Title="Thêm/Sửa Nguyên Liệu" PrimaryButtonText="OK" SecondaryButtonText="Cancel" PrimaryButtonClick="AddEditDialogPrimaryButtonClick">
                 <StackPanel>
                     <TextBox x:Name="MaterialCodeTextBox" PlaceholderText="Mã nguyên liệu"/>
@@ -105,10 +159,11 @@
             </ContentDialog>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,0,0,10">
-                <Button Content="Trang trước" Click="PreviousPageButton_Click" Margin="5" Foreground="Black" Background="AntiqueWhite"/>
+                <Button Content="Trước" Click="PreviousPageButton_Click" Margin="5" Foreground="Black" Background="AntiqueWhite"/>
                 <TextBlock x:Name="PageInfoTextBlock" Text="Trang 1" VerticalAlignment="Center" Margin="10,0" Foreground="Black"/>
-                <Button Content="Trang tiếp theo" Click="NextPageButton_Click" Margin="5" Foreground="Black" Background="AntiqueWhite"/>
+                <Button Content="Sau" Click="NextPageButton_Click" Margin="5" Foreground="Black" Background="AntiqueWhite"/>
             </StackPanel>
         </StackPanel>
+        <TextBlock x:Name="WarningTextBlock" Text="Cảnh báo: Số lượng nguyên liệu thấp!" Foreground="Red" FontWeight="Bold" Visibility="Collapsed" HorizontalAlignment="Center" Margin="0,10,0,0"/>
     </Grid>
 </Page>

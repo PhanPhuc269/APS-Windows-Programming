@@ -4,6 +4,7 @@ using App.Model;
 using System.Linq;
 using System;
 using System.ComponentModel;
+using Microsoft.UI.Xaml.Controls;
 
 namespace App.ViewModels
 {
@@ -90,7 +91,17 @@ namespace App.ViewModels
         {
             get; set;
         }
+        public void SetNotificationThreshold(string materialCode, int newThreshold)
+        {
 
-        
+            var material = AllMaterials.FirstOrDefault(m => m.MaterialCode == materialCode);
+            if (material != null)
+            {
+                material.Threshold = newThreshold;
+                App.GetService<IDao>().UpdateMaterialThreshold(materialCode, newThreshold);
+                
+            }
+        }
+
     }
 }
