@@ -289,7 +289,7 @@ public class MySqlDao : IDao
 
     public FullObservableCollection<Invoice> GetPendingOrders()
     {
-        var query = "SELECT * FROM ORDERS WHERE COMPLETED_TIME IS not NULL";
+        var query = "SELECT * FROM ORDERS WHERE COMPLETED_TIME IS NULL";
         var result = ExecuteSelectQuery(query);
 
         var orders = new FullObservableCollection<Invoice>();
@@ -303,7 +303,7 @@ public class MySqlDao : IDao
                 CreatedTime = Convert.ToDateTime(row["ORDER_TIME"]),
                 PaymentMethod = row["PAYMENT_METHOD"].ToString(),
                 InvoiceItems = GetOrderDetails(Convert.ToInt32(row["ORDER_ID"])),
-                CompleteTime = row["COMPLETED_TIME"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(row["COMPLETED_TIME"]),
+                //CompleteTime = row["COMPLETED_TIME"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(row["COMPLETED_TIME"]),
             });
         }
 
@@ -390,13 +390,11 @@ public class MySqlDao : IDao
 
     public async Task<int> CreateOrder(Invoice invoice)
     {
-        // Tính thời gian dự kiến (COMPLETE_TIME)
-        var estimatedCompleteTime = DateTime.Now.AddMinutes(invoice.TotalQuantity * 3);
 
         // Câu truy vấn SQL để tạo đơn hàng
         var query = @"
-                        INSERT INTO ORDERS (TOTAL_AMOUNT, ORDER_TIME, PAYMENT_METHOD, CONSUMED_POINTS, AMOUNT_DUE, EMPLOYEE_ID, COMPLETED_TIME) 
-                        VALUES (@total, @time, @method, @points, @amountDue, @employee, @completeTime);
+                        INSERT INTO ORDERS (TOTAL_AMOUNT, ORDER_TIME, PAYMENT_METHOD, CONSUMED_POINTS, AMOUNT_DUE, EMPLOYEE_ID) 
+                        VALUES (@total, @time, @method, @points, @amountDue, @employee);
                         SELECT LAST_INSERT_ID();";
         var parameters = new List<MySqlParameter>
         {
@@ -406,7 +404,6 @@ public class MySqlDao : IDao
             new ("@amountDue", invoice.AmountDue),
             new ("@method", invoice.PaymentMethod),
             new ("@employee", 1),
-            new ("@completeTime", estimatedCompleteTime)  // Thêm tham số COMPLETE_TIME
         };
 
         var orderId = Convert.ToInt32(await ExecuteScalarAsync(query, parameters));
@@ -830,32 +827,33 @@ public class MySqlDao : IDao
 
         return new Revenue();
     }
-
     public async Task<List<TopProduct>> GetTopProducts(DateTime selectedDate)
     {
         var query = @"
-            SELECT
-                b.IMAGE_PATH AS ImageUrl,
-                b.BEVERAGE_NAME AS Name,
-                SUM(od.SUBTOTAL) AS Revenue
-            FROM
-                ORDER_DETAILS od
-            JOIN
-                BEVERAGE b ON od.BEVERAGE_SIZE_ID = b.ID
-            JOIN
-                ORDERS o ON od.ORDER_ID = o.ORDER_ID
-            WHERE
-                DATE(o.ORDER_TIME) = @selectedDate
-            GROUP BY
-                b.IMAGE_PATH, b.BEVERAGE_NAME
-            ORDER BY
-                Revenue DESC
-            LIMIT 5";
+        SELECT
+            b.IMAGE_PATH AS ImageUrl,
+            b.BEVERAGE_NAME AS Name,
+            SUM(od.SUBTOTAL) AS Revenue
+        FROM
+            ORDER_DETAILS od
+        JOIN
+            BEVERAGE_SIZE bz ON od.BEVERAGE_SIZE_ID = bz.ID
+        JOIN 
+            BEVERAGE b ON bz.BEVERAGE_ID = b.ID 
+        JOIN
+            ORDERS o ON od.ORDER_ID = o.ORDER_ID
+        WHERE
+            DATE(o.ORDER_TIME) = @selectedDate
+        GROUP BY
+            b.IMAGE_PATH, b.BEVERAGE_NAME
+        ORDER BY
+            Revenue DESC
+        LIMIT 5";
 
         var parameters = new List<MySqlParameter>
-        {
-            new MySqlParameter("@selectedDate", selectedDate)
-        };
+    {
+        new MySqlParameter("@selectedDate", selectedDate)
+    };
 
         var result = ExecuteSelectQuery(query, parameters);
 
@@ -877,30 +875,32 @@ public class MySqlDao : IDao
     public async Task<List<TopCategory>> GetTopCategories(DateTime selectedDate)
     {
         var query = @"
-            SELECT
-                t.CATEGORY AS Name,
-                SUM(od.SUBTOTAL) AS Revenue
-            FROM
-                ORDER_DETAILS od
-            JOIN
-                BEVERAGE b ON od.BEVERAGE_SIZE_ID = b.ID
-            JOIN
-                TYPE_BEVERAGE t ON b.CATEGORY_ID = t.ID
-            JOIN
-                ORDERS o ON od.ORDER_ID = o.ORDER_ID
-            WHERE
-                DATE(o.ORDER_TIME) = @selectedDate
-            GROUP BY
-                t.CATEGORY
-            ORDER BY
-                Revenue DESC
-            LIMIT 5";
+        SELECT
+            t.CATEGORY AS Name,
+            SUM(od.SUBTOTAL) AS Revenue
+        FROM
+            ORDER_DETAILS od
+        JOIN
+            BEVERAGE_SIZE bz ON od.BEVERAGE_SIZE_ID = bz.ID
+        JOIN 
+            BEVERAGE b ON bz.BEVERAGE_ID = b.ID 
+        JOIN
+            TYPE_BEVERAGE t ON b.CATEGORY_ID = t.ID
+        JOIN
+            ORDERS o ON od.ORDER_ID = o.ORDER_ID
+        WHERE
+            DATE(o.ORDER_TIME) = @selectedDate
+        GROUP BY
+            t.CATEGORY
+        ORDER BY
+            Revenue DESC
+        LIMIT 5";
 
 
         var parameters = new List<MySqlParameter>
-        {
-            new MySqlParameter("@selectedDate", selectedDate)
-        };
+    {
+        new MySqlParameter("@selectedDate", selectedDate)
+    };
 
         var result = ExecuteSelectQuery(query, parameters);
 
@@ -921,23 +921,25 @@ public class MySqlDao : IDao
     public async Task<List<TopSeller>> GetTopSellers(DateTime selectedDate)
     {
         var query = @"
-            SELECT 
-                b.IMAGE_PATH AS ImageUrl, 
-                b.BEVERAGE_NAME AS Name,
-                SUM(od.QUANTITY) AS Amount
-            FROM 
-                ORDER_DETAILS od
-            JOIN 
-                BEVERAGE b ON od.BEVERAGE_SIZE_ID = b.ID
-            JOIN
-                ORDERS o ON od.ORDER_ID = o.ORDER_ID
-            WHERE
-                DATE(o.ORDER_TIME) = @selectedDate
-            GROUP BY 
-                b.IMAGE_PATH, b.BEVERAGE_NAME
-            ORDER BY 
-                Amount DESC
-            LIMIT 5";
+        SELECT 
+            b.IMAGE_PATH AS ImageUrl, 
+            b.BEVERAGE_NAME AS Name,
+            SUM(od.QUANTITY) AS Amount
+        FROM
+            ORDER_DETAILS od
+        JOIN
+            BEVERAGE_SIZE bz ON od.BEVERAGE_SIZE_ID = bz.ID
+        JOIN 
+            BEVERAGE b ON bz.BEVERAGE_ID = b.ID 
+        JOIN
+            ORDERS o ON od.ORDER_ID = o.ORDER_ID
+        WHERE
+            DATE(o.ORDER_TIME) = @selectedDate
+        GROUP BY 
+            b.IMAGE_PATH, b.BEVERAGE_NAME
+        ORDER BY 
+            Amount DESC
+        LIMIT 5";
 
 
         var parameters = new List<MySqlParameter>

@@ -26,6 +26,11 @@ namespace App.Model
             get; set;
         }
 
+        public DateTime? EstimateTime
+        {
+            get; set;
+        }
+
         public int TableNumber
         {
             get; set;
@@ -44,6 +49,8 @@ namespace App.Model
         {
             // Khởi tạo InvoiceItems
             InvoiceItems = new FullObservableCollection<InvoiceItem>();
+
+            EstimateTime= DateTime.Now.AddMinutes(3);
 
             // Đăng ký sự kiện CollectionChanged để cập nhật tổng số lượng và tổng giá khi danh sách thay đổi
             InvoiceItems.CollectionChanged += OnInvoiceItemsChanged;
@@ -130,11 +137,10 @@ namespace App.Model
             while (true)
             {
                 // Nếu hóa đơn có thời gian hoàn thành, tính toán và cập nhật thời gian còn lại
-                if (CompleteTime.HasValue)
+                if (EstimateTime.HasValue)
                 {
                     OnPropertyChanged(nameof(RemainingTime));
                 }
-
                 // Chờ một giây trước khi cập nhật lại thời gian
                 await Task.Delay(1000);
             }
@@ -145,13 +151,13 @@ namespace App.Model
             get
             {
                 // Nếu CompleteTime có giá trị và thời gian hiện tại trước thời gian hoàn thành
-                if (CompleteTime.HasValue)
+                if (EstimateTime.HasValue)
                 {
                     var now = DateTime.Now;
-                    if (CompleteTime.Value > now)
+                    if (EstimateTime.Value > now)
                     {
                         // Tính toán thời gian còn lại
-                        var remaining = CompleteTime.Value - now;
+                        var remaining = EstimateTime.Value - now;
 
                         // Trả về thời gian còn lại theo định dạng hh:mm:ss
                         return remaining.ToString(@"hh\:mm\:ss");
