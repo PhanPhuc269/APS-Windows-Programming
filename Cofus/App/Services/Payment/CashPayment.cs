@@ -39,7 +39,7 @@ public class CashPayment : IPaymentMethod
             {
                 if (decimal.TryParse(receivedAmountTextBox.Text, out decimal receivedAmount))
                 {
-                    decimal totalAmount = invoice.TotalPrice;
+                    decimal totalAmount = invoice.AmountDue;
                     decimal change = receivedAmount - totalAmount;
 
                     if (change >= 0)

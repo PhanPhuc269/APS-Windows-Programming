@@ -24,8 +24,17 @@ public class VietQRPayment:IPaymentMethod
         var qrUrl = GenerateVietQR(invoice, token);
         ContentDialog checkoutDia = await OpenDialog.OpenPaymentWebViewDialog(qrUrl,true);
         checkoutDia.XamlRoot = App.MainWindow.Content.XamlRoot;
-        var dialogResult = await checkoutDia.ShowAsync();
-        return dialogResult == ContentDialogResult.Primary;
+        var dialogResult = checkoutDia.ShowAsync();
+        // Kiểm tra thanh toán sau mỗi 5 giây cho đến khi thanh toán thành công
+        bool isPaymentSuccessful = await WaitForPaymentAsync(invoice, token);
+        if (isPaymentSuccessful == true) 
+        {
+            checkoutDia.Hide();
+            return true; 
+        }
+
+        var result=await dialogResult;
+        return result == ContentDialogResult.Primary;
     }
 
     // Tạo mã QR thanh toán VietQR
