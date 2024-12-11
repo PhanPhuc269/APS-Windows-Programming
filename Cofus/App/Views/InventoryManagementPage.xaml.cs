@@ -16,13 +16,32 @@ public sealed partial class InventoryManagementPage : Page
     {
         get;
     }
-
     public InventoryManagementPage()
     {
         this.InitializeComponent();
         ViewModel = new InventoryManagementViewModel();
         InventoryListView.ItemsSource = ViewModel.FilteredMaterials;
+
+        // Đăng ký sự kiện Loaded
+        this.Loaded += InventoryManagementPage_Loaded;
     }
+    private async void InventoryManagementPage_Loaded(object sender, RoutedEventArgs e)
+    {
+        // Lấy nguyên liệu dưới ngưỡng cảnh báo từ cơ sở dữ liệu
+        var materialsBelowThreshold = App.GetService<IDao>().GetAllMaterialsOutStock();
+
+        if (materialsBelowThreshold.Any())
+        {
+            string notificationMessage = "Các nguyên liệu dưới ngưỡng cảnh báo:\n";
+            foreach (var material in materialsBelowThreshold)
+            {
+                notificationMessage += $"- {material.MaterialName} (Số lượng: {material.Quantity}, Ngưỡng: {material.Threshold})\n";
+            }
+
+            ShowNotification(notificationMessage);
+        }
+    }
+
 
     private void SearchButton_Click(object sender, RoutedEventArgs e)
     {

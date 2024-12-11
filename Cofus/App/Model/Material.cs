@@ -126,8 +126,7 @@ namespace App.Model
                 }
             }
         }
-        public bool IsBelowThreshold => Quantity <= Threshold;
-
+        public bool IsBelowThreshold => Quantity < Threshold;
         public int Threshold
         {
             get => threshold;
@@ -142,6 +141,5 @@ namespace App.Model
         }
         public string FormattedImportDate => ImportDate.ToString("dd/MM/yyyy");
         public string FormattedExpirationDate => ExpirationDate.ToString("dd/MM/yyyy");
-        public bool IsLowQuantity => Quantity < Threshold;
     }
 }

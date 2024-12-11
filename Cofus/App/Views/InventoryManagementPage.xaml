@@ -87,7 +87,7 @@
                 </ListView.Header>
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="model:Material">
-                        <Grid Background="{x:Bind IsLowQuantity, Converter={StaticResource LowQuantityToColorConverter}}">
+                        <Grid Background="{x:Bind IsBelowThreshold, Mode=OneWay, Converter={StaticResource LowQuantityToColorConverter}}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="120"/>
                                 <ColumnDefinition Width="260"/>
