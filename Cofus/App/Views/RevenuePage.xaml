@@ -14,17 +14,17 @@
     </Page.DataContext>
 
     <Grid Background="#e3e4e9" Padding="15" >
-        <StackPanel Background="White" Orientation="Vertical" VerticalAlignment="Top" Padding="10" Margin="0,0,0,0">
+        <StackPanel Background="White" Orientation="Horizontal" VerticalAlignment="Top" Padding="5" Margin="0,0,0,0">
             <DatePicker x:Name="DatePicker" 
                 SelectedDate="{Binding SelectedDate, Mode=TwoWay}" 
                 HorizontalAlignment="Left" 
                 Width="350" 
-                Margin="0,10,0,0" 
+                Margin="0,5,0,5" 
                 DateChanged="DatePicker_DateChanged"/>
         </StackPanel>
 
         <!-- Tổng quan section -->
-        <StackPanel Background="White" Orientation="Vertical" VerticalAlignment="Top" Padding="10" Margin="0,50,0,0">
+        <StackPanel Background="White" Orientation="Vertical" VerticalAlignment="Top" Padding="10" Margin="0,65,0,0">
             <TextBlock Text="Tổng quan"
                        FontSize="20"
                        FontWeight="Bold"
