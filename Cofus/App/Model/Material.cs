@@ -126,8 +126,7 @@ namespace App.Model
                 }
             }
         }
-        public bool IsBelowThreshold => Quantity <= Threshold;
-
+        public bool IsBelowThreshold => Quantity < Threshold;
         public int Threshold
         {
             get => threshold;
