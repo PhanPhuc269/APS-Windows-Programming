@@ -44,32 +44,26 @@ public sealed partial class ProductInputDialog : ContentDialog
 
     private async void ContentDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
-        while (true)
+        // Reset the notice text
+        Notice.Text = string.Empty;
+
+        // Kiểm tra số lượng có hợp lệ không
+        if (!int.TryParse(quantityTextBox.Text, out int quantity) || quantity <= 0)
         {
-            // Kiểm tra số lượng có hợp lệ không
-            if (!int.TryParse(quantityTextBox.Text, out int quantity) || quantity <= 0)
-            {
-                args.Cancel = true; // Ngăn không cho đóng dialog
-                Notice.Text = "Vui lòng nhập số lượng hợp lệ";
-                return;
-            }
+            args.Cancel = true; // Ngăn không cho đóng dialog
+            Notice.Text = "Vui lòng nhập số lượng hợp lệ";
+            return;
+        }
 
-            int beverageSizeId = App.GetService<IDao>().GetBeverageSizeId(BeverageId, SelectedSize);
+        int beverageSizeId = App.GetService<IDao>().GetBeverageSizeId(BeverageId, SelectedSize);
+        int maxAvailableQuantity = await App.GetService<IDao>().GetMaxAvailableQuantityAsync(beverageSizeId);
 
-            // Kiểm tra nguyên liệu có đủ không
-            int maxAvailableQuantity = await App.GetService<IDao>().GetMaxAvailableQuantityAsync(beverageSizeId);
-
-            if (quantity > maxAvailableQuantity)
-            {
-                args.Cancel = true; // Ngăn không cho đóng dialog
-                Notice.Text = $"Chỉ còn tối đa là {maxAvailableQuantity}.";
-                quantityTextBox.Text = string.Empty; // Reset the quantity input
-                return;
-            }
-
-            // Nếu đã nhập số lượng hợp lệ, thoát khỏi vòng lặp
-            Notice.Text = string.Empty; // Clear any previous notice
-            break;
+        if (quantity > maxAvailableQuantity)
+        {
+            args.Cancel = true; // Ngăn không cho đóng dialog
+            Notice.Text = $"Chỉ còn tối đa là {maxAvailableQuantity}.";
+            quantityTextBox.Text = string.Empty; // Reset the quantity input
+            return;
         }
     }
 

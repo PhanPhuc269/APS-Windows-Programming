@@ -955,6 +955,7 @@ public class MySqlDao : IDao
     {
         var query = @"
         SELECT
+            t.IMAGE_PATH AS ImageUrl,
             t.CATEGORY AS Name,
             SUM(od.SUBTOTAL) AS Revenue
         FROM
@@ -970,7 +971,7 @@ public class MySqlDao : IDao
         WHERE
             DATE(o.ORDER_TIME) = @selectedDate
         GROUP BY
-            t.CATEGORY
+            t.CATEGORY, t.IMAGE_PATH
         ORDER BY
             Revenue DESC
         LIMIT 5";
@@ -989,6 +990,7 @@ public class MySqlDao : IDao
         {
             topCategories.Add(new TopCategory
             {
+                ImageUrl = row["ImageUrl"].ToString(),
                 Name = row["Name"].ToString(),
                 Revenue = Convert.ToInt32(row["Revenue"])
             });
