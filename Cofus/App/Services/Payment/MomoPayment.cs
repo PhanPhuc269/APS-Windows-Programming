@@ -15,8 +15,15 @@ using QRCoder;
 
 namespace App;
 
-public class MoMoPayment
+public class MoMoPayment: IPaymentMethod
 {
+    public async Task<bool> ProcessPayment(Invoice invoice)
+    {
+        ContentDialog checkoutDia = await ShowMoMoQRCode(invoice);
+        checkoutDia.XamlRoot = App.MainWindow.Content.XamlRoot;
+        var dialogResult = await checkoutDia.ShowAsync();
+        return dialogResult == ContentDialogResult.Primary;
+    }
     private static readonly string apiUrl = "https://test-payment.momo.vn/gw_payment/transactionProcessor";
     private string GenerateSignature(string rawData, string secretKey)
     {

@@ -454,14 +454,15 @@ public class MySqlDao : IDao
 
     public async Task AddOrderDetail(int orderId, InvoiceItem item)
     {
-        var query = "INSERT INTO ORDER_DETAILS (ORDER_ID, BEVERAGE_SIZE_ID, QUANTITY, PRICE, SUBTOTAL) VALUES (@orderId, @beverageSizeId, @quantity, @price, @total)";
+        var query = "INSERT INTO ORDER_DETAILS (ORDER_ID, BEVERAGE_SIZE_ID, QUANTITY, PRICE, SUBTOTAL, NOTE) VALUES (@orderId, @beverageSizeId, @quantity, @price, @total, @note)";
         var parameters = new List<MySqlParameter>
         {
             new ("@orderId", orderId),
             new ("@beverageSizeId", MySqlDbType.Int32) { Value = GetBeverageSizeId(item.BeverageId, item.Size) },
             new ("@quantity", item.Quantity),
             new ("@price", item.Price),
-            new ("@total", item.Total)
+            new ("@total", item.Total),
+            new ("@note", item.Note)
 
         };
 

@@ -11,7 +11,6 @@ public class PendingControlViewModel : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler PropertyChanged;
 
-    private DispatcherTimer _timer;
 
     private FullObservableCollection<Invoice> _pendingInvoices;
     public FullObservableCollection<Invoice> PendingInvoices
@@ -46,42 +45,13 @@ public class PendingControlViewModel : INotifyPropertyChanged
         }
     }
 
-    private Dictionary<int, string> _remainingTimes = new();
-    public Dictionary<int, string> RemainingTimes
-    {
-        get => _remainingTimes;
-        set
-        {
-            _remainingTimes = value;
-            OnPropertyChanged(nameof(RemainingTimes));
-        }
-    }
-
     public PendingControlViewModel()
     {
         IDao dao = App.GetService<IDao>();
         PendingInvoices = dao.GetPendingOrders();
 
-        _timer = new DispatcherTimer();
-        _timer.Interval = TimeSpan.FromSeconds(1);
-        _timer.Tick += Timer_Tick;
-        _timer.Start();
     }
 
-    private void Timer_Tick(object sender, object e)
-    {
-        foreach (var invoice in PendingInvoices)
-        {
-            if (invoice.EstimateTime.HasValue)
-            {
-                // Update the dictionary with the new RemainingTime
-                RemainingTimes[invoice.InvoiceNumber] = invoice.RemainingTime;
-            }
-         }
-
-        // Notify UI to update RemainingTime bindings
-        OnPropertyChanged(nameof(RemainingTimes));
-    }
 
     private void PendingInvoices_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
     {

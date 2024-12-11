@@ -10,10 +10,17 @@ using Microsoft.UI.Xaml;
 using App.Model;
 
 namespace App.Services.Payment;
-public class VNPayPayment
+public class VNPayPayment:IPaymentMethod
 {
+    public async Task<bool> ProcessPayment(Invoice invoice)
+    {
+        ContentDialog checkoutDia = await ShowVNPayQRCode(invoice);
+        checkoutDia.XamlRoot = App.MainWindow.Content.XamlRoot;
+        var dialogResult = await checkoutDia.ShowAsync();
+        return dialogResult == ContentDialogResult.Primary;
+    }
 
-     public static async Task<ContentDialog> ShowVNPayQRCode(Invoice invoice)
+    public static async Task<ContentDialog> ShowVNPayQRCode(Invoice invoice)
     {
         DotNetEnv.Env.Load(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\..\..\App\.env"));
 

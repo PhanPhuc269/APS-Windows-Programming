@@ -10,13 +10,23 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace App;
 
-public class VietQRPayment
+public class VietQRPayment:IPaymentMethod
 {
     private readonly string _bankId = "MB"; // ID ngân hàng
     private readonly string _accountNo = "0398103087"; // Số tài khoản
     private readonly string _accountName = "HUYNH MAN"; // Tên chủ tài khoản
     private readonly string _template = "full"; // Template QR (có thể thay đổi)
     private bool _isSuccess = false;
+
+    public async Task<bool> ProcessPayment(Invoice invoice)
+    {
+        var token = GenerateUniqueID.GenerateUniqueOrderID();
+        var qrUrl = GenerateVietQR(invoice, token);
+        ContentDialog checkoutDia = await OpenDialog.OpenPaymentWebViewDialog(qrUrl,true);
+        checkoutDia.XamlRoot = App.MainWindow.Content.XamlRoot;
+        var dialogResult = await checkoutDia.ShowAsync();
+        return dialogResult == ContentDialogResult.Primary;
+    }
 
     // Tạo mã QR thanh toán VietQR
 

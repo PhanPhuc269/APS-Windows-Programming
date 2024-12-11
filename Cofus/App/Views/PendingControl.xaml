@@ -66,8 +66,8 @@
                                 <TextBlock Text="{x:Bind TotalQuantity}" FontSize="14" Grid.Column="1" Grid.Row="2" Margin="10,5,0,0"/>
 
                                 <TextBlock Text="Thời gian còn lại:" FontSize="14" Foreground="White" VerticalAlignment="Center" Grid.Column="0" Grid.Row="3" Margin="0,5,0,0"/>
-                                <TextBlock Text="{Binding DataContext[InvoiceNumber], ElementName=PendingOrdersListView, Mode=OneWay}" FontSize="14" Grid.Column="1" Grid.Row="3" Margin="5,5,0,0"/>
-                              
+                                <TextBlock Tag="{x:Bind InvoiceNumber}"  Text="{x:Bind RemainingTime, Mode=OneWay}" FontSize="14" Grid.Column="1" Grid.Row="3" Margin="5,5,0,0"/>
+
                             </Grid>
 
                             <!-- Danh sách sản phẩm -->
@@ -77,7 +77,7 @@
                                         <ListView.Header>
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="3*"/>
+                                                    <ColumnDefinition Width="2*"/>
                                                     <ColumnDefinition Width="1*"/>
                                                     <ColumnDefinition Width="2*"/>
                                                     <ColumnDefinition Width="2*"/>
@@ -94,7 +94,7 @@
                                             <DataTemplate x:DataType="model:InvoiceItem">
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="3*"/>
+                                                        <ColumnDefinition Width="2*"/>
                                                         <ColumnDefinition Width="1*"/>
                                                         <ColumnDefinition Width="2*"/>
                                                         <ColumnDefinition Width="2*"/>
@@ -103,7 +103,7 @@
                                                     <TextBlock Grid.Column="0" Text="{x:Bind Name}" FontSize="14" Margin="3,0,0,0"/>
                                                     <TextBlock Grid.Column="1" Text="{x:Bind Quantity}" FontSize="14" HorizontalAlignment="Center"/>
                                                     <TextBlock Grid.Column="2" Text="{x:Bind Size}" FontSize="14" HorizontalAlignment="Center"/>
-                                                    <TextBlock Grid.Column="3" Text="{x:Bind Note}" FontSize="14" HorizontalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="3" Text="{x:Bind Note}" FontSize="14" HorizontalAlignment="Center" TextWrapping="Wrap"/>
                                                 </Grid>
                                             </DataTemplate>
                                         </ListView.ItemTemplate>
@@ -112,18 +112,20 @@
                             </Grid>
 
                             <!-- Nút hoàn tất -->
-                            <Button Content="Hoàn tất"
-                                        Grid.Column="2"
-                                        Width="80"
-                                        Height="40"
-                                        Background="{StaticResource PrimaryColor}"
-                                        Foreground="White"
-                                        CornerRadius="20"
-                                        FontWeight="Bold"
-                                        FontSize="13"
-                                        VerticalAlignment="Center"
-                                        Click="CompleteOrderButton_Click"
-                                        Style="{StaticResource ButtonRevealStyle}"/>
+                            <Button Grid.Column="2"
+                                Background="{StaticResource PrimaryColor}"
+                                Foreground="White"
+                                FontWeight="Bold"
+                                FontSize="13"
+                                Padding="0"
+                                Margin="0,0,5,0"
+                                VerticalAlignment="Center"
+                                Click="CompleteOrderButton_Click"
+                                Style="{StaticResource ButtonRevealStyle}">
+                                <StackPanel Orientation="Horizontal">
+                                    <FontIcon Glyph="&#xF16C;" FontSize="16"/>
+                                </StackPanel>
+                            </Button>
                         </Grid>
                     </Border>
                 </DataTemplate>
@@ -131,18 +133,3 @@
         </ListView>
     </StackPanel>
 </UserControl>
-<!--<Grid Padding="10" Margin="0,0,0,10" Background="White" CornerRadius="8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel>
-                            <TextBlock Text="{x:Bind InvoiceNumber}" FontSize="18" FontWeight="SemiBold"/>
-                            <TextBlock Text="{x:Bind TableNumber}" FontSize="18" FontWeight="SemiBold"/>
-                            --><!--<TextBlock Text="Quantity: {x:Bind Quantity}" FontSize="14" Foreground="White"/>--><!--
-                        </StackPanel>
-                        <Button Content="Complete"
-                                Grid.Column="1"
-                                VerticalAlignment="Center"
-                                Click="CompleteOrderButton_Click"/>
-                    </Grid>-->

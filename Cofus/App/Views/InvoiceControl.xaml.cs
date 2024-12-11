@@ -130,147 +130,149 @@ public sealed partial class InvoiceControl : UserControl
             try
             {
                 bool isPaid=false;
-                ContentDialog checkoutDia;
-                if (paymentMethod== "MoMo")
-                {
-                    checkoutDia = await MoMoPayment.ShowMoMoQRCode(ViewModel.Invoice);
-                    checkoutDia.XamlRoot = this.XamlRoot;
-                    var dialogResult = ContentDialogResult.None;
-                    dialogResult = await checkoutDia.ShowAsync();
-                    if (dialogResult == ContentDialogResult.Primary)
-                    {
-                        isPaid = true;
-                    }
-                    else
-                    {
-                        isPaid = false;
-                    }
-                }
-                if (paymentMethod == "VNPay")
-                {
-                    checkoutDia = await VNPayPayment.ShowVNPayQRCode(ViewModel.Invoice);
-                    checkoutDia.XamlRoot=this.XamlRoot;
-                    var dialogResult = ContentDialogResult.None;
-                    dialogResult = await checkoutDia.ShowAsync();
-                    if (dialogResult == ContentDialogResult.Primary)
-                    {
-                        isPaid = true;
-                    }
-                    else
-                    {
-                        isPaid = false;
-                    }
-                }
-                if (paymentMethod == "VietQR")
-                {
-                    VietQRPayment vietQRPayment = new VietQRPayment();
-                    var token = GenerateUniqueOrderId(); // Tạo mã đơn hàng duy nhất
-                    var qrUrl = vietQRPayment.GenerateVietQR(ViewModel.Invoice, token); // Tạo URL mã QR
-                    
-                    // Hiển thị ContentDialog chứa mã QR
-                    checkoutDia = await OpenPaymentWebViewDialog(qrUrl, true);
+                IPaymentMethod paymentMethodInstance = PaymentFactory.CreatePaymentMethod(paymentMethod);
+                isPaid = await paymentMethodInstance.ProcessPayment(ViewModel.Invoice);
+                //ContentDialog checkoutDia;
+                //if (paymentMethod== "MoMo")
+                //{
+                //    checkoutDia = await MoMoPayment.ShowMoMoQRCode(ViewModel.Invoice);
+                //    checkoutDia.XamlRoot = this.XamlRoot;
+                //    var dialogResult = ContentDialogResult.None;
+                //    dialogResult = await checkoutDia.ShowAsync();
+                //    if (dialogResult == ContentDialogResult.Primary)
+                //    {
+                //        isPaid = true;
+                //    }
+                //    else
+                //    {
+                //        isPaid = false;
+                //    }
+                //}
+                //if (paymentMethod == "VNPay")
+                //{
+                //    checkoutDia = await VNPayPayment.ShowVNPayQRCode(ViewModel.Invoice);
+                //    checkoutDia.XamlRoot=this.XamlRoot;
+                //    var dialogResult = ContentDialogResult.None;
+                //    dialogResult = await checkoutDia.ShowAsync();
+                //    if (dialogResult == ContentDialogResult.Primary)
+                //    {
+                //        isPaid = true;
+                //    }
+                //    else
+                //    {
+                //        isPaid = false;
+                //    }
+                //}
+                //if (paymentMethod == "VietQR")
+                //{
+                //    VietQRPayment vietQRPayment = new VietQRPayment();
+                //    var token = GenerateUniqueOrderId(); // Tạo mã đơn hàng duy nhất
+                //    var qrUrl = vietQRPayment.GenerateVietQR(ViewModel.Invoice, token); // Tạo URL mã QR
 
-                    // Mở dialog (đối với WebView hoặc bất kỳ cách nào hiển thị mã QR)
-                    var dialogTask = checkoutDia.ShowAsync(); // Chờ dialog hiển thị
+                //    // Hiển thị ContentDialog chứa mã QR
+                //    checkoutDia = await OpenPaymentWebViewDialog(qrUrl, true);
 
-                    // Kiểm tra trạng thái thanh toán bất đồng bộ
-                    isPaid = await vietQRPayment.WaitForPaymentAsync(ViewModel.Invoice, token);
+                //    // Mở dialog (đối với WebView hoặc bất kỳ cách nào hiển thị mã QR)
+                //    var dialogTask = checkoutDia.ShowAsync(); // Chờ dialog hiển thị
 
-                    // Kiểm tra nếu thanh toán đã thành công, và nếu thành công, đóng dialog
-                    if (isPaid)
-                    {
-                        checkoutDia.Hide(); // Đóng dialog khi thanh toán thành công
-                    }
-                    await dialogTask;
+                //    // Kiểm tra trạng thái thanh toán bất đồng bộ
+                //    isPaid = await vietQRPayment.WaitForPaymentAsync(ViewModel.Invoice, token);
 
-                }
-                if (paymentMethod == "Cash")
-                {
-                    // Create a dialog to input the received amount
-                    // Tạo một tham chiếu đến TextBox
-                    TextBox receivedAmountTextBox = new TextBox { PlaceholderText = "Amount" };
+                //    // Kiểm tra nếu thanh toán đã thành công, và nếu thành công, đóng dialog
+                //    if (isPaid)
+                //    {
+                //        checkoutDia.Hide(); // Đóng dialog khi thanh toán thành công
+                //    }
+                //    await dialogTask;
 
-                    ContentDialog cashDialog = new ContentDialog
-                    {
-                        Title = "Cash Payment",
-                        Content = new StackPanel
-                        {
-                            Children =
-                            {
-                                new TextBlock { Text = "Enter the amount received:" },
-                                receivedAmountTextBox // Thêm TextBox trực tiếp vào đây
-                            }
-                        },
-                        PrimaryButtonText = "Confirm",
-                        CloseButtonText = "Cancel",
-                        XamlRoot = this.XamlRoot
-                    };
+                //}
+                //if (paymentMethod == "Cash")
+                //{
+                //    // Create a dialog to input the received amount
+                //    // Tạo một tham chiếu đến TextBox
+                //    TextBox receivedAmountTextBox = new TextBox { PlaceholderText = "Amount" };
 
-                    var dialogResult = await cashDialog.ShowAsync();
+                //    ContentDialog cashDialog = new ContentDialog
+                //    {
+                //        Title = "Cash Payment",
+                //        Content = new StackPanel
+                //        {
+                //            Children =
+                //            {
+                //                new TextBlock { Text = "Enter the amount received:" },
+                //                receivedAmountTextBox // Thêm TextBox trực tiếp vào đây
+                //            }
+                //        },
+                //        PrimaryButtonText = "Confirm",
+                //        CloseButtonText = "Cancel",
+                //        XamlRoot = this.XamlRoot
+                //    };
 
-                    if (dialogResult == ContentDialogResult.Primary)
-                    {
-                        // Truy cập giá trị trực tiếp từ TextBox
-                        if (decimal.TryParse(receivedAmountTextBox.Text, out decimal receivedAmount))
-                        {
-                            decimal totalAmount = ViewModel.Invoice.TotalPrice;
-                            decimal change = receivedAmount - totalAmount;
+                //    var dialogResult = await cashDialog.ShowAsync();
 
-                            if (change >= 0)
-                            {
-                                // Đánh dấu hóa đơn là đã thanh toán
-                                ViewModel.Invoice.MarkAsPaid();
+                //    if (dialogResult == ContentDialogResult.Primary)
+                //    {
+                //        // Truy cập giá trị trực tiếp từ TextBox
+                //        if (decimal.TryParse(receivedAmountTextBox.Text, out decimal receivedAmount))
+                //        {
+                //            decimal totalAmount = ViewModel.Invoice.TotalPrice;
+                //            decimal change = receivedAmount - totalAmount;
 
-                                // Hiển thị thông báo thành công
-                                ContentDialog successDialog = new ContentDialog
-                                {
-                                    Title = "Payment Successful",
-                                    Content = $"Payment received. Change: {change:C}",
-                                    CloseButtonText = "OK",
-                                    XamlRoot = this.XamlRoot
-                                };
+                //            if (change >= 0)
+                //            {
+                //                // Đánh dấu hóa đơn là đã thanh toán
+                //                ViewModel.Invoice.MarkAsPaid();
 
-                                
-                                var dr = ContentDialogResult.None;
-                                dr = await successDialog.ShowAsync();
-                                if (dialogResult == ContentDialogResult.Primary)
-                                {
-                                    isPaid = true;
-                                }
-                                else
-                                {
-                                    isPaid = false;
-                                }
-                            }
-                            else
-                            {
-                                // Hiển thị lỗi nếu số tiền không đủ
-                                ContentDialog errorDialog = new ContentDialog
-                                {
-                                    Title = "Insufficient Amount",
-                                    Content = "The received amount is less than the total amount.",
-                                    CloseButtonText = "OK",
-                                    XamlRoot = this.XamlRoot
-                                };
+                //                // Hiển thị thông báo thành công
+                //                ContentDialog successDialog = new ContentDialog
+                //                {
+                //                    Title = "Payment Successful",
+                //                    Content = $"Payment received. Change: {change:C}",
+                //                    CloseButtonText = "OK",
+                //                    XamlRoot = this.XamlRoot
+                //                };
 
-                                await errorDialog.ShowAsync();
-                            }
-                        }
-                        else
-                        {
-                            // Hiển thị lỗi nếu nhập không hợp lệ
-                            ContentDialog errorDialog = new ContentDialog
-                            {
-                                Title = "Invalid Input",
-                                Content = "Please enter a valid amount.",
-                                CloseButtonText = "OK",
-                                XamlRoot = this.XamlRoot
-                            };
 
-                            await errorDialog.ShowAsync();
-                        }
-                    }
-                }
+                //                var dr = ContentDialogResult.None;
+                //                dr = await successDialog.ShowAsync();
+                //                if (dialogResult == ContentDialogResult.Primary)
+                //                {
+                //                    isPaid = true;
+                //                }
+                //                else
+                //                {
+                //                    isPaid = false;
+                //                }
+                //            }
+                //            else
+                //            {
+                //                // Hiển thị lỗi nếu số tiền không đủ
+                //                ContentDialog errorDialog = new ContentDialog
+                //                {
+                //                    Title = "Insufficient Amount",
+                //                    Content = "The received amount is less than the total amount.",
+                //                    CloseButtonText = "OK",
+                //                    XamlRoot = this.XamlRoot
+                //                };
+
+                //                await errorDialog.ShowAsync();
+                //            }
+                //        }
+                //        else
+                //        {
+                //            // Hiển thị lỗi nếu nhập không hợp lệ
+                //            ContentDialog errorDialog = new ContentDialog
+                //            {
+                //                Title = "Invalid Input",
+                //                Content = "Please enter a valid amount.",
+                //                CloseButtonText = "OK",
+                //                XamlRoot = this.XamlRoot
+                //            };
+
+                //            await errorDialog.ShowAsync();
+                //        }
+                //    }
+                //}
 
                 var isSuccess = false;
                 if (isPaid == true)

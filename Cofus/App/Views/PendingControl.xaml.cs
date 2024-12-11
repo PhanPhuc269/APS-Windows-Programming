@@ -27,14 +27,70 @@ public sealed partial class PendingControl : UserControl
     {
         this.InitializeComponent();
         ViewModel = new PendingControlViewModel();
-        PendingOrdersListView.DataContext = ViewModel.RemainingTimes;
+        this.DataContext = ViewModel;
+
+        // Initialize and start a timer for updating RemainingTimes
+        _timer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(1)
+        };
+        _timer.Tick += Timer_Tick;
+        _timer.Start();
     }
 
     private void CompleteOrderButton_Click(object sender, RoutedEventArgs e)
     {
-        // Handle the completion of the order
         var button = sender as Button;
         var order = button.DataContext as Invoice;
         ViewModel.CompleteOrder(order);
+    }
+
+    private DispatcherTimer _timer;
+
+    private void Timer_Tick(object sender, object e)
+    {
+        foreach (var invoice in ViewModel.PendingInvoices)
+        {
+            var container = PendingOrdersListView.ContainerFromItem(invoice) as ListViewItem;
+            if (container != null)
+            {
+                var textBlock = FindTextBlockByTag(container, invoice.InvoiceNumber);
+                if (textBlock != null)
+                {
+                    textBlock.Text = invoice.RemainingTime;
+                }
+            }
+        }
+    }
+
+    private TextBlock FindTextBlockByTag(DependencyObject parent, int tag)
+    {
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+
+            if (child is TextBlock textBlock && textBlock.Tag is int textBlockTag && textBlockTag == tag)
+            {
+                return textBlock;
+            }
+
+            var foundChild = FindTextBlockByTag(child, tag);
+            if (foundChild != null)
+            {
+                return foundChild;
+            }
+        }
+
+        return null;
+    }
+
+    // Stop the timer when the control is unloaded
+    private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+    {
+        if (_timer != null)
+        {
+            _timer.Stop();
+            _timer.Tick -= Timer_Tick;
+        }
     }
 }
