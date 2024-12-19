@@ -1,4 +1,6 @@
-﻿using App.ViewModels;
+﻿using App.Model;
+using System.Collections.ObjectModel;
+using App.ViewModels;
 
 using Microsoft.UI.Xaml.Controls;
 
@@ -10,10 +12,5 @@ public sealed partial class EmployeeShiftPage : Page
     {
         get;
     }
-
-    public EmployeeShiftPage()
-    {
-        ViewModel = App.GetService<EmployeeShiftViewModel>();
-        InitializeComponent();
-    }
+   
 }

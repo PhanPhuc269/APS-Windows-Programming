@@ -56,4 +56,7 @@ public interface IDao
     User GetUserByUsername(string username);
     bool AddUser(User user);
     List<HistoryOrder> GetBeveragesPurchasedByCustomer(string phoneNumber);
+
+    //Quản lý ca làm việc
+    List<ShiftAttendance> GetShiftAttendances(DateTime startDate, DateTime endDate);
 }

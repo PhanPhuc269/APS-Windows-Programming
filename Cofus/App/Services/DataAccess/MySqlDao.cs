@@ -1168,5 +1168,59 @@ public class MySqlDao : IDao
             AccessLevel = Convert.ToInt32(row["AccessLevel"])
         };
     }
+
+    public List<ShiftAttendance> GetShiftAttendances(DateTime startDate, DateTime endDate)
+    {
+        var shiftAttendances = new List<ShiftAttendance>();
+
+        string query = @"
+        SELECT sa.ID, sa.EMPLOYEE_ID, a.EMP_NAME, sa.SHIFT_DATE, sa.MORNING_SHIFT, sa.AFTERNOON_SHIFT, sa.NOTE, sa.CREATED_AT, sa.UPDATED_AT
+        FROM SHIFT_ATTENDANCE sa
+        JOIN ACCOUNT a ON sa.EMPLOYEE_ID = a.EMPLOYEE_ID
+        WHERE sa.SHIFT_DATE BETWEEN @StartDate AND @EndDate";
+
+        var parameters = new List<MySqlParameter>
+        {
+            new ("@StartDate", startDate),
+            new ("@EndDate", endDate)
+        };
+
+        var result = ExecuteSelectQuery(query, parameters);
+
+        var shiftAttendanceDict = new Dictionary<int, ShiftAttendance>();
+
+        foreach (var row in result)
+        {
+            int id = Convert.ToInt32(row["ID"]);
+            if (!shiftAttendanceDict.ContainsKey(id))
+            {
+                var shiftAttendance = new ShiftAttendance
+                {
+                    Id = id,
+                    EmployeeId = Convert.ToInt32(row["EMPLOYEE_ID"]),
+                    Name = row["EMP_NAME"].ToString(),
+                    Shifts = new FullObservableCollection<Shift>()
+                };
+                shiftAttendanceDict[id] = shiftAttendance;
+            }
+
+            var shift = new Shift
+            {
+                ShiftDate = Convert.ToDateTime(row["SHIFT_DATE"]),
+                MorningShift = Convert.ToBoolean(row["MORNING_SHIFT"]),
+                AfternoonShift = Convert.ToBoolean(row["AFTERNOON_SHIFT"]),
+                Note = row["NOTE"].ToString(),
+                CreatedAt = Convert.ToDateTime(row["CREATED_AT"]),
+                UpdatedAt = Convert.ToDateTime(row["UPDATED_AT"])
+            };
+
+            shiftAttendanceDict[id].Shifts.Add(shift);
+        }
+
+        shiftAttendances.AddRange(shiftAttendanceDict.Values);
+
+        return shiftAttendances;
+    }
+
 }
 
