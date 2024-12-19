@@ -1,0 +1,88 @@
+﻿<Page
+    x:Class="App.Views.EmployeeShiftPage"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:AttendanceApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid>
+        <!-- Thanh điều hướng bên trái -->
+        <NavigationView PaneDisplayMode="Left" IsPaneOpen="False">
+            <NavigationView.MenuItems>
+                <NavigationViewItem Content="Báo cáo" Icon="Report" />
+                <NavigationViewItem Content="Chấm công" Icon="Calendar" />
+            </NavigationView.MenuItems>
+
+            <!-- Nội dung chính -->
+            <ScrollViewer>
+                <StackPanel Margin="20">
+                    <!-- Tiêu đề và bộ lọc -->
+                    <TextBlock Text="Chấm công nhân viên" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ComboBox Header="Thời gian" SelectedIndex="0">
+                            <ComboBoxItem Content="Tuần này" />
+                            <ComboBoxItem Content="Tháng này" />
+                        </ComboBox>
+                        <Button Grid.Column="1" Content="Xem báo cáo" Margin="10,0,0,0"/>
+                    </Grid>
+
+                    <!-- Bảng chấm công -->
+                    <Grid Margin="0,20,0,0" BorderBrush="Gray" BorderThickness="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="200" /> <!-- Cột nhân viên -->
+                            <ColumnDefinition Width="*" /> <!-- Các ngày -->
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Hàng tiêu đề -->
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Nhân viên" FontWeight="Bold" Grid.Column="0" Padding="10" />
+                        <TextBlock Text="19/06" FontWeight="Bold" Grid.Column="1" Padding="10" />
+                        <TextBlock Text="20/06" FontWeight="Bold" Grid.Column="2" Padding="10" />
+                        <!-- Thêm các tiêu đề ngày khác -->
+
+                        <!-- Dữ liệu nhân viên -->
+                        <ItemsControl Grid.Row="1" Grid.ColumnSpan="8" ItemsSource="{Binding EmployeeData}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,5,0,5" BorderBrush="LightGray" BorderThickness="1">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="200" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <!-- Cột ngày -->
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Tên nhân viên -->
+                                        <TextBlock Text="{Binding Name}" Grid.Column="0" Padding="10" VerticalAlignment="Center"/>
+
+                                        <!-- Ca sáng -->
+                                        <ToggleButton Grid.Column="1" Content="{Binding MorningShift}" IsChecked="{Binding MorningChecked}" Background="LightBlue" Padding="5" Margin="5"/>
+                                        <!-- Ca chiều -->
+                                        <ToggleButton Grid.Column="2" Content="{Binding AfternoonShift}" IsChecked="{Binding AfternoonChecked}" Background="LightYellow" Padding="5" Margin="5"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+
+                    <!-- Nút xuất báo cáo -->
+                    <Button Content="Xuất báo cáo" HorizontalAlignment="Right" Margin="0,20,0,0"/>
+                </StackPanel>
+            </ScrollViewer>
+        </NavigationView>
+    </Grid>
+</Page>

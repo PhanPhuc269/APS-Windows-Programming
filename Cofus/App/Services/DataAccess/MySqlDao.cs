@@ -333,6 +333,55 @@ public class MySqlDao : IDao
 
         return orders;
     }
+    public List<HistoryOrder> GetBeveragesPurchasedByCustomer(string phoneNumber)
+    {
+        var query = @"
+        SELECT 
+            B.ID,
+            B.BEVERAGE_NAME,
+            B.IMAGE_PATH,
+            B.CATEGORY_ID,
+            OD.QUANTITY,
+            O.ORDER_TIME
+        FROM 
+            CUSTOMERS C
+        JOIN 
+            ORDERS O ON C.CUSTOMER_ID = O.CUSTOMER_ID
+        JOIN 
+            ORDER_DETAILS OD ON O.ORDER_ID = OD.ORDER_ID
+        JOIN 
+            BEVERAGE B ON OD.BEVERAGE_SIZE_ID = B.ID
+        WHERE 
+            C.PHONE_NUMBER = @phoneNumber
+        ORDER BY 
+            O.ORDER_TIME DESC;";
+
+        var parameters = new List<MySqlParameter>
+        {
+            new ("@phoneNumber", phoneNumber)
+        };
+
+        var result = ExecuteSelectQuery(query, parameters);
+
+        var products = new List<HistoryOrder>();
+
+        foreach (var row in result)
+        {
+            products.Add(new HistoryOrder
+            {
+                Id = Convert.ToInt32(row["ID"]),
+                Name = row["BEVERAGE_NAME"].ToString(),
+                Image = row["IMAGE_PATH"]?.ToString(),
+                TypeBeverageId = Convert.ToInt32(row["CATEGORY_ID"]),
+                Quantity = Convert.ToInt32(row["QUANTITY"]),
+                OrderTime = Convert.ToDateTime(row["ORDER_TIME"])
+            });
+        }
+
+        // Chuyển danh sách products thành JSON
+        return products;
+    }
+
 
     public async Task<object> ExecuteScalarAsync(string query, List<MySqlParameter> parameters)
     {

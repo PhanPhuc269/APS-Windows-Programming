@@ -150,4 +150,7 @@
   <data name="Shell_TimeKeeping.Content" xml:space="preserve">
     <value>TimeKeeping</value>
   </data>
+  <data name="Shell_EmployeeShift.Content" xml:space="preserve">
+    <value>EmployeeShift</value>
+  </data>
 </root>
