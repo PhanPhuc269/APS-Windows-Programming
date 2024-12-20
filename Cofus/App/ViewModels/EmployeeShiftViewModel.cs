@@ -21,6 +21,15 @@ public partial class EmployeeShiftViewModel : ObservableRecipient
     // Giờ bắt đầu ca chiều (VD: 13:00 chiều)
     private readonly TimeSpan AfternoonShiftStartTime = new TimeSpan(13, 0, 0);
 
+    // Các thuộc tính ngày trong tuần
+    public string Day1 { get; private set; }
+    public string Day2 { get; private set; }
+    public string Day3 { get; private set; }
+    public string Day4 { get; private set; }
+    public string Day5 { get; private set; }
+    public string Day6 { get; private set; }
+    public string Day7 { get; private set; }
+
     public EmployeeShiftViewModel()
     {
         ShiftAttendances = new ObservableCollection<ShiftAttendance>();
@@ -38,6 +47,26 @@ public partial class EmployeeShiftViewModel : ObservableRecipient
         int delta = DayOfWeek.Monday - referenceDate.DayOfWeek;
         CurrentWeekStartDate = referenceDate.AddDays(delta);
         CurrentWeekEndDate = CurrentWeekStartDate.AddDays(6);
+        UpdateDays();
+    }
+
+    // Cập nhật các thuộc tính ngày trong tuần
+    private void UpdateDays()
+    {
+        Day1 = CurrentWeekStartDate.ToString("ddd dd/MM");
+        Day2 = CurrentWeekStartDate.AddDays(1).ToString("ddd dd/MM");
+        Day3 = CurrentWeekStartDate.AddDays(2).ToString("ddd dd/MM");
+        Day4 = CurrentWeekStartDate.AddDays(3).ToString("ddd dd/MM");
+        Day5 = CurrentWeekStartDate.AddDays(4).ToString("ddd dd/MM");
+        Day6 = CurrentWeekStartDate.AddDays(5).ToString("ddd dd/MM");
+        Day7 = CurrentWeekStartDate.AddDays(6).ToString("ddd dd/MM");
+        OnPropertyChanged(nameof(Day1));
+        OnPropertyChanged(nameof(Day2));
+        OnPropertyChanged(nameof(Day3));
+        OnPropertyChanged(nameof(Day4));
+        OnPropertyChanged(nameof(Day5));
+        OnPropertyChanged(nameof(Day6));
+        OnPropertyChanged(nameof(Day7));
     }
 
     // Tải dữ liệu chấm công

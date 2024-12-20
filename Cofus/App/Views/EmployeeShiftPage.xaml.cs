@@ -12,5 +12,10 @@ public sealed partial class EmployeeShiftPage : Page
     {
         get;
     }
-   
+    public EmployeeShiftPage()
+    {
+        this.InitializeComponent();
+        ViewModel = new EmployeeShiftViewModel();
+    }
+
 }
