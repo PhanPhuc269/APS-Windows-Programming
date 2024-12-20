@@ -15,5 +15,21 @@ public class Shift : INotifyPropertyChanged
     public DateTime CreatedAt { get; set; } // Ngày tạo bản ghi
     public DateTime UpdatedAt { get; set; } // Ngày cập nhật bản ghi
 
+    // Trạng thái enable của nút
+    public bool IsMorningEnabled
+    {
+        get; set;
+    }
+    public bool IsAfternoonEnabled
+    {
+        get; set;
+    }
+
+    // Cột tương ứng
+    public int ColumnIndex
+    {
+        get; set;
+    }
+
     public event PropertyChangedEventHandler PropertyChanged;
 }

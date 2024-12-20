@@ -6,8 +6,12 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local="using:App.ViewModels"
     xmlns:model="using:App.Model"
+    xmlns:conv="using:App.Converters"
     mc:Ignorable="d">
 
+    <UserControl.Resources>
+        <conv:BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </UserControl.Resources>
 	<Grid x:Name="ContentArea">
 		<!-- Giao diện chính -->
 		<ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -23,7 +27,7 @@
 						<ComboBoxItem Content="Tuần này" />
 						<ComboBoxItem Content="Tháng này" />
 					</ComboBox>
-					<Button Content="Xem báo cáo" Grid.Column="1" Margin="10,0,0,0" />
+					<Button Content="Chấm công" Click="OnShiftClick" Foreground="Orange" Grid.Column="1" Margin="10,0,0,0" />
 				</Grid>
 
 				<!-- Bảng chấm công -->
@@ -69,12 +73,6 @@
 										<ColumnDefinition Width="150" />
 										<!-- Ngày T2 -->
 										<ColumnDefinition Width="*" />
-										<ColumnDefinition Width="*" />
-										<ColumnDefinition Width="*" />
-										<ColumnDefinition Width="*" />
-										<ColumnDefinition Width="*" />
-										<ColumnDefinition Width="*" />
-										<ColumnDefinition Width="*" />
 										<!-- Ngày CN -->
 									</Grid.ColumnDefinitions>
 
@@ -85,22 +83,41 @@
 									<ItemsControl Grid.Column="1" ItemsSource="{x:Bind Shifts}">
 										<ItemsControl.ItemTemplate>
 											<DataTemplate x:DataType="model:Shift">
-												<StackPanel Margin="5">
-													<ToggleButton IsChecked="{x:Bind MorningShift}" Background="LightBlue" Foreground="Black" Margin="0,2,0,2">
-														<TextBlock TextAlignment="Center">
-															<Run Text="Ca sáng"/>
-															<LineBreak/>
-															<Run Text="07:01 - 11:27"/>
-														</TextBlock>
-													</ToggleButton>
-													<ToggleButton IsChecked="{x:Bind AfternoonShift}" Background="LightYellow" Foreground="Black" Margin="0,2,0,2">
-														<TextBlock TextAlignment="Center">
-															<Run Text="Ca chiều"/>
-															<LineBreak/>
-															<Run Text="13:00 - 17:55"/>
-														</TextBlock>
-													</ToggleButton>
-												</StackPanel>
+												<Grid>
+													<Grid.ColumnDefinitions>
+														<ColumnDefinition Width="*" />
+														<ColumnDefinition Width="*" />
+														<ColumnDefinition Width="*" />
+														<ColumnDefinition Width="*" />
+														<ColumnDefinition Width="*" />
+														<ColumnDefinition Width="*" />
+														<ColumnDefinition Width="*" />
+													</Grid.ColumnDefinitions>
+
+													<StackPanel Grid.Column="{x:Bind ColumnIndex}" Margin="5">
+														<!-- Ca sáng -->
+														<ToggleButton IsChecked="{x:Bind MorningShift}"
+																	  IsHitTestVisible="{x:Bind IsMorningEnabled}"
+																	  Background="LightBlue" Foreground="Black" Margin="0,2,0,2">															<TextBlock TextAlignment="Center">
+																<Run Text="Ca sáng"/>
+																<LineBreak/>
+																<Run Text="07:01 - 11:27"/>
+															</TextBlock>
+														</ToggleButton>
+
+														<!-- Ca chiều -->
+														<ToggleButton IsChecked="{x:Bind AfternoonShift}"
+																	  IsHitTestVisible="{x:Bind IsAfternoonEnabled}"
+																	  Background="LightYellow" Foreground="Black" Margin="0,2,0,2">
+															<TextBlock TextAlignment="Center">
+																<Run Text="Ca chiều"/>
+																<LineBreak/>
+																<Run Text="13:00 - 17:55"/>
+															</TextBlock>
+														</ToggleButton>
+													</StackPanel>
+												</Grid>
+												
 											</DataTemplate>
 										</ItemsControl.ItemTemplate>
 									</ItemsControl>
@@ -114,5 +131,28 @@
 				<Button Content="Xuất báo cáo" HorizontalAlignment="Right" Margin="0,20,0,0" />
 			</StackPanel>
 		</ScrollViewer>
+		<ContentDialog
+			x:Name="CheckInDialog"
+			Title="Chấm công"
+			PrimaryButtonText="Xác nhận"
+			SecondaryButtonText="Hủy"
+			PrimaryButtonClick="OnCheckInDialogConfirm"
+			SecondaryButtonClick="OnCheckInDialogCancel"
+			CloseButtonText="Đóng">
+
+			<StackPanel>
+				<TextBlock Text="Nhập mã nhân viên và mã xác thực:" FontWeight="Bold" Margin="0,0,0,10"/>
+        
+				<!-- Mã nhân viên -->
+				<TextBox x:Name="EmployeeCodeTextBox" Header="Mã nhân viên" PlaceholderText="Nhập mã nhân viên" Margin="0,10,0,10"/>
+
+				<!-- Mã xác thực -->
+				<PasswordBox x:Name="AuthCodePasswordBox" Header="Mã xác thực" PlaceholderText="Nhập mã xác thực" Margin="0,10,0,10"/>
+
+				<!-- Hiển thị thông tin ca làm việc -->
+				<TextBlock Text="Thông tin chấm công:" FontWeight="Bold" Margin="0,20,0,10"/>
+				<TextBlock x:Name="ShiftInfoTextBlock" Text="Ngày: --/--/----, Ca: --, Giờ: --:--" Foreground="Gray"/>
+			</StackPanel>
+		</ContentDialog>
 	</Grid>
 </Page>

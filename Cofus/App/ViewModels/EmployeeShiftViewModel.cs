@@ -72,12 +72,33 @@ public partial class EmployeeShiftViewModel : ObservableRecipient
     // Tải dữ liệu chấm công
     private void LoadShiftAttendance()
     {
-        var shiftAttendances = App.GetService<IDao>().GetShiftAttendances(CurrentWeekStartDate, CurrentWeekEndDate);
+        var shAttend = App.GetService<IDao>().GetShiftAttendances(CurrentWeekStartDate, CurrentWeekEndDate);
         ShiftAttendances.Clear();
-        foreach (var attendance in shiftAttendances)
+        foreach (var attendance in shAttend)
         {
+            foreach (var shift in attendance.Shifts)
+            {
+                // Tính toán cột hiển thị dựa trên ngày trong tuần
+                shift.ColumnIndex = (shift.ShiftDate - CurrentWeekStartDate).Days;
+
+                shift.IsMorningEnabled = GetShiftEnableState(shift.ShiftDate, MorningShiftStartTime);
+                shift.IsAfternoonEnabled = GetShiftEnableState(shift.ShiftDate, AfternoonShiftStartTime);
+
+            }
             ShiftAttendances.Add(attendance);
         }
+    }
+
+    private bool GetShiftEnableState(DateTime shiftDate, TimeSpan shiftStartTime)
+    {
+        var now = DateTime.Now;
+
+        if (shiftDate.Date < now.Date) return false; // Ngày đã qua
+        if (shiftDate.Date > now.Date) return false; // Ngày tương lai
+
+        // Cho phép trước và sau 15 phút của giờ ca làm việc
+        var shiftStart = shiftDate.Date + shiftStartTime;
+        return now >= shiftStart.AddMinutes(-15) && now <= shiftStart.AddMinutes(15);
     }
 
     // Cập nhật trạng thái chấm công
