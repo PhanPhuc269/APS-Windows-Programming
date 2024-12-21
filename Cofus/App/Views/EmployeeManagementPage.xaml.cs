@@ -158,7 +158,6 @@ public sealed partial class EmployeeManagementPage : Page
                     Content = $"Đã xảy ra lỗi khi xuất file Excel: {ex.Message}",
                     CloseButtonText = "Đóng"
                 };
-                await errorDialog.ShowAsync();
             });
         }
     }
