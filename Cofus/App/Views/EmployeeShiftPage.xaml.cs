@@ -27,6 +27,7 @@ public sealed partial class EmployeeShiftPage : Page
 
         // Hiển thị dialog
         var result = await CheckInDialog.ShowAsync();
+        CheckInDialog.Closing += Dialog_Closing;
 
         if (result == ContentDialogResult.Primary)
         {
@@ -55,20 +56,64 @@ public sealed partial class EmployeeShiftPage : Page
 
     private void ShowError(string message)
     {
-        // Hiển thị thông báo lỗi
-        var dialog = new ContentDialog
-        {
-            Title = "Lỗi",
-            Content = message,
-            CloseButtonText = "Đóng"
-        };
-        _ = dialog.ShowAsync();
+        ShiftInfoError.Text = message;
+        
     }
-    private void OnCheckInDialogConfirm(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+    private async void OnCheckInDialogConfirm(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
-        // Handle the confirm button click event
-    }
+        var now = DateTime.Now;
+        var employeeCode = EmployeeCodeTextBox.Text;
+        var authCode = AuthCodePasswordBox.Password;
 
+        // Kiểm tra mã nhân viên và mã xác thực
+        if (string.IsNullOrEmpty(employeeCode) || string.IsNullOrEmpty(authCode))
+        {
+            ShowError("Vui lòng nhập đầy đủ mã nhân viên và mã xác thực.");
+            return;
+        }
+
+        // Determine if the current time is morning or afternoon
+        bool isAfternoon = now.TimeOfDay >= new TimeSpan(12, 0, 0);
+
+        var shift = new Shift
+        {
+            ShiftDate = now.Date,
+            MorningShift = !isAfternoon,
+            AfternoonShift = isAfternoon,
+        };
+
+        bool success = await App.GetService<IDao>().AddShiftAttendance(shift, int.Parse(employeeCode));
+
+        if (success)
+        {
+            CheckInDialog.Hide();
+            ViewModel.LoadShiftAttendance();
+            
+            // Hiển thị thông báo thành công
+            var dialog = new ContentDialog
+            {
+                Title = "Thành công",
+                Content = "Chấm công thành công.",
+                CloseButtonText = "Đóng",
+                XamlRoot = this.XamlRoot
+            };
+            await dialog.ShowAsync();
+        }
+        else
+        {
+            args.Cancel = true;
+            // Hiển thị thông báo lỗi
+            ShowError("Có lỗi xảy ra khi chấm công.");
+        }
+    }
+    private void Dialog_Closing(ContentDialog sender, ContentDialogClosingEventArgs args)
+    {
+        // Ngăn không cho dialog đóng nếu chưa thỏa mãn điều kiện
+        if (args.Result == ContentDialogResult.Primary &&( string.IsNullOrEmpty(EmployeeCodeTextBox.Text) || string.IsNullOrEmpty(AuthCodePasswordBox.Password)))
+        {
+            args.Cancel = true; // Ngăn đóng dialog
+        }
+    }
     private void OnCheckInDialogCancel(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
         // Handle the cancel button click event

@@ -1,9 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using App.Model;
 using System.Collections.ObjectModel;
+using PropertyChanged;
 
 namespace App.ViewModels;
-
+[AddINotifyPropertyChangedInterface]
 public partial class EmployeeShiftViewModel : ObservableRecipient
 {
     // Danh sách chấm công
@@ -14,6 +15,18 @@ public partial class EmployeeShiftViewModel : ObservableRecipient
 
     // Ngày kết thúc tuần hiện tại
     public DateTime CurrentWeekEndDate { get; private set; }
+
+    private DateTimeOffset? selectedDate;
+    public DateTimeOffset? SelectedDate
+    {
+        get => selectedDate;
+        set
+        {
+            selectedDate = value;
+            OnSelectedDateChanged();
+        }
+    }
+
 
     // Giờ bắt đầu ca sáng (VD: 8:00 sáng)
     private readonly TimeSpan MorningShiftStartTime = new TimeSpan(8, 0, 0);
@@ -35,7 +48,14 @@ public partial class EmployeeShiftViewModel : ObservableRecipient
         ShiftAttendances = new ObservableCollection<ShiftAttendance>();
 
         // Thiết lập tuần hiện tại
-        SetWeek(DateTime.Now);
+        if (SelectedDate.HasValue)
+        {
+            SetWeek(SelectedDate.Value.DateTime);
+        }
+        else
+        {
+            SetWeek(DateTime.Now);
+        }
 
         // Tải dữ liệu chấm công
         LoadShiftAttendance();
@@ -44,8 +64,18 @@ public partial class EmployeeShiftViewModel : ObservableRecipient
     // Thiết lập tuần dựa trên ngày tham chiếu
     public void SetWeek(DateTime referenceDate)
     {
-        int delta = DayOfWeek.Monday - referenceDate.DayOfWeek;
-        CurrentWeekStartDate = referenceDate.AddDays(delta);
+        // Nếu ngày tham chiếu là Chủ nhật, lùi lại 6 ngày để lấy thứ Hai của tuần hiện tại
+        if (referenceDate.DayOfWeek == DayOfWeek.Sunday)
+        {
+            referenceDate = referenceDate.AddDays(-6);
+        }
+        else
+        {
+            int delta = DayOfWeek.Monday - referenceDate.DayOfWeek;
+            referenceDate = referenceDate.AddDays(delta);
+        }
+
+        CurrentWeekStartDate = referenceDate;
         CurrentWeekEndDate = CurrentWeekStartDate.AddDays(6);
         UpdateDays();
     }
@@ -70,7 +100,7 @@ public partial class EmployeeShiftViewModel : ObservableRecipient
     }
 
     // Tải dữ liệu chấm công
-    private void LoadShiftAttendance()
+    public void LoadShiftAttendance()
     {
         var shAttend = App.GetService<IDao>().GetShiftAttendances(CurrentWeekStartDate, CurrentWeekEndDate);
         ShiftAttendances.Clear();
@@ -79,7 +109,7 @@ public partial class EmployeeShiftViewModel : ObservableRecipient
             foreach (var shift in attendance.Shifts)
             {
                 // Tính toán cột hiển thị dựa trên ngày trong tuần
-                shift.ColumnIndex = (shift.ShiftDate - CurrentWeekStartDate).Days;
+                shift.ColumnIndex = (shift.ShiftDate.Date - CurrentWeekStartDate.Date).Days;
 
                 shift.IsMorningEnabled = GetShiftEnableState(shift.ShiftDate, MorningShiftStartTime);
                 shift.IsAfternoonEnabled = GetShiftEnableState(shift.ShiftDate, AfternoonShiftStartTime);
@@ -143,5 +173,14 @@ public partial class EmployeeShiftViewModel : ObservableRecipient
     private void SaveAttendanceToDatabase(ShiftAttendance attendance)
     {
         // Implement the logic to save the attendance to the database
+    }
+    // Xử lý khi SelectedDate thay đổi
+    private void OnSelectedDateChanged()
+    {
+        if (SelectedDate.HasValue)
+        {
+            SetWeek(SelectedDate.Value.DateTime);
+            LoadShiftAttendance();
+        }
     }
 }

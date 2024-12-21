@@ -6,6 +6,8 @@ using MySql.Data.MySqlClient;
 using DotNetEnv;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Mysqlx.Notice;
+using System.Data;
 
 namespace App;
 
@@ -1191,17 +1193,17 @@ public class MySqlDao : IDao
 
         foreach (var row in result)
         {
-            int id = Convert.ToInt32(row["ID"]);
-            if (!shiftAttendanceDict.ContainsKey(id))
+            int employeeId = Convert.ToInt32(row["EMPLOYEE_ID"]);
+            if (!shiftAttendanceDict.ContainsKey(employeeId))
             {
                 var shiftAttendance = new ShiftAttendance
                 {
-                    Id = id,
-                    EmployeeId = Convert.ToInt32(row["EMPLOYEE_ID"]),
+                    Id = Convert.ToInt32(row["ID"]),
+                    EmployeeId = employeeId,
                     Name = row["EMP_NAME"].ToString(),
                     Shifts = new FullObservableCollection<Shift>()
                 };
-                shiftAttendanceDict[id] = shiftAttendance;
+                shiftAttendanceDict[employeeId] = shiftAttendance;
             }
 
             var shift = new Shift
@@ -1214,13 +1216,117 @@ public class MySqlDao : IDao
                 UpdatedAt = Convert.ToDateTime(row["UPDATED_AT"])
             };
 
-            shiftAttendanceDict[id].Shifts.Add(shift);
+            shiftAttendanceDict[employeeId].Shifts.Add(shift);
         }
 
         shiftAttendances.AddRange(shiftAttendanceDict.Values);
 
         return shiftAttendances;
     }
+    // New method to add shift attendance
+    public async Task<bool> AddShiftAttendance(Shift shift, int employeeId)
+    {
+        using (var connection = GetConnection())
+        {
+            await connection.OpenAsync();
 
+            // Determine if the current time is morning or afternoon
+            bool isAfternoon = DateTime.Now.TimeOfDay >= new TimeSpan(12, 0, 0);
+
+            // Check if the employee has already worked the shift on the same day
+            string checkQuery = "SELECT COUNT(*) FROM SHIFT_ATTENDANCE WHERE EMPLOYEE_ID = @EmployeeId AND SHIFT_DATE = @ShiftDate";
+            var checkParameters = new List<MySqlParameter>
+            {
+                new     ("@EmployeeId", employeeId),
+                new     ("@ShiftDate", shift.ShiftDate)
+            };
+
+            var count = (long)await ExecuteScalarAsync(checkQuery, checkParameters);
+
+            if (count > 0)
+            {
+                // Update the existing record to include the current shift
+                string updateQuery = isAfternoon
+                    ? "UPDATE SHIFT_ATTENDANCE SET AFTERNOON_SHIFT = @AfternoonShift WHERE EMPLOYEE_ID = @EmployeeId AND SHIFT_DATE = @ShiftDate"
+                    : "UPDATE SHIFT_ATTENDANCE SET MORNING_SHIFT = @MorningShift WHERE EMPLOYEE_ID = @EmployeeId AND SHIFT_DATE = @ShiftDate";
+
+                var updateParameters = new List<MySqlParameter>
+                {
+                    new     (isAfternoon ? "@AfternoonShift" : "@MorningShift", isAfternoon ? shift.AfternoonShift : shift.MorningShift),
+                    new     ("@EmployeeId", employeeId),
+                    new     ("@ShiftDate", shift.ShiftDate)
+                };
+
+                int result = await ExecuteNonQueryAsync(updateQuery, updateParameters);
+                return result > 0;
+            }
+            else
+            {
+                // Insert a new record for the shift
+                string insertQuery = "INSERT INTO SHIFT_ATTENDANCE (EMPLOYEE_ID, SHIFT_DATE, MORNING_SHIFT, AFTERNOON_SHIFT) VALUES (@EmployeeId, @ShiftDate, @MorningShift, @AfternoonShift)";
+                var insertParameters = new List<MySqlParameter>
+                {
+                    new     ("@EmployeeId", employeeId),
+                    new     ("@ShiftDate", shift.ShiftDate),
+                    new     ("@MorningShift", isAfternoon ? false : shift.MorningShift),
+                    new     ("@AfternoonShift", isAfternoon ? shift.AfternoonShift : false)
+                };
+
+                int result = await ExecuteNonQueryAsync(insertQuery, insertParameters);
+                return result > 0;
+            }
+        }
+    }
+    public async Task<Dictionary<int, double>> GetWorkingHoursForMonth(int month, int year)
+    {
+        var workingHours = new Dictionary<int, double>();
+
+        string query = @"
+            SELECT EMPLOYEE_ID, SHIFT_DATE, MORNING_SHIFT, AFTERNOON_SHIFT
+            FROM SHIFT_ATTENDANCE
+            WHERE MONTH(SHIFT_DATE) = @Month AND YEAR(SHIFT_DATE) = @Year";
+
+        using (var connection = GetConnection())
+        {
+            await connection.OpenAsync();
+            using (var command = new MySqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Month", month);
+                command.Parameters.AddWithValue("@Year", year);
+
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        int employeeId = reader.GetInt32("EMPLOYEE_ID");
+                        DateTime shiftDate = reader.GetDateTime("SHIFT_DATE");
+                        bool morningShift = reader.GetBoolean("MORNING_SHIFT");
+                        bool afternoonShift = reader.GetBoolean("AFTERNOON_SHIFT");
+
+                        double hoursWorked = 0;
+                        if (morningShift)
+                        {
+                            hoursWorked += 4.5; // Giả sử ca sáng là 4.5 giờ
+                        }
+                        if (afternoonShift)
+                        {
+                            hoursWorked += 4.95; // Giả sử ca chiều là 4.95 giờ
+                        }
+
+                        if (workingHours.ContainsKey(employeeId))
+                        {
+                            workingHours[employeeId] += hoursWorked;
+                        }
+                        else
+                        {
+                            workingHours[employeeId] = hoursWorked;
+                        }
+                    }
+                }
+            }
+        }
+
+        return workingHours;
+    }
 }
 

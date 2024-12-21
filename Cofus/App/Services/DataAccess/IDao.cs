@@ -59,4 +59,5 @@ public interface IDao
 
     //Quản lý ca làm việc
     List<ShiftAttendance> GetShiftAttendances(DateTime startDate, DateTime endDate);
+    Task<bool> AddShiftAttendance(Shift shift, int employeeId);
 }
