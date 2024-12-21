@@ -44,7 +44,13 @@ public sealed partial class AuthenticationPage : Page
     {
 
         var existingUser = _dao.GetUserByUsername(user);
-        return existingUser != null && existingUser.Password == password;
+        if (existingUser != null && existingUser.Password == password)
+        {
+            App.CurrentUser = existingUser; // Lưu thông tin người dùng vào biến toàn cục hoặc singleton
+            return true; 
+        } 
+        return false;
+
     }
 
     private async void Page_Loaded(object sender, RoutedEventArgs e)

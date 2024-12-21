@@ -849,11 +849,28 @@ public class MySqlDao : IDao
 
     public User GetUserByUsername(string username)
     {
+        //var query = "SELECT * FROM ACCOUNT WHERE USERNAME = @username";
+        //var parameters = new List<MySqlParameter>
+        //{
+        //    new MySqlParameter("@username", username)
+        //};
+
+        //var result = ExecuteSelectQuery(query, parameters);
+
+        //if (result.Count == 0) return null;
+
+        //var row = result[0];
+        //return new User
+        //{
+        //    Username = row["USERNAME"].ToString(),
+        //    Password = row["USER_PASSWORD"].ToString()
+        //};
+
         var query = "SELECT * FROM ACCOUNT WHERE USERNAME = @username";
         var parameters = new List<MySqlParameter>
-        {
-            new MySqlParameter("@username", username)
-        };
+    {
+        new MySqlParameter("@username", username)
+    };
 
         var result = ExecuteSelectQuery(query, parameters);
 
@@ -863,7 +880,9 @@ public class MySqlDao : IDao
         return new User
         {
             Username = row["USERNAME"].ToString(),
-            Password = row["USER_PASSWORD"].ToString()
+            Password = row["USER_PASSWORD"].ToString(),
+            Role = row["EMP_ROLE"].ToString(),
+            AccessLevel = Convert.ToInt32(row["ACCESS_LEVEL"])
         };
     }
 
