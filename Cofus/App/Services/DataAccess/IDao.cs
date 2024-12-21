@@ -55,4 +55,9 @@ public interface IDao
     List<User> GetAllUsers();
     User GetUserByUsername(string username);
     bool AddUser(User user);
+
+    List<User> SearchEmployees(string keyword);
+    public bool DeleteEmployee(string userId);
+
+    bool UpdateEmployee(User user);
 }

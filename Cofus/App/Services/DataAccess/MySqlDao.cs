@@ -826,7 +826,7 @@ public class MySqlDao : IDao
 
     public List<User> GetAllUsers()
     {
-        var query = "SELECT * FROM USERS";
+        var query = "SELECT * FROM ACCOUNT";
         var result = ExecuteSelectQuery(query);
 
         var users = new List<User>();
@@ -835,6 +835,10 @@ public class MySqlDao : IDao
         {
             users.Add(new User
             {
+                Id = row["EMPLOYEE_ID"].ToString(),
+                Name = row["EMP_NAME"].ToString(),
+                Role = row["EMP_ROLE"].ToString(),
+                AccessLevel = Convert.ToInt32(row["ACCESS_LEVEL"]),
                 Username = row["USERNAME"].ToString(),
                 Password = row["USER_PASSWORD"].ToString()
             });
@@ -1119,5 +1123,65 @@ public class MySqlDao : IDao
             AccessLevel = Convert.ToInt32(row["AccessLevel"])
         };
     }
+
+    public List<User> SearchEmployees(string keyword)
+    {
+        string query = "SELECT * FROM ACCOUNT WHERE EMP_NAME LIKE @keyword";
+        var parameters = new List<MySqlParameter> { new MySqlParameter("@keyword", $"%{keyword}%") };
+        var result = ExecuteSelectQuery(query, parameters);
+        return result.Select(row => new User
+        {
+            Id = row["EMPLOYEE_ID"].ToString(),
+            Name = row["EMP_NAME"].ToString(),
+            Role = row["EMP_ROLE"].ToString(),
+            AccessLevel = Convert.ToInt32(row["ACCESS_LEVEL"]),
+            Username = row["USERNAME"].ToString(),
+            Password = row["USER_PASSWORD"].ToString()
+        }).ToList();
+    }
+
+    public bool DeleteEmployee(string userId)
+    {
+        if (!int.TryParse(userId, out int employeeId))
+        {
+            // Log or handle the case where userId is not a valid integer
+            System.Diagnostics.Debug.WriteLine($"Invalid userId: {userId}");
+            return false;
+        }
+
+        var query = "DELETE FROM ACCOUNT WHERE EMPLOYEE_ID = @employeeId";
+        var parameters = new List<MySqlParameter>
+    {
+        new MySqlParameter("@employeeId", employeeId)
+    };
+
+        int rowsAffected = ExecuteNonQuery(query, parameters);
+        if (rowsAffected == 0)
+        {
+            // Log or handle the case where no rows were affected
+            System.Diagnostics.Debug.WriteLine($"No rows affected for EMPLOYEE_ID: {employeeId}");
+        }
+
+        return rowsAffected > 0;
+    }
+
+
+    public bool UpdateEmployee(User user)
+    {
+        var query = "UPDATE ACCOUNT SET EMP_NAME = @name, EMP_ROLE = @role, ACCESS_LEVEL = @accessLevel, USERNAME = @username, USER_PASSWORD = @password WHERE EMPLOYEE_ID = @id";
+        var parameters = new List<MySqlParameter>
+        {
+            new MySqlParameter("@id", user.Id),
+            new MySqlParameter("@name", user.Name),
+            new MySqlParameter("@role", user.Role),
+            new MySqlParameter("@accessLevel", user.AccessLevel),
+            new MySqlParameter("@username", user.Username),
+            new MySqlParameter("@password", user.Password)
+        };
+        return ExecuteNonQuery(query, parameters) > 0;
+    }
+
+
+
 }
 
