@@ -216,7 +216,11 @@ public sealed partial class AuthenticationPage : Page
     }
     private bool IsPasswordValid(string password)
     {
-        var passwordPattern = @"^(?=.*[A-Z])(?=.*[!@#$%^&*()_+]).{1,8}$";
+        // Biểu thức chính quy kiểm tra mật khẩu:
+        // - (?=.*[A-Z]): Ít nhất một chữ viết hoa.
+        // - (?=.*[!@#$%^&*()_+]): Ít nhất một ký tự đặc biệt.
+        // - .{8,}: Độ dài tối thiểu 8 ký tự.
+        var passwordPattern = @"^(?=.*[A-Z])(?=.*[!@#$%^&*()_+]).{8,}$";
         bool isValid = System.Text.RegularExpressions.Regex.IsMatch(password, passwordPattern);
         Console.WriteLine($"Password: {password}, Valid: {isValid}");
         return isValid;
