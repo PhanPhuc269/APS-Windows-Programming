@@ -150,6 +150,12 @@ public sealed partial class AuthenticationPage : Page
             return;
         }
 
+        if (!IsPasswordValid(password))
+        {
+            await ShowContentDialog("Error", "Password must be 1-8 characters long, include at least one uppercase letter, and one special character.");
+            return;
+        }
+
         if (password != confirmPassword)
         {
             await ShowContentDialog("Error", "Passwords do not match.");
@@ -174,6 +180,8 @@ public sealed partial class AuthenticationPage : Page
             await ShowContentDialog("Error", $"Failed to register user. Username '{username}' may already exist.");
         }
     }
+
+
 
     private async Task ShowContentDialog(string title, string content)
     {
@@ -206,4 +214,13 @@ public sealed partial class AuthenticationPage : Page
         IBuffer plainBuffer = await provider.UnprotectAsync(encryptedBuffer);
         return CryptographicBuffer.ConvertBinaryToString(BinaryStringEncoding.Utf8, plainBuffer);
     }
+    private bool IsPasswordValid(string password)
+    {
+        var passwordPattern = @"^(?=.*[A-Z])(?=.*[!@#$%^&*()_+]).{1,8}$";
+        bool isValid = System.Text.RegularExpressions.Regex.IsMatch(password, passwordPattern);
+        Console.WriteLine($"Password: {password}, Valid: {isValid}");
+        return isValid;
+    }
+
+
 }
