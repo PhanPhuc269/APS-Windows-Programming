@@ -9,6 +9,7 @@ using Windows.Security.Cryptography.DataProtection;
 using Windows.Storage.Streams;
 using App.ViewModels;
 using App.Views;
+using App.Model;
 
 namespace App.Views;
 
@@ -97,56 +98,99 @@ public sealed partial class AuthenticationPage : Page
             App.MainWindow.Content = shell ?? new Frame();
 
             // Hiển thị cửa sổ thông báo với username
-            await new ContentDialog()
+            var dialog = new ContentDialog
             {
-                XamlRoot = this.Content.XamlRoot,
+                XamlRoot = this.Content?.XamlRoot, // Kiểm tra XamlRoot
                 Title = "Đăng nhập thành công",
                 Content = $"Xin chào, {user}!",
                 CloseButtonText = "OK"
-            }.ShowAsync();
+            };
+
+            if (dialog.XamlRoot != null)
+            {
+                await dialog.ShowAsync();
+            }
+            else
+            {
+                Console.WriteLine("XamlRoot is null. Cannot show ContentDialog.");
+            }
         }
         else
         {
-            await new ContentDialog()
+            var dialog = new ContentDialog
             {
-                XamlRoot = this.Content.XamlRoot,
+                XamlRoot = this.Content?.XamlRoot, // Kiểm tra XamlRoot
                 Content = "Tên người dùng hoặc mật khẩu không chính xác",
                 CloseButtonText = "OK"
-            }.ShowAsync();
+            };
+
+            if (dialog.XamlRoot != null)
+            {
+                await dialog.ShowAsync();
+            }
+            else
+            {
+                Console.WriteLine("XamlRoot is null. Cannot show ContentDialog.");
+            }
         }
     }
+
 
 
     private async void Signup_Click(object sender, RoutedEventArgs e)
     {
-        var user = usernameTextBox.Text;
-        var password = passwordBox.Password;
+        var fullName = signupFullNameTextBox.Text;
+        var username = signupUsernameTextBox.Text;
+        var password = signupPasswordBox.Password;
+        var confirmPassword = signupConfirmPasswordBox.Password;
 
-        if (CheckLogin(user, password))
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         {
-            if (rememberCheckBox.IsChecked == true)
-            {
-                var encryptedPassword = await EncryptPasswordAsync(password);
+            await ShowContentDialog("Error", "Username and password cannot be empty.");
+            return;
+        }
 
-                var localSettings = ApplicationData.Current.LocalSettings;
-                localSettings.Values["user"] = user;
-                localSettings.Values["password"] = encryptedPassword;
-            }
+        if (password != confirmPassword)
+        {
+            await ShowContentDialog("Error", "Passwords do not match.");
+            return;
+        }
 
-            UIElement? shell = App.GetService<ShellPage>();
-            App.MainWindow.Content = shell ?? new Frame();
+        var user = new User
+        {
+            Name = fullName,
+            Username = username,
+            Password = password
+        };
+
+        var result = _dao.AddUser(user);
+        if (result)
+        {
+            await ShowContentDialog("Success", "User registered successfully.");
+            SwitchToSignIn(sender, e);
         }
         else
         {
-            await new ContentDialog()
-            {
-                XamlRoot = this.Content.XamlRoot,
-                Content = "Incorrect username or password entered\n",
-                CloseButtonText = "OK"
-            }.ShowAsync();
+            await ShowContentDialog("Error", $"Failed to register user. Username '{username}' may already exist.");
         }
     }
-    
+
+    private async Task ShowContentDialog(string title, string content)
+    {
+        var dialog = new ContentDialog
+        {
+            XamlRoot = this.Content.XamlRoot,
+            Title = title,
+            Content = content,
+            CloseButtonText = "OK"
+        };
+        await dialog.ShowAsync();
+    }
+
+
+
+
+
     private async Task<string> EncryptPasswordAsync(string password)
     {
         var provider = new DataProtectionProvider("LOCAL=user");

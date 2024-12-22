@@ -888,15 +888,37 @@ public class MySqlDao : IDao
 
     public bool AddUser(User user)
     {
-        var query = "INSERT INTO USERS (USERNAME, PASSWORD) VALUES (@username, @password)";
-        var parameters = new List<MySqlParameter>
+        // Kiểm tra xem Username đã tồn tại chưa
+        var existingUser = GetUserByUsername(user.Username);
+        if (existingUser != null)
         {
-            new MySqlParameter("@username", user.Username),
-            new MySqlParameter("@password", user.Password)
-        };
+            Console.WriteLine($"Username '{user.Username}' already exists.");
+            return false;
+        }
 
-        return ExecuteNonQuery(query, parameters) > 0;
+        // Nếu Username không tồn tại, thêm người dùng
+        var query = "INSERT INTO ACCOUNT (EMP_NAME, EMP_ROLE, ACCESS_LEVEL, USERNAME, USER_PASSWORD) VALUES (@EmpName, @EmpRole, @AccessLevel, @Username, @UserPassword)";
+        var parameters = new List<MySqlParameter>
+    {
+        new MySqlParameter("@EmpName", user.Name),
+        new MySqlParameter("@EmpRole", "Staff"),
+        new MySqlParameter("@AccessLevel", 2),
+        new MySqlParameter("@Username", user.Username),
+        new MySqlParameter("@UserPassword", user.Password)
+    };
+
+        try
+        {
+            return ExecuteNonQuery(query, parameters) > 0;
+        }
+        catch (MySqlException ex)
+        {
+            Console.WriteLine($"MySQL Error: {ex.Message}");
+            return false;
+        }
     }
+
+
 
     public async Task<Revenue> GetRevenue(DateTime selectedDate)
     {

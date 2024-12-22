@@ -60,4 +60,5 @@ public interface IDao
     public bool DeleteEmployee(string userId);
 
     bool UpdateEmployee(User user);
+
 }
