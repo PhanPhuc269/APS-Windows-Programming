@@ -40,19 +40,54 @@ public sealed partial class AuthenticationPage : Page
         SignInPanel.Visibility = Visibility.Visible;
         SignUpPanel.Visibility = Visibility.Collapsed;
     }
+    private string HashPassword(string password)
+    {
+        // Tạo salt ngẫu nhiên
+        var salt = Guid.NewGuid().ToString();
+        var saltedPassword = password + salt;
+
+        using (var sha256 = System.Security.Cryptography.SHA256.Create())
+        {
+            var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(saltedPassword));
+            var hash = Convert.ToBase64String(hashBytes);
+
+            // Trả về hash + salt để lưu vào database
+            return $"{hash}:{salt}";
+        }
+    }
+    private bool VerifyPassword(string inputPassword, string storedHashedPassword)
+    {
+        // Tách hash và salt từ chuỗi lưu trong database
+        var parts = storedHashedPassword.Split(':');
+        if (parts.Length != 2) return false;
+
+        var hash = parts[0];
+        var salt = parts[1];
+
+        // Hash lại mật khẩu người dùng nhập kèm với salt
+        var saltedInputPassword = inputPassword + salt;
+        using (var sha256 = System.Security.Cryptography.SHA256.Create())
+        {
+            var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(saltedInputPassword));
+            var inputHash = Convert.ToBase64String(hashBytes);
+
+            // So sánh hash mới với hash lưu trong database
+            return hash == inputHash;
+        }
+    }
+
 
     private bool CheckLogin(string user, string password)
     {
-
         var existingUser = _dao.GetUserByUsername(user);
-        if (existingUser != null && existingUser.Password == password)
+        if (existingUser != null && VerifyPassword(password, existingUser.Password))
         {
             App.CurrentUser = existingUser; // Lưu thông tin người dùng vào biến toàn cục hoặc singleton
-            return true; 
-        } 
+            return true;
+        }
         return false;
-
     }
+
 
     private async void Page_Loaded(object sender, RoutedEventArgs e)
     {
@@ -162,11 +197,14 @@ public sealed partial class AuthenticationPage : Page
             return;
         }
 
+        // Hash mật khẩu
+        var hashedPassword = HashPassword(password);
+
         var user = new User
         {
             Name = fullName,
             Username = username,
-            Password = password
+            Password = hashedPassword // Lưu hash mật khẩu vào database
         };
 
         var result = _dao.AddUser(user);
@@ -180,6 +218,7 @@ public sealed partial class AuthenticationPage : Page
             await ShowContentDialog("Error", $"Người dùng đăng kí thất bại. Tên đăng nhập '{username}' đã tồn tại.");
         }
     }
+
 
 
 
