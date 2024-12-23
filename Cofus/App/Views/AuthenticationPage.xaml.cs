@@ -146,19 +146,19 @@ public sealed partial class AuthenticationPage : Page
 
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         {
-            await ShowContentDialog("Error", "Username and password cannot be empty.");
+            await ShowContentDialog("Thông báo", "Tên đăng nhập hoặc mật khẩu không thể trống.");
             return;
         }
 
         if (!IsPasswordValid(password))
         {
-            await ShowContentDialog("Error", "Password must be 1-8 characters long, include at least one uppercase letter, and one special character.");
+            await ShowContentDialog("Thông báo", "Mật khẩu phải chứa ít nhất 8 kí tự, gồm ít nhất 1 chữ hoa và ít nhất 1 kí tự đặc biệt.");
             return;
         }
 
         if (password != confirmPassword)
         {
-            await ShowContentDialog("Error", "Passwords do not match.");
+            await ShowContentDialog("Thông báo", "Mật khẩu không trùng khớp.");
             return;
         }
 
@@ -172,12 +172,12 @@ public sealed partial class AuthenticationPage : Page
         var result = _dao.AddUser(user);
         if (result)
         {
-            await ShowContentDialog("Success", "User registered successfully.");
+            await ShowContentDialog("Success", "Người dùng đăng kí thành công.");
             SwitchToSignIn(sender, e);
         }
         else
         {
-            await ShowContentDialog("Error", $"Failed to register user. Username '{username}' may already exist.");
+            await ShowContentDialog("Error", $"Người dùng đăng kí thất bại. Tên đăng nhập '{username}' đã tồn tại.");
         }
     }
 
