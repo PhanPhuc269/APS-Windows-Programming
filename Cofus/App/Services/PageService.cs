@@ -18,6 +18,7 @@ public class PageService : IPageService
         Configure<RevenueViewModel, RevenuePage>();
         Configure<InventoryManagementViewModel, InventoryManagementPage>();
         Configure<CustomerManagementViewModel, CustomerManagementPage>();
+        Configure<EmployeeManagementViewModel, EmployeeManagementPage>();
     }
 
     public Type GetPageType(string key)

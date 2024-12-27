@@ -826,7 +826,7 @@ public class MySqlDao : IDao
 
     public List<User> GetAllUsers()
     {
-        var query = "SELECT * FROM USERS";
+        var query = "SELECT * FROM ACCOUNT";
         var result = ExecuteSelectQuery(query);
 
         var users = new List<User>();
@@ -835,6 +835,10 @@ public class MySqlDao : IDao
         {
             users.Add(new User
             {
+                Id = row["EMPLOYEE_ID"].ToString(),
+                Name = row["EMP_NAME"].ToString(),
+                Role = row["EMP_ROLE"].ToString(),
+                AccessLevel = Convert.ToInt32(row["ACCESS_LEVEL"]),
                 Username = row["USERNAME"].ToString(),
                 Password = row["USER_PASSWORD"].ToString()
             });
@@ -845,11 +849,28 @@ public class MySqlDao : IDao
 
     public User GetUserByUsername(string username)
     {
+        //var query = "SELECT * FROM ACCOUNT WHERE USERNAME = @username";
+        //var parameters = new List<MySqlParameter>
+        //{
+        //    new MySqlParameter("@username", username)
+        //};
+
+        //var result = ExecuteSelectQuery(query, parameters);
+
+        //if (result.Count == 0) return null;
+
+        //var row = result[0];
+        //return new User
+        //{
+        //    Username = row["USERNAME"].ToString(),
+        //    Password = row["USER_PASSWORD"].ToString()
+        //};
+
         var query = "SELECT * FROM ACCOUNT WHERE USERNAME = @username";
         var parameters = new List<MySqlParameter>
-        {
-            new MySqlParameter("@username", username)
-        };
+    {
+        new MySqlParameter("@username", username)
+    };
 
         var result = ExecuteSelectQuery(query, parameters);
 
@@ -859,21 +880,45 @@ public class MySqlDao : IDao
         return new User
         {
             Username = row["USERNAME"].ToString(),
-            Password = row["USER_PASSWORD"].ToString()
+            Password = row["USER_PASSWORD"].ToString(),
+            Role = row["EMP_ROLE"].ToString(),
+            AccessLevel = Convert.ToInt32(row["ACCESS_LEVEL"])
         };
     }
 
     public bool AddUser(User user)
     {
-        var query = "INSERT INTO USERS (USERNAME, PASSWORD) VALUES (@username, @password)";
-        var parameters = new List<MySqlParameter>
+        // Kiểm tra xem Username đã tồn tại chưa
+        var existingUser = GetUserByUsername(user.Username);
+        if (existingUser != null)
         {
-            new MySqlParameter("@username", user.Username),
-            new MySqlParameter("@password", user.Password)
-        };
+            Console.WriteLine($"Username '{user.Username}' already exists.");
+            return false;
+        }
 
-        return ExecuteNonQuery(query, parameters) > 0;
+        // Nếu Username không tồn tại, thêm người dùng
+        var query = "INSERT INTO ACCOUNT (EMP_NAME, EMP_ROLE, ACCESS_LEVEL, USERNAME, USER_PASSWORD) VALUES (@EmpName, @EmpRole, @AccessLevel, @Username, @UserPassword)";
+        var parameters = new List<MySqlParameter>
+    {
+        new MySqlParameter("@EmpName", user.Name),
+        new MySqlParameter("@EmpRole", "Staff"),
+        new MySqlParameter("@AccessLevel", 2),
+        new MySqlParameter("@Username", user.Username),
+        new MySqlParameter("@UserPassword", user.Password)
+    };
+
+        try
+        {
+            return ExecuteNonQuery(query, parameters) > 0;
+        }
+        catch (MySqlException ex)
+        {
+            Console.WriteLine($"MySQL Error: {ex.Message}");
+            return false;
+        }
     }
+
+
 
     public async Task<Revenue> GetRevenue(DateTime selectedDate)
     {
@@ -1119,5 +1164,65 @@ public class MySqlDao : IDao
             AccessLevel = Convert.ToInt32(row["AccessLevel"])
         };
     }
+
+    public List<User> SearchEmployees(string keyword)
+    {
+        string query = "SELECT * FROM ACCOUNT WHERE EMP_NAME LIKE @keyword";
+        var parameters = new List<MySqlParameter> { new MySqlParameter("@keyword", $"%{keyword}%") };
+        var result = ExecuteSelectQuery(query, parameters);
+        return result.Select(row => new User
+        {
+            Id = row["EMPLOYEE_ID"].ToString(),
+            Name = row["EMP_NAME"].ToString(),
+            Role = row["EMP_ROLE"].ToString(),
+            AccessLevel = Convert.ToInt32(row["ACCESS_LEVEL"]),
+            Username = row["USERNAME"].ToString(),
+            Password = row["USER_PASSWORD"].ToString()
+        }).ToList();
+    }
+
+    public bool DeleteEmployee(string userId)
+    {
+        if (!int.TryParse(userId, out int employeeId))
+        {
+            // Log or handle the case where userId is not a valid integer
+            System.Diagnostics.Debug.WriteLine($"Invalid userId: {userId}");
+            return false;
+        }
+
+        var query = "DELETE FROM ACCOUNT WHERE EMPLOYEE_ID = @employeeId";
+        var parameters = new List<MySqlParameter>
+    {
+        new MySqlParameter("@employeeId", employeeId)
+    };
+
+        int rowsAffected = ExecuteNonQuery(query, parameters);
+        if (rowsAffected == 0)
+        {
+            // Log or handle the case where no rows were affected
+            System.Diagnostics.Debug.WriteLine($"No rows affected for EMPLOYEE_ID: {employeeId}");
+        }
+
+        return rowsAffected > 0;
+    }
+
+
+    public bool UpdateEmployee(User user)
+    {
+        var query = "UPDATE ACCOUNT SET EMP_NAME = @name, EMP_ROLE = @role, ACCESS_LEVEL = @accessLevel, USERNAME = @username, USER_PASSWORD = @password WHERE EMPLOYEE_ID = @id";
+        var parameters = new List<MySqlParameter>
+        {
+            new MySqlParameter("@id", user.Id),
+            new MySqlParameter("@name", user.Name),
+            new MySqlParameter("@role", user.Role),
+            new MySqlParameter("@accessLevel", user.AccessLevel),
+            new MySqlParameter("@username", user.Username),
+            new MySqlParameter("@password", user.Password)
+        };
+        return ExecuteNonQuery(query, parameters) > 0;
+    }
+
+
+
 }
 

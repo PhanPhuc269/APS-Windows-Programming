@@ -43,27 +43,32 @@
                 TODO: Update item icons by updating FontIcon.Glyph properties.
                 https://docs.microsoft.com/windows/apps/design/style/segoe-fluent-icons-font#icon-list
                 -->
-                <NavigationViewItem x:Uid="Shell_SalePage" Tag="SalePage" helpers:NavigationHelper.NavigateTo="App.ViewModels.SalePageViewModel" >
+                <NavigationViewItem x:Uid="Shell_SalePage" Tag="SalePage" helpers:NavigationHelper.NavigateTo="App.ViewModels.SalePageViewModel">
                     <NavigationViewItem.Icon>
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE764;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-
+                <NavigationViewItem x:Uid="Shell_CustomerManagement" Tag="CustomerManagementPage" helpers:NavigationHelper.NavigateTo="App.ViewModels.CustomerManagementViewModel">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE716;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Uid="Shell_InventoryManagement" Tag="InventoryManagementPage" helpers:NavigationHelper.NavigateTo="App.ViewModels.InventoryManagementViewModel">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xEC08;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Uid="Shell_EmployeeManagement" Tag="EmployeeManagementPage" helpers:NavigationHelper.NavigateTo="App.ViewModels.EmployeeManagementViewModel">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE748;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
                 <NavigationViewItem x:Uid="Shell_Revenue" Tag="RevenuePage" helpers:NavigationHelper.NavigateTo="App.ViewModels.RevenueViewModel">
                     <NavigationViewItem.Icon>
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8BC;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_InventoryManagement" helpers:NavigationHelper.NavigateTo="App.ViewModels.InventoryManagementViewModel">
-                    <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xEC08;"/>
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_CustomerManagement" helpers:NavigationHelper.NavigateTo="App.ViewModels.CustomerManagementViewModel">
-                    <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE716;"/>
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
+
             </NavigationView.MenuItems>
             <NavigationView.HeaderTemplate>
                 <DataTemplate>

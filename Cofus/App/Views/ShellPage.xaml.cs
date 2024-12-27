@@ -37,8 +37,64 @@ public sealed partial class ShellPage : Page
 
         Loaded += ShellPage_Loaded;
     }
+    private void ConfigureNavigationMenu(string role)
+    {
+        // Định nghĩa quyền truy cập của từng vai trò
+        var adminVisibleTags = new HashSet<string>
+    {
+        "CustomerManagementPage",
+        "InventoryManagementPage",
+        "EmployeeManagementPage",
+        "RevenuePage"
+    };
+
+        var staffVisibleTags = new HashSet<string>
+    {
+        "SalePage",
+        "CustomerManagementPage",
+        "InventoryManagementPage"
+    };
+
+        // Duyệt qua tất cả các mục trong NavigationViewControl
+        foreach (var item in NavigationViewControl.MenuItems)
+        {
+            if (item is NavigationViewItem navigationViewItem)
+            {
+                string tag = navigationViewItem.Tag?.ToString();
+
+                // Quyết định hiển thị dựa trên vai trò
+                if (role == "Admin")
+                {
+                    navigationViewItem.Visibility = adminVisibleTags.Contains(tag) ? Visibility.Visible : Visibility.Collapsed;
+                }
+                else if (role == "Staff")
+                {
+                    navigationViewItem.Visibility = staffVisibleTags.Contains(tag) ? Visibility.Visible : Visibility.Collapsed;
+                }
+                else
+                {
+                    // Ẩn tất cả các mục nếu vai trò không hợp lệ
+                    navigationViewItem.Visibility = Visibility.Collapsed;
+                }
+            }
+        }
+    }
+
+
+
     private void ShellPage_Loaded(object sender, RoutedEventArgs e)
     {
+        //foreach (var item in NavigationViewControl.MenuItems)
+        //{
+        //    if (item is NavigationViewItem navigationViewItem && navigationViewItem.Tag.ToString() == "SalePage")
+        //    {
+        //        NavigationViewControl.SelectedItem = navigationViewItem;
+        //        ViewModel.NavigationService.NavigateTo("App.ViewModels.SalePageViewModel");
+        //        break;
+        //    }
+        //}
+        ConfigureNavigationMenu(App.CurrentUser?.Role);
+
         foreach (var item in NavigationViewControl.MenuItems)
         {
             if (item is NavigationViewItem navigationViewItem && navigationViewItem.Tag.ToString() == "SalePage")
