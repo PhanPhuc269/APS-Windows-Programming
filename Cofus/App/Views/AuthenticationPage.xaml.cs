@@ -247,17 +247,46 @@ public sealed partial class AuthenticationPage : Page
         var random = new Random();
         return new string(Enumerable.Repeat(chars, 10).Select(s => s[random.Next(s.Length)]).ToArray());
     }
-
     private async Task<bool> SendResetEmailAsync(string email, string newPassword)
     {
         try
         {
-            var client = new SendGridClient("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");
-            var from = new EmailAddress("contact.quanminhle@gmail.com", "Your App");
-            var subject = "Reset Password";
+            // Get the API key from the environment variable
+            var apiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY");
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                throw new InvalidOperationException("SendGrid API key is missing.");
+            }
+
+            var client = new SendGridClient(apiKey);
+            var from = new EmailAddress("contact.quanminhle@gmail.com", "Cofus");
+            var subject = "Reset Your Password";
             var to = new EmailAddress(email);
-            var plainTextContent = $"Your new password is: {newPassword}";
-            var htmlContent = $"<strong>Your new password is: {newPassword}</strong>";
+
+            // Plain text version for email clients that do not support HTML
+            var plainTextContent = $"You requested to reset your password. Your new password is: {newPassword}.\n\nPlease log in and update your password as soon as possible.\n\nThank you,\nYour App Team";
+
+            // HTML content
+            var htmlContent = $@"
+            <div style=""font-family: Arial, sans-serif; font-size: 16px; color: #333; text-align: center; padding: 20px;"">
+                <h1 style=""color: #444;"">Hello,</h1>
+                <p style=""font-size: 18px; color: #666;"">
+                    You have requested to reset your password. Please find your new password below:
+                </p>
+                <p style=""font-size: 20px; font-weight: bold; color: #000; margin: 20px 0;"">
+                    {newPassword}
+                </p>
+
+                <p style=""margin-top: 20px; font-size: 14px; color: #999;"">
+                    If you did not request this reset, please contact our support team immediately.
+                </p>
+                <hr style=""margin: 30px 0; border: none; border-top: 1px solid #ddd;"" />
+                <p style=""font-size: 14px; color: #999;"">
+                    Thank you,<br />
+    
+                </p>
+            </div>";
+
             var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
 
             var response = await client.SendEmailAsync(msg);
