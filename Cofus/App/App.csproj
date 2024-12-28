@@ -66,6 +66,7 @@
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="QRCoder" Version="1.6.0" />
+    <PackageReference Include="SendGrid" Version="9.29.3" />
     <PackageReference Include="System.Text.Json" Version="9.0.0" />
     <PackageReference Include="WinUIEx" Version="2.4.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.0" />

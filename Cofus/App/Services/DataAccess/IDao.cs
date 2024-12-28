@@ -55,4 +55,6 @@ public interface IDao
     List<User> GetAllUsers();
     User GetUserByUsername(string username);
     bool AddUser(User user);
+    bool UpdateUser(User user);
+
 }

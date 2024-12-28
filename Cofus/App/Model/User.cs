@@ -16,6 +16,10 @@ public class User
     {
         get; set;
     }
+    public string Email
+    {
+        get; set;
+    }
     public int AccessLevel
     {
         get; set;
