@@ -95,6 +95,7 @@ public partial class EmployeeManagementViewModel : ObservableRecipient
                 existingUser.AccessLevel = user.AccessLevel;
                 existingUser.Username = user.Username;
                 existingUser.Password = user.Password;
+                existingUser.Salary = user.Salary;
             }
         }
     }

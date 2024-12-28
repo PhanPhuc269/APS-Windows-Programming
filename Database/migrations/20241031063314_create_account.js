@@ -7,6 +7,7 @@ exports.up = function(knex) {
       table.integer('ACCESS_LEVEL');
       table.string('USERNAME', 40).unique();
       table.string('USER_PASSWORD', 1000);
+      table.integer('SALARY');
     });
   };
   

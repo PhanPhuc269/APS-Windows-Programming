@@ -16,7 +16,7 @@ public class User : INotifyPropertyChanged
     private int accessLevel;
     private string username;
     private string password;
-
+    private int salary;
     public event PropertyChangedEventHandler PropertyChanged;
 
     protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -94,6 +94,19 @@ public class User : INotifyPropertyChanged
             if (accessLevel != value)
             {
                 accessLevel = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public int Salary
+    {
+        get => salary;
+        set
+        {
+            if (salary != value)
+            {
+                salary = value;
                 OnPropertyChanged();
             }
         }

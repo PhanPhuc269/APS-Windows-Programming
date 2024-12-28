@@ -52,11 +52,13 @@
                             <ColumnDefinition Width="200"/>
                             <ColumnDefinition Width="100"/>
                             <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="150"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock HorizontalAlignment="Center" Text="Mã nhân viên" Grid.Column="0" Foreground="Black" FontWeight="Bold"/>
                         <TextBlock HorizontalAlignment="Center" Text="Tên nhân viên" Grid.Column="1" Foreground="Black" FontWeight="Bold"/>
                         <TextBlock HorizontalAlignment="Center" Text="Chức vụ" Grid.Column="2" Foreground="Black" FontWeight="Bold"/>
                         <TextBlock HorizontalAlignment="Center" Text="Mức truy cập" Grid.Column="3" Foreground="Black" FontWeight="Bold"/>
+                        <TextBlock HorizontalAlignment="Center" Text="Lương" Grid.Column="4" Foreground="Black" FontWeight="Bold"/>
                     </Grid>
                 </ListView.Header>
                 <ListView.ItemTemplate>
@@ -67,21 +69,24 @@
                                 <ColumnDefinition Width="260"/>
                                 <ColumnDefinition Width="40"/>
                                 <ColumnDefinition Width="200"/>
+                                <ColumnDefinition Width="120"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock HorizontalAlignment="Center" Text="{x:Bind Id}" Grid.Column="0" Foreground="Black"/>
                             <TextBlock HorizontalAlignment="Center" Text="{x:Bind Name}" Grid.Column="1" Foreground="Black"/>
                             <TextBlock HorizontalAlignment="Center" Text="{x:Bind Role}" Grid.Column="2" Foreground="Black"/>
                             <TextBlock HorizontalAlignment="Center" Text="{x:Bind AccessLevel}" Grid.Column="3" Foreground="Black"/>
+                            <TextBlock HorizontalAlignment="Center" Text="{x:Bind Salary}" Grid.Column="4" Foreground="Black"/>
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
             <ContentDialog x:Name="AddEditDialog" Title="Sửa Thông Tin" PrimaryButtonText="OK" SecondaryButtonText="Cancel" PrimaryButtonClick="AddEditDialogPrimaryButtonClick">
-                <StackPanel>
+                <StackPanel Spacing="10">
                     <TextBox x:Name="EmployeeCodeTextBox" PlaceholderText="Mã nhân viên" IsReadOnly="True"/>
                     <TextBox x:Name="EmployeeNameTextBox" PlaceholderText="Tên nhân viên"/>
                     <TextBox x:Name="FunctionTextBox" PlaceholderText="Chức vụ"/>
                     <TextBox x:Name="AccessLevelTextBox" PlaceholderText="Mức truy cập"/>
+                    <TextBox x:Name="SalaryTextBox" PlaceholderText="Lương"/>
                 </StackPanel>
             </ContentDialog>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,0,0,10">
