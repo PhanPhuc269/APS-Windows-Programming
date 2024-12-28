@@ -2,6 +2,8 @@
 using App.Model;
 using System.Collections.ObjectModel;
 using PropertyChanged;
+using SendGrid.Helpers.Mail;
+using SendGrid;
 
 namespace App.ViewModels;
 [AddINotifyPropertyChangedInterface]
@@ -167,6 +169,59 @@ public partial class EmployeeShiftViewModel : ObservableRecipient
         {
             SetWeek(SelectedDate.Value.DateTime);
             LoadShiftAttendance();
+        }
+    }
+
+    public async Task<bool> SendAuthCodeAsync(string email, string authCode)
+    {
+        try
+        {
+            DotNetEnv.Env.Load(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\..\..\App\.env"));
+            // Get the API key from the environment variable
+            var apiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY");
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                throw new InvalidOperationException("SendGrid API key is missing.");
+            }
+
+            var client = new SendGridClient(apiKey);
+            var from = new EmailAddress("contact.quanminhle@gmail.com", "Cofus");
+            var subject = "Mã xác thực chấm công";
+            var to = new EmailAddress(email);
+
+            // Plain text version for email clients that do not support HTML
+            var plainTextContent = $"Bạn đã yêu cầu mã xác thực để chấm công. Mã xác thực của bạn là: {authCode}.\n\nVui lòng sử dụng mã này để hoàn tất quá trình chấm công.\n\nCảm ơn,\nĐội ngũ Cofus";
+
+            // HTML content
+            var htmlContent = $@"
+            <div style=""font-family: Arial, sans-serif; font-size: 16px; color: #333; text-align: center; padding: 20px;"">
+                <h1 style=""color: #444;"">Xin chào,</h1>
+                <p style=""font-size: 18px; color: #666;"">
+                    Bạn đã yêu cầu mã xác thực để chấm công. Vui lòng tìm mã xác thực của bạn bên dưới:
+                </p>
+                <p style=""font-size: 20px; font-weight: bold; color: #000; margin: 20px 0;"">
+                    {authCode}
+                </p>
+
+                <p style=""margin-top: 20px; font-size: 14px; color: #999;"">
+                    Nếu bạn không yêu cầu mã xác thực này, vui lòng liên hệ với đội ngũ hỗ trợ của chúng tôi ngay lập tức.
+                </p>
+                <hr style=""margin: 30px 0; border: none; border-top: 1px solid #ddd;"" />
+                <p style=""font-size: 14px; color: #999;"">
+                    Cảm ơn,<br />
+                    Đội ngũ Cofus
+                </p>
+            </div>";
+
+            var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
+
+            var response = await client.SendEmailAsync(msg);
+            return response.StatusCode == System.Net.HttpStatusCode.Accepted;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to send email: {ex.Message}");
+            return false;
         }
     }
 }

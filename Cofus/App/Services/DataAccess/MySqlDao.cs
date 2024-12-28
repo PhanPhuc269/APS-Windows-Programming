@@ -896,7 +896,7 @@ public class MySqlDao : IDao
 
     public User GetUserByUsername(string username)
     {
-        var query = "SELECT USERNAME, USER_PASSWORD, EMAIL FROM ACCOUNT WHERE USERNAME = @username";
+        var query = "SELECT USERNAME, USER_PASSWORD, EMAIL, EMPLOYEE_ID FROM ACCOUNT WHERE USERNAME = @username";
         var parameters = new List<MySqlParameter>
     {
         new MySqlParameter("@username", username)
@@ -909,6 +909,7 @@ public class MySqlDao : IDao
         var row = result[0];
         return new User
         {
+            Id = Convert.ToInt32(row["EMPLOYEE_ID"]),
             Username = row["USERNAME"].ToString(),
             Password = row["USER_PASSWORD"].ToString(),
             Email = row["EMAIL"]?.ToString() // Ánh xạ email từ kết quả

@@ -251,6 +251,7 @@ public sealed partial class AuthenticationPage : Page
     {
         try
         {
+            DotNetEnv.Env.Load(Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\..\..\App\.env"));
             // Get the API key from the environment variable
             var apiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY");
             if (string.IsNullOrEmpty(apiKey))
