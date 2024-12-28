@@ -132,47 +132,33 @@ public partial class EmployeeShiftViewModel : ObservableRecipient
     }
 
     // Cập nhật trạng thái chấm công
-    public void UpdateShiftAttendance(int employeeId, DateTime shiftDate, bool isMorningShift, bool newStatus, DateTime checkInTime)
+    public async Task<bool> CheckInShift(int employeeId, Shift shift)
     {
-        var attendance = ShiftAttendances.FirstOrDefault(sa =>
-            sa.EmployeeId == employeeId && sa.Shifts.Any(s => s.ShiftDate.Date == shiftDate.Date));
-
-        if (attendance != null)
+        if (shift.MorningShift)
         {
-            var shift = attendance.Shifts.FirstOrDefault(s => s.ShiftDate.Date == shiftDate.Date);
-            if (shift != null)
+            // Kiểm tra trễ ca sáng
+            if (shift.ShiftDate.TimeOfDay > MorningShiftStartTime)
             {
-                if (isMorningShift)
-                {
-                    shift.MorningShift = newStatus;
-
-                    // Kiểm tra trễ ca sáng
-                    if (newStatus && checkInTime.TimeOfDay > MorningShiftStartTime)
-                    {
-                        shift.Note = "Chấm công trễ ca sáng";
-                    }
-                }
-                else
-                {
-                    shift.AfternoonShift = newStatus;
-
-                    // Kiểm tra trễ ca chiều
-                    if (newStatus && checkInTime.TimeOfDay > AfternoonShiftStartTime)
-                    {
-                        shift.Note = "Chấm công trễ ca chiều";
-                    }
-                }
-
-                // Lưu thay đổi vào cơ sở dữ liệu
-                SaveAttendanceToDatabase(attendance);
+                shift.Note = "Chấm công trễ ca sáng";
             }
         }
+        else
+        {
+            // Kiểm tra trễ ca chiều
+            if (shift.ShiftDate.TimeOfDay > AfternoonShiftStartTime)
+            {
+                shift.Note = "Chấm công trễ ca chiều";
+            }
+        }
+
+        // Lưu thay đổi vào cơ sở dữ liệu
+        return await SaveAttendanceToDatabase( employeeId,  shift);
     }
 
     // Lưu chấm công vào cơ sở dữ liệu
-    private void SaveAttendanceToDatabase(ShiftAttendance attendance)
+    public async Task<bool> SaveAttendanceToDatabase(int employeeId, Shift shift)
     {
-        // Implement the logic to save the attendance to the database
+        return await App.GetService<IDao>().AddShiftAttendance(shift, employeeId);
     }
     // Xử lý khi SelectedDate thay đổi
     private void OnSelectedDateChanged()

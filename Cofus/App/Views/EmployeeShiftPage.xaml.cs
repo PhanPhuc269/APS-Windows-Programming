@@ -57,7 +57,6 @@ public sealed partial class EmployeeShiftPage : Page
     private void ShowError(string message)
     {
         ShiftInfoError.Text = message;
-        
     }
     private async void OnCheckInDialogConfirm(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
@@ -77,15 +76,16 @@ public sealed partial class EmployeeShiftPage : Page
 
         var shift = new Shift
         {
-            ShiftDate = now.Date,
+            ShiftDate = now,
             MorningShift = !isAfternoon,
             AfternoonShift = isAfternoon,
         };
 
-        bool success = await App.GetService<IDao>().AddShiftAttendance(shift, int.Parse(employeeCode));
+        bool success = await ViewModel.CheckInShift(int.Parse(employeeCode), shift);
 
         if (success)
         {
+            ShowError("");
             CheckInDialog.Hide();
             ViewModel.LoadShiftAttendance();
             
