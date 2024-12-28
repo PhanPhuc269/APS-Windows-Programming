@@ -55,6 +55,8 @@ public interface IDao
     List<User> GetAllUsers();
     User GetUserByUsername(string username);
     bool AddUser(User user);
+    bool UpdateUser(User user);
+
     List<HistoryOrder> GetBeveragesPurchasedByCustomer(string phoneNumber);
 
     //Quản lý ca làm việc

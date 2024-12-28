@@ -896,11 +896,11 @@ public class MySqlDao : IDao
 
     public User GetUserByUsername(string username)
     {
-        var query = "SELECT * FROM ACCOUNT WHERE USERNAME = @username";
+        var query = "SELECT USERNAME, USER_PASSWORD, EMAIL FROM ACCOUNT WHERE USERNAME = @username";
         var parameters = new List<MySqlParameter>
-        {
-            new MySqlParameter("@username", username)
-        };
+    {
+        new MySqlParameter("@username", username)
+    };
 
         var result = ExecuteSelectQuery(query, parameters);
 
@@ -910,9 +910,11 @@ public class MySqlDao : IDao
         return new User
         {
             Username = row["USERNAME"].ToString(),
-            Password = row["USER_PASSWORD"].ToString()
+            Password = row["USER_PASSWORD"].ToString(),
+            Email = row["EMAIL"]?.ToString() // Ánh xạ email từ kết quả
         };
     }
+
 
     public bool AddUser(User user)
     {
@@ -1143,34 +1145,21 @@ public class MySqlDao : IDao
         return materials;
     }
 
-
-
-
-
-
-
-
-
-    public User GetCurrentUser(string username)
+    public bool UpdateUser(User user)
     {
-        var query = "SELECT * FROM USERS WHERE USERNAME = @username"; // Modify according to your database schema
+        var query = @"
+    UPDATE ACCOUNT
+    SET USER_PASSWORD = @Password
+    WHERE USERNAME = @Username";
+
         var parameters = new List<MySqlParameter>
-        {
-            new MySqlParameter("@username", username)
-        };
+    {
+        new MySqlParameter("@Username", user.Username),
+        new MySqlParameter("@Password", user.Password) // Nếu cần mã hóa, mã hóa trước khi lưu
+    };
 
-        var result = ExecuteSelectQuery(query, parameters);
-
-        var row = result[0];
-
-        return new User
-        {
-            Username = row["USERNAME"].ToString(),
-            Password = row["USER_PASSWORD"].ToString(),
-            AccessLevel = Convert.ToInt32(row["AccessLevel"])
-        };
+        return ExecuteNonQuery(query, parameters) > 0;
     }
-
     public List<ShiftAttendance> GetShiftAttendances(DateTime startDate, DateTime endDate)
     {
         var shiftAttendances = new List<ShiftAttendance>();
@@ -1329,4 +1318,6 @@ public class MySqlDao : IDao
         return workingHours;
     }
 }
+
+
 

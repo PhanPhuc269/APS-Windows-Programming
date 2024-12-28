@@ -3,6 +3,7 @@ exports.up = function(knex) {
     return knex.schema.createTable('TYPE_BEVERAGE', (table) => {
       table.increments('ID');
       table.string('CATEGORY', 40);
+      table.string('IMAGE_PATH'); 
     });
   };
   
