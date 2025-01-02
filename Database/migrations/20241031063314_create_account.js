@@ -6,7 +6,7 @@ exports.up = function(knex) {
       table.string('EMP_ROLE', 40);
       table.integer('ACCESS_LEVEL');
       table.string('USERNAME', 40).unique();
-      table.string('USER_PASSWORD', 40);
+      table.string('USER_PASSWORD', 1000);
       table.string('EMAIL', 255);
     });
   };

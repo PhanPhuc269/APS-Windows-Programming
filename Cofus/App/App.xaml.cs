@@ -9,6 +9,7 @@ using App.Services;
 using App.ViewModels;
 using App.Views;
 
+using App.Model;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI;
@@ -30,6 +31,10 @@ public partial class App : Application
     public IHost Host
     {
         get;
+    }
+    public static User CurrentUser
+    {
+        get; set;
     }
 
     public static T GetService<T>()
@@ -77,6 +82,8 @@ public partial class App : Application
             // Views and ViewModels
             services.AddTransient<EmployeeShiftViewModel>();
             services.AddTransient<EmployeeShiftPage>();
+            services.AddTransient<EmployeeManagementViewModel>();
+            services.AddTransient<EmployeeManagementPage>();
             services.AddTransient<CustomerManagementViewModel>();
             services.AddTransient<CustomerManagementPage>();
             services.AddTransient<InventoryManagementViewModel>();

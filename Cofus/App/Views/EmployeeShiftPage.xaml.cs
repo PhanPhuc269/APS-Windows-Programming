@@ -124,7 +124,7 @@ public sealed partial class EmployeeShiftPage : Page
             AfternoonShift = isAfternoon,
         };
 
-        bool success = await ViewModel.CheckInShift(User.Id, shift);
+        bool success = await ViewModel.CheckInShift(int.Parse(User.Id), shift);
 
         if (success)
         {

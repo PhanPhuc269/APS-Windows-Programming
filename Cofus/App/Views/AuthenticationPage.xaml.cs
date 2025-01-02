@@ -13,6 +13,7 @@ using SendGrid.Helpers.Mail;
 using App.ViewModels;
 using App.Views;
 using System.Net.Mail;
+using App.Model;
 
 namespace App.Views;
 
@@ -41,12 +42,54 @@ public sealed partial class AuthenticationPage : Page
         SignInPanel.Visibility = Visibility.Visible;
         SignUpPanel.Visibility = Visibility.Collapsed;
     }
+    private string HashPassword(string password)
+    {
+        // Tạo salt ngẫu nhiên
+        var salt = Guid.NewGuid().ToString();
+        var saltedPassword = password + salt;
+
+        using (var sha256 = System.Security.Cryptography.SHA256.Create())
+        {
+            var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(saltedPassword));
+            var hash = Convert.ToBase64String(hashBytes);
+
+            // Trả về hash + salt để lưu vào database
+            return $"{hash}:{salt}";
+        }
+    }
+    private bool VerifyPassword(string inputPassword, string storedHashedPassword)
+    {
+        // Tách hash và salt từ chuỗi lưu trong database
+        var parts = storedHashedPassword.Split(':');
+        if (parts.Length != 2) return false;
+
+        var hash = parts[0];
+        var salt = parts[1];
+
+        // Hash lại mật khẩu người dùng nhập kèm với salt
+        var saltedInputPassword = inputPassword + salt;
+        using (var sha256 = System.Security.Cryptography.SHA256.Create())
+        {
+            var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(saltedInputPassword));
+            var inputHash = Convert.ToBase64String(hashBytes);
+
+            // So sánh hash mới với hash lưu trong database
+            return hash == inputHash;
+        }
+    }
+
 
     private bool CheckLogin(string user, string password)
     {
         var existingUser = _dao.GetUserByUsername(user);
-        return existingUser != null && existingUser.Password == password;
+        if (existingUser != null && VerifyPassword(password, existingUser.Password))
+        {
+            App.CurrentUser = existingUser; // Lưu thông tin người dùng vào biến toàn cục hoặc singleton
+            return true;
+        }
+        return false;
     }
+
 
     private async void Page_Loaded(object sender, RoutedEventArgs e)
     {
@@ -92,54 +135,90 @@ public sealed partial class AuthenticationPage : Page
             App.MainWindow.Content = shell ?? new Frame();
 
             // Hiển thị cửa sổ thông báo với username
-            await new ContentDialog()
+            var dialog = new ContentDialog
             {
-                XamlRoot = this.Content.XamlRoot,
+                XamlRoot = this.Content?.XamlRoot, // Kiểm tra XamlRoot
                 Title = "Đăng nhập thành công",
                 Content = $"Xin chào, {user}!",
                 CloseButtonText = "OK"
-            }.ShowAsync();
+            };
+
+            if (dialog.XamlRoot != null)
+            {
+                await dialog.ShowAsync();
+            }
+            else
+            {
+                Console.WriteLine("XamlRoot is null. Cannot show ContentDialog.");
+            }
         }
         else
         {
-            await new ContentDialog()
+            var dialog = new ContentDialog
             {
-                XamlRoot = this.Content.XamlRoot,
+                XamlRoot = this.Content?.XamlRoot, // Kiểm tra XamlRoot
                 Content = "Tên người dùng hoặc mật khẩu không chính xác",
                 CloseButtonText = "OK"
-            }.ShowAsync();
+            };
+
+            if (dialog.XamlRoot != null)
+            {
+                await dialog.ShowAsync();
+            }
+            else
+            {
+                Console.WriteLine("XamlRoot is null. Cannot show ContentDialog.");
+            }
         }
     }
 
     private async void Signup_Click(object sender, RoutedEventArgs e)
     {
-        var user = usernameTextBox.Text;
-        var password = passwordBox.Password;
+        var fullName = signupFullNameTextBox.Text;
+        var username = signupUsernameTextBox.Text;
+        var password = signupPasswordBox.Password;
+        var confirmPassword = signupConfirmPasswordBox.Password;
 
-        if (CheckLogin(user, password))
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         {
-            if (rememberCheckBox.IsChecked == true)
-            {
-                var encryptedPassword = await EncryptPasswordAsync(password);
+            await ShowContentDialog("Thông báo", "Tên đăng nhập hoặc mật khẩu không thể trống.");
+            return;
+        }
 
-                var localSettings = ApplicationData.Current.LocalSettings;
-                localSettings.Values["user"] = user;
-                localSettings.Values["password"] = encryptedPassword;
-            }
+        if (!IsPasswordValid(password))
+        {
+            await ShowContentDialog("Thông báo", "Mật khẩu phải chứa ít nhất 8 kí tự, gồm ít nhất 1 chữ hoa và ít nhất 1 kí tự đặc biệt.");
+            return;
+        }
 
-            UIElement? shell = App.GetService<ShellPage>();
-            App.MainWindow.Content = shell ?? new Frame();
+        if (password != confirmPassword)
+        {
+            await ShowContentDialog("Thông báo", "Mật khẩu không trùng khớp.");
+            return;
+        }
+
+        // Hash mật khẩu
+        var hashedPassword = HashPassword(password);
+
+        var user = new User
+        {
+            Name = fullName,
+            Username = username,
+            Password = hashedPassword // Lưu hash mật khẩu vào database
+        };
+
+        var result = _dao.AddUser(user);
+        if (result)
+        {
+            await ShowContentDialog("Success", "Người dùng đăng kí thành công.");
+            SwitchToSignIn(sender, e);
         }
         else
         {
-            await new ContentDialog()
-            {
-                XamlRoot = this.Content.XamlRoot,
-                Content = "Incorrect username or password entered\n",
-                CloseButtonText = "OK"
-            }.ShowAsync();
+            await ShowContentDialog("Error", $"Người dùng đăng kí thất bại. Tên đăng nhập '{username}' đã tồn tại.");
         }
     }
+
 
     private async void ForgotPassword_Click(object sender, RoutedEventArgs e)
     {
@@ -177,7 +256,7 @@ public sealed partial class AuthenticationPage : Page
                         var newPassword = GenerateTemporaryPassword();
 
                         // Cập nhật mật khẩu reset vào cơ sở dữ liệu
-                        user.Password = newPassword;
+                        user.Password = HashPassword(newPassword) ;
                         var updated = _dao.UpdateUser(user);
 
                         if (updated)
@@ -240,13 +319,32 @@ public sealed partial class AuthenticationPage : Page
             }.ShowAsync();
         }
     }
-
     private string GenerateTemporaryPassword()
     {
-        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        const string upperCaseChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const string specialChars = "!@#$%^&*()_+";
+        const string lowerCaseChars = "abcdefghijklmnopqrstuvwxyz";
+        const string digits = "0123456789";
+        const string allChars = upperCaseChars + lowerCaseChars + digits + specialChars;
         var random = new Random();
-        return new string(Enumerable.Repeat(chars, 10).Select(s => s[random.Next(s.Length)]).ToArray());
+
+        // Bảo đảm các điều kiện bắt buộc
+        var password = new StringBuilder();
+        password.Append(upperCaseChars[random.Next(upperCaseChars.Length)]); // Ít nhất 1 chữ viết hoa
+        password.Append(specialChars[random.Next(specialChars.Length)]);    // Ít nhất 1 ký tự đặc biệt
+        password.Append(lowerCaseChars[random.Next(lowerCaseChars.Length)]); // Ít nhất 1 chữ thường
+        password.Append(digits[random.Next(digits.Length)]);                 // Ít nhất 1 chữ số
+
+        // Điền thêm các ký tự ngẫu nhiên để đạt độ dài tối thiểu 8
+        for (int i = password.Length; i < 8; i++)
+        {
+            password.Append(allChars[random.Next(allChars.Length)]);
+        }
+
+        // Xáo trộn các ký tự để đảm bảo tính ngẫu nhiên
+        return new string(password.ToString().OrderBy(c => random.Next()).ToArray());
     }
+
     private async Task<bool> SendResetEmailAsync(string email, string newPassword)
     {
         try
@@ -300,6 +398,23 @@ public sealed partial class AuthenticationPage : Page
         }
     }
 
+
+
+
+    private async Task ShowContentDialog(string title, string content)
+    {
+        var dialog = new ContentDialog
+        {
+            XamlRoot = this.Content.XamlRoot,
+            Title = title,
+            Content = content,
+            CloseButtonText = "OK"
+        };
+        await dialog.ShowAsync();
+    }
+
+
+
     private async Task<string> EncryptPasswordAsync(string password)
     {
         var provider = new DataProtectionProvider("LOCAL=user");
@@ -315,4 +430,17 @@ public sealed partial class AuthenticationPage : Page
         IBuffer plainBuffer = await provider.UnprotectAsync(encryptedBuffer);
         return CryptographicBuffer.ConvertBinaryToString(BinaryStringEncoding.Utf8, plainBuffer);
     }
+    private bool IsPasswordValid(string password)
+    {
+        // Biểu thức chính quy kiểm tra mật khẩu:
+        // - (?=.*[A-Z]): Ít nhất một chữ viết hoa.
+        // - (?=.*[!@#$%^&*()_+]): Ít nhất một ký tự đặc biệt.
+        // - .{8,}: Độ dài tối thiểu 8 ký tự.
+        var passwordPattern = @"^(?=.*[A-Z])(?=.*[!@#$%^&*()_+]).{8,}$";
+        bool isValid = System.Text.RegularExpressions.Regex.IsMatch(password, passwordPattern);
+        Console.WriteLine($"Password: {password}, Valid: {isValid}");
+        return isValid;
+    }
+
+
 }
