@@ -1244,7 +1244,8 @@ public class MySqlDao : IDao
                 {
                     new     (isAfternoon ? "@AfternoonShift" : "@MorningShift", isAfternoon ? shift.AfternoonShift : shift.MorningShift),
                     new     ("@EmployeeId", employeeId),
-                    new     ("@ShiftDate", shift.ShiftDate)
+                    new     ("@ShiftDate", shift.ShiftDate),
+                    new     ("@Note", shift.Note)
                 };
 
                 int result = await ExecuteNonQueryAsync(updateQuery, updateParameters);
@@ -1259,7 +1260,8 @@ public class MySqlDao : IDao
                     new     ("@EmployeeId", employeeId),
                     new     ("@ShiftDate", shift.ShiftDate),
                     new     ("@MorningShift", isAfternoon ? false : shift.MorningShift),
-                    new     ("@AfternoonShift", isAfternoon ? shift.AfternoonShift : false)
+                    new     ("@AfternoonShift", isAfternoon ? shift.AfternoonShift : false),
+                    new     ("@Note", shift.Note)
                 };
 
                 int result = await ExecuteNonQueryAsync(insertQuery, insertParameters);
@@ -1319,6 +1321,3 @@ public class MySqlDao : IDao
         return workingHours;
     }
 }
-
-
-
