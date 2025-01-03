@@ -44,7 +44,8 @@ public sealed partial class ShellPage : Page
         "CustomerManagementPage",
         "InventoryManagementPage",
         "EmployeeManagementPage",
-        "RevenuePage"
+        "RevenuePage",
+        "EmployeeShiftPage"
     };
 
         var staffVisibleTags = new HashSet<string>
