@@ -4,6 +4,7 @@ using App.Contracts.Services;
 using App.Views;
 
 using Microsoft.UI.Xaml.Navigation;
+using App.Model;
 
 namespace App.ViewModels;
 
@@ -11,6 +12,13 @@ public partial class ShellViewModel : ObservableRecipient
 {
     [ObservableProperty]
     private bool isBackEnabled;
+    private User _currentUser;
+
+    public User CurrentUser
+    {
+        get => _currentUser;
+        set => SetProperty(ref _currentUser, value);
+    }
 
     [ObservableProperty]
     private object? selected;
