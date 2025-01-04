@@ -6,12 +6,16 @@ using System.Threading.Tasks;
 using App.Model;
 using App.Views;
 using Microsoft.UI.Xaml.Controls;
+using MySql.Data.MySqlClient;
 
 namespace App;
 public interface IDao
 {
     Category GetCategory(string type);
+    Category GetCategoryHome(string type);
+
     FullObservableCollection<Category> GetListTypeBeverage();
+    FullObservableCollection<Category> GetListTypeBeverageHome();
     FullObservableCollection<Invoice> GetPendingOrders();
 
     Task<List<string>> SuggestCustomerPhoneNumbers(string keyword);
@@ -22,6 +26,8 @@ public interface IDao
     List<string> GetAllPaymentMethod();
     bool CompletePendingOrder(Invoice order);
     FullObservableCollection<Product> GetAllBeverage();
+    FullObservableCollection<Product> GetAllBeverageHome();
+
     int GetProductPrice(int beverageId, string size);
     int GetComsumedPoints(string phoneNumber);
     void BonusPoints(int AmountDue, string CustomerPhone);
@@ -48,7 +54,7 @@ public interface IDao
     // Thông báo ngưỡng hết nguyn lịu
     bool UpdateMaterialThreshold(string materialCode, int newThreshold);
     List<Material> GetAllMaterialsOutStock();
-    
+
 
 
     // Quản lý người dùng
@@ -56,5 +62,18 @@ public interface IDao
     User GetUserByUsername(string username);
     bool AddUser(User user);
     bool UpdateUser(User user);
+    bool AddCategory(string categoryName, string imagePath);
+    bool DeleteCategory(string categoryName);
+    bool AddBeverage(string categoryName, string beverageName, string imagePath,
+                            List<(string size, decimal price)> sizesAndPrices,
+                            List<(string materialCode, int quantity)> recipe);
 
+    bool UpdateBeverage(Category category, Product updatedBeverage, List<(string size, decimal price)> sizesAndPrices, int status);
+    List<(string size, decimal price)> GetSizesAndPrices(int beverageId);
+
+    List<(string size, string materialName, int quantity, string unit)> GetRecipe(int beverageId);
+
+    bool UpdateCategoryStatus(string categoryName, int newStatus);
+
+    bool UpdateBeverageStatus(int beverageId, int newStatus);
 }

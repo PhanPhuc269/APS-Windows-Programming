@@ -1,4 +1,5 @@
 ﻿using System.Net;
+
 using App.Activation;
 using App.Contracts.Services;
 using App.Core.Contracts.Services;
@@ -74,6 +75,8 @@ public partial class App : Application
 
 
             // Views and ViewModels
+            services.AddTransient<ProductManagementViewModel>();
+            services.AddTransient<ProductManagementPage>();
             services.AddTransient<CustomerManagementViewModel>();
             services.AddTransient<CustomerManagementPage>();
             services.AddTransient<InventoryManagementViewModel>();
