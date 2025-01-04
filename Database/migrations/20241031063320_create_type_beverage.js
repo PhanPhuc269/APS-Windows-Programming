@@ -4,6 +4,7 @@ exports.up = function(knex) {
       table.increments('ID');
       table.string('CATEGORY', 40);
       table.string('IMAGE_PATH'); 
+      table.int('STATUS');
     });
   };
   

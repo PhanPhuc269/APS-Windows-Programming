@@ -5,6 +5,7 @@ exports.up = function(knex) {
       table.string('BEVERAGE_NAME', 40);
       table.integer('CATEGORY_ID').unsigned().references('ID').inTable('TYPE_BEVERAGE');
       table.string('IMAGE_PATH');
+      table.int('STATUS');
     });
   };
   
