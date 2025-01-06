@@ -150,7 +150,7 @@
 
 
             <ContentDialog x:Name="AddEditDialog" Title="Thêm/Sửa Nguyên Liệu" PrimaryButtonText="OK" SecondaryButtonText="Cancel" PrimaryButtonClick="AddEditDialogPrimaryButtonClick">
-                <StackPanel>
+                <StackPanel Spacing="10">
                     <TextBox x:Name="MaterialCodeTextBox" PlaceholderText="Mã nguyên liệu"/>
                     <TextBox x:Name="MaterialNameTextBox" PlaceholderText="Tên nguyên liệu"/>
                     <TextBox x:Name="QuantityTextBox" PlaceholderText="Số lượng"/>

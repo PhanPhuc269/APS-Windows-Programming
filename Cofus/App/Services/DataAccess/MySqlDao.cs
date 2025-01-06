@@ -891,7 +891,8 @@ public class MySqlDao : IDao
                 Role = row["EMP_ROLE"].ToString(),
                 AccessLevel = Convert.ToInt32(row["ACCESS_LEVEL"]),
                 Username = row["USERNAME"].ToString(),
-                Password = row["USER_PASSWORD"].ToString()
+                Password = row["USER_PASSWORD"].ToString(),
+                Salary = Convert.ToInt32(row["SALARY"])
             });
         }
 
@@ -919,7 +920,8 @@ public class MySqlDao : IDao
             Password = row["USER_PASSWORD"].ToString(),
             Email = row["EMAIL"]?.ToString(), // Ánh xạ email từ kết quả
             Role = row["EMP_ROLE"].ToString(),
-            AccessLevel = Convert.ToInt32(row["ACCESS_LEVEL"])
+            AccessLevel = Convert.ToInt32(row["ACCESS_LEVEL"]),
+            Salary = Convert.ToInt32(row["SALARY"])
         };
     }
 
@@ -935,14 +937,15 @@ public class MySqlDao : IDao
         }
 
         // Nếu Username không tồn tại, thêm người dùng
-        var query = "INSERT INTO ACCOUNT (EMP_NAME, EMP_ROLE, ACCESS_LEVEL, USERNAME, USER_PASSWORD) VALUES (@EmpName, @EmpRole, @AccessLevel, @Username, @UserPassword)";
+        var query = "INSERT INTO ACCOUNT (EMP_NAME, EMP_ROLE, ACCESS_LEVEL, USERNAME, USER_PASSWORD, SALARY) VALUES (@EmpName, @EmpRole, @AccessLevel, @Username, @UserPassword, @userSalary)";
         var parameters = new List<MySqlParameter>
     {
         new ("@EmpName", user.Name),
         new ("@EmpRole", "Staff"),
         new ("@AccessLevel", 2),
         new ("@Username", user.Username),
-        new ("@UserPassword", user.Password)
+        new ("@UserPassword", user.Password),
+        new ("@UserSalary", user.Salary)
     };
 
         try
@@ -1307,8 +1310,13 @@ public class MySqlDao : IDao
             FROM SHIFT_ATTENDANCE
             WHERE MONTH(SHIFT_DATE) = @Month AND YEAR(SHIFT_DATE) = @Year";
 
-        using (var connection = GetConnection())
-        {
+        //using (var connection = GetConnection())
+        //{
+            //Username = row["USERNAME"].ToString(),
+            //Password = row["USER_PASSWORD"].ToString(),
+            //AccessLevel = Convert.ToInt32(row["AccessLevel"]),
+            //Salary = Convert.ToInt32(row["SALARY"])
+        //};
             await connection.OpenAsync();
             using (var command = new MySqlCommand(query, connection))
             {
@@ -1362,7 +1370,8 @@ public class MySqlDao : IDao
             Role = row["EMP_ROLE"].ToString(),
             AccessLevel = Convert.ToInt32(row["ACCESS_LEVEL"]),
             Username = row["USERNAME"].ToString(),
-            Password = row["USER_PASSWORD"].ToString()
+            Password = row["USER_PASSWORD"].ToString(),
+            Salary = Convert.ToInt32(row["SALARY"])
         }).ToList();
     }
 
@@ -1394,7 +1403,7 @@ public class MySqlDao : IDao
 
     public bool UpdateEmployee(User user)
     {
-        var query = "UPDATE ACCOUNT SET EMP_NAME = @name, EMP_ROLE = @role, ACCESS_LEVEL = @accessLevel, USERNAME = @username, USER_PASSWORD = @password WHERE EMPLOYEE_ID = @id";
+        var query = "UPDATE ACCOUNT SET EMP_NAME = @name, EMP_ROLE = @role, ACCESS_LEVEL = @accessLevel, USERNAME = @username, USER_PASSWORD = @password, SALARY = @salary WHERE EMPLOYEE_ID = @id";
         var parameters = new List<MySqlParameter>
         {
             new MySqlParameter("@id", user.Id),
@@ -1402,7 +1411,8 @@ public class MySqlDao : IDao
             new MySqlParameter("@role", user.Role),
             new MySqlParameter("@accessLevel", user.AccessLevel),
             new MySqlParameter("@username", user.Username),
-            new MySqlParameter("@password", user.Password)
+            new MySqlParameter("@password", user.Password),
+            new MySqlParameter("@salary", user.Salary)
         };
         return ExecuteNonQuery(query, parameters) > 0;
     }

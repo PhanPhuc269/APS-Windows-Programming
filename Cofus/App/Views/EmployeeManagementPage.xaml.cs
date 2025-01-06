@@ -50,7 +50,8 @@ public sealed partial class EmployeeManagementPage : Page
             Role = FunctionTextBox.Text,
             AccessLevel = int.Parse(AccessLevelTextBox.Text),
             Username = ViewModel.SelectedEmployee.Username,
-            Password = ViewModel.SelectedEmployee.Password
+            Password = ViewModel.SelectedEmployee.Password,
+            Salary = int.Parse(SalaryTextBox.Text)
         };
         ViewModel.UpdateEmployee(user);
     }
@@ -64,6 +65,8 @@ public sealed partial class EmployeeManagementPage : Page
             EmployeeNameTextBox.Text = selectedUser.Name;
             FunctionTextBox.Text = selectedUser.Role;
             AccessLevelTextBox.Text = selectedUser.AccessLevel.ToString();
+            SalaryTextBox.Text = selectedUser.Salary.ToString();
+
         }
     }
     private void PreviousPageButton_Click(object sender, RoutedEventArgs e)
@@ -105,6 +108,7 @@ public sealed partial class EmployeeManagementPage : Page
                         worksheet.Cell(1, 2).Value = "Tên nhân viên";
                         worksheet.Cell(1, 3).Value = "Vai trò";
                         worksheet.Cell(1, 4).Value = "Cấp độ truy cập";
+                        worksheet.Cell(1, 5).Value = "Lương";
 
                         var row = 2;
                         foreach (var user in ViewModel.FilteredUser)
@@ -113,6 +117,7 @@ public sealed partial class EmployeeManagementPage : Page
                             worksheet.Cell(row, 2).Value = user.Name;
                             worksheet.Cell(row, 3).Value = user.Role;
                             worksheet.Cell(row, 4).Value = user.AccessLevel;
+                            worksheet.Cell(row, 5).Value = user.Salary;
                             row++;
                         }
 
@@ -170,6 +175,7 @@ public sealed partial class EmployeeManagementPage : Page
             EmployeeNameTextBox.Text = ViewModel.SelectedEmployee.Name;
             FunctionTextBox.Text = ViewModel.SelectedEmployee.Role;
             AccessLevelTextBox.Text = ViewModel.SelectedEmployee.AccessLevel.ToString();
+            SalaryTextBox.Text = ViewModel.SelectedEmployee.Salary.ToString();
             AddEditDialog.Title = "Sửa Thông Tin";
             AddEditDialog.ShowAsync();
         }
@@ -181,6 +187,7 @@ public sealed partial class EmployeeManagementPage : Page
         EmployeeNameTextBox.Text = string.Empty;
         FunctionTextBox.Text = string.Empty;
         AccessLevelTextBox.Text = string.Empty;
+        SalaryTextBox.Text = string.Empty;
         AddEditDialog.Title = "Thêm Nhân Viên";
         AddEditDialog.ShowAsync();
     }
