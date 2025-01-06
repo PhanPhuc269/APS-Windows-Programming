@@ -70,6 +70,13 @@
                         </DataTemplate>
                     </TextBox.HeaderTemplate>
                 </TextBox>
+                <TextBox Foreground="Black" Name="signupEmailTextBox" Width="250" Padding="10" FontSize="15" Margin="0,0,0,10">
+                    <TextBox.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="Email:" Foreground="White"/>
+                        </DataTemplate>
+                    </TextBox.HeaderTemplate>
+                </TextBox>
                 <PasswordBox Foreground="Black" Name="signupPasswordBox" Width="250" Padding="10" FontSize="15" Margin="0,0,0,10">
                     <PasswordBox.HeaderTemplate>
                         <DataTemplate>
@@ -83,6 +90,7 @@
                             <TextBlock Text="Nhập lại mật khẩu:" Foreground="White"/>
                         </DataTemplate>
                     </PasswordBox.HeaderTemplate>
+                    
                 </PasswordBox>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20">
                     <Button x:Name="signupButton" Content="Đăng ký" Width="110" FontSize="15" Padding="10" Background="RoyalBlue" Foreground="White" Click="Signup_Click"/>

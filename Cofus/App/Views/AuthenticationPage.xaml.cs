@@ -178,10 +178,10 @@ public sealed partial class AuthenticationPage : Page
         var username = signupUsernameTextBox.Text;
         var password = signupPasswordBox.Password;
         var confirmPassword = signupConfirmPasswordBox.Password;
-
-        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+        var email = signupEmailTextBox.Text;
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(email))
         {
-            await ShowContentDialog("Thông báo", "Tên đăng nhập hoặc mật khẩu không thể trống.");
+            await ShowContentDialog("Thông báo", "Tên đăng nhập, Email hoặc mật khẩu không thể trống.");
             return;
         }
 
@@ -204,7 +204,8 @@ public sealed partial class AuthenticationPage : Page
         {
             Name = fullName,
             Username = username,
-            Password = hashedPassword // Lưu hash mật khẩu vào database
+            Password = hashedPassword, // Lưu hash mật khẩu vào database
+            Email = email
         };
 
         var result = _dao.AddUser(user);
@@ -215,7 +216,7 @@ public sealed partial class AuthenticationPage : Page
         }
         else
         {
-            await ShowContentDialog("Error", $"Người dùng đăng kí thất bại. Tên đăng nhập '{username}' đã tồn tại.");
+            await ShowContentDialog("Error", $"Người dùng đăng kí thất bại. Tên đăng nhập '{username}' hoặc Email '{email}' đã tồn tại.");
         }
     }
 
