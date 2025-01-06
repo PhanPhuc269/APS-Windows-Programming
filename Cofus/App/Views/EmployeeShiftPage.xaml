@@ -162,7 +162,7 @@
 				<!-- Mã nhân viên -->
 				<TextBox x:Name="EmployeeCodeTextBox" Header="Tên đăng nhập của nhân viên" PlaceholderText="Username" Margin="0,10,0,10"/>
 				<!-- Nút gửi mã xác thực -->
-				<Button Content="Gửi mã xác thực" Click="OnSendAuthCodeClick" Foreground="Black" Background="Brown" Margin="0,10,0,10"/>
+				<Button Content="Gửi mã xác thực" Click="OnSendAuthCodeClick" Foreground="white" Background="Brown" Margin="0,10,0,10"/>
 				<!-- Mã xác thực -->
 				<PasswordBox x:Name="AuthCodePasswordBox" Header="Mã xác thực" PlaceholderText="Nhập mã xác thực" Margin="0,10,0,10"/>
 

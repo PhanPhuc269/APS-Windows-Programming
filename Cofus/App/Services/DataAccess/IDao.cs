@@ -81,10 +81,12 @@ public interface IDao
     //Quản lý ca làm việc
     List<ShiftAttendance> GetShiftAttendances(DateTime startDate, DateTime endDate);
     Task<bool> AddShiftAttendance(Shift shift, int employeeId);
+    Task<bool> CheckShiftAttendance(int employeeId, Shift shift);
 
     List<User> SearchEmployees(string keyword);
     public bool DeleteEmployee(string userId);
 
     bool UpdateEmployee(User user);
     bool UpdateBeverageStatus(int beverageId, int newStatus);
+
 }

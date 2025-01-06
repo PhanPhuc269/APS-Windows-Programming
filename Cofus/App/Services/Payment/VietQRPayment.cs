@@ -13,8 +13,8 @@ namespace App;
 public class VietQRPayment:IPaymentMethod
 {
     private readonly string _bankId = "MB"; // ID ngân hàng
-    private readonly string _accountNo = "0398103087"; // Số tài khoản
-    private readonly string _accountName = "HUYNH MAN"; // Tên chủ tài khoản
+    private readonly string _accountNo = "0363353610"; // Số tài khoản
+    private readonly string _accountName = "PHAN HONG PHUC"; // Tên chủ tài khoản
     private readonly string _template = "full"; // Template QR (có thể thay đổi)
     private bool _isSuccess = false;
 
@@ -71,7 +71,7 @@ public class VietQRPayment:IPaymentMethod
             return true; // Nếu đã thành công, trả về true ngay lập tức
         }
 
-        var url = "https://script.googleusercontent.com/macros/echo?user_content_key=M58C6O-90DDGYlaDJmXX3JrA_yJHD47P091uMLQQbugPvhzTK43gQ9lgkbBCsRF-Phnxxdp3s2J6VRCvd_0fe7XErsJqEtSem5_BxDlH2jW0nuo2oDemN9CCS2h10ox_1xSncGQajx_ryfhECjZEnKfR2S4I563Nwr1MhF95pI1y5Ct-GMUCsYQ7S_SuhiLJVa2sm447-s78wdFEfDBg89K4j4CcvwNVfRppXMJo5bkfxxMg--JwxQ&lib=MdDEL8iyKTVTgWPGij_Q9AmWDIxTrJnKJ"; // Thay đổi URL theo API của bạn
+        var url = "https://script.google.com/macros/s/AKfycbyQdQ6RRVmYOv80xyZOXvhE5w_eeBisPE8_aDgpgKXW6wHZmXq6CA9BBiYO0bvJfcWl/exec"; // Thay đổi URL theo API của bạn
         using (var client = new HttpClient())
         {
             try
