@@ -84,6 +84,8 @@ public partial class App : Application
             services.AddTransient<EmployeeShiftPage>();
             services.AddTransient<EmployeeManagementViewModel>();
             services.AddTransient<EmployeeManagementPage>();
+            services.AddTransient<ProductManagementViewModel>();
+            services.AddTransient<ProductManagementPage>();
             services.AddTransient<CustomerManagementViewModel>();
             services.AddTransient<CustomerManagementPage>();
             services.AddTransient<InventoryManagementViewModel>();

@@ -69,15 +69,12 @@
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE748;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_Revenue" 
-                 Tag="RevenuePage" helpers:NavigationHelper.NavigateTo="App.ViewModels.RevenueViewModel">
-
+                <NavigationViewItem x:Uid="Shell_Revenue" Tag="RevenuePage" helpers:NavigationHelper.NavigateTo="App.ViewModels.RevenueViewModel">
                     <NavigationViewItem.Icon>
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE716;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_EmployeeShift" 
- Tag="EmployeeShiftPage" helpers:NavigationHelper.NavigateTo="App.ViewModels.EmployeeShiftViewModel">
+                <NavigationViewItem x:Uid="Shell_EmployeeShift" Tag="EmployeeShiftPage" helpers:NavigationHelper.NavigateTo="App.ViewModels.EmployeeShiftViewModel">
                     <NavigationViewItem.Icon>
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE779;"/>
                     </NavigationViewItem.Icon>
@@ -94,11 +91,15 @@
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 <NavigationViewItem x:Uid="Shell_EmployeeShift" helpers:NavigationHelper.NavigateTo="App.ViewModels.EmployeeShiftViewModel">
+                <NavigationViewItem.Icon>
+                    <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe7c3;"/>
+                </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Uid="Shell_ProductManagement" helpers:NavigationHelper.NavigateTo="App.ViewModels.ProductManagementViewModel">
                     <NavigationViewItem.Icon>
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe7c3;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-
             </NavigationView.MenuItems>
             <NavigationView.HeaderTemplate>
                 <DataTemplate>

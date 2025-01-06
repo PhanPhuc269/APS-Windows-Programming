@@ -8,6 +8,7 @@ using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Mysqlx.Notice;
 using System.Data;
+using System.Diagnostics;
 
 namespace App;
 
@@ -165,6 +166,7 @@ public class MySqlDao : IDao
 
         return rowsAffected;
     }
+
     public Category GetCategory(string type)
     {
 
@@ -194,27 +196,108 @@ public class MySqlDao : IDao
 
         return new Category(type, new FullObservableCollection<Product>(products));
     }
+    public Category GetCategoryHome(string type)
+    {
+
+        var query = @"SELECT b.ID, b.BEVERAGE_NAME, b.IMAGE_PATH, tb.CATEGORY 
+                          FROM BEVERAGE b
+                          INNER JOIN TYPE_BEVERAGE tb ON b.CATEGORY_ID= tb.ID 
+                          WHERE tb.CATEGORY = @type and b.status = 1";
+        var parameters = new List<MySqlParameter>
+        {
+            new ("@type", type)
+        };
+
+        var result = ExecuteSelectQuery(query, parameters);
+
+        var products = new List<Product>();
+
+        foreach (var row in result)
+        {
+            products.Add(new Product
+            {
+                Id = Convert.ToInt32(row["ID"]),
+                Name = row["BEVERAGE_NAME"].ToString(),
+                Image = row["IMAGE_PATH"].ToString(),
+                TypeBeverageId = Convert.ToInt32(row["ID"])
+            });
+        }
+
+        return new Category(type, new FullObservableCollection<Product>(products));
+    }
 
     public FullObservableCollection<Category> GetListTypeBeverage()
     {
-        var query = "SELECT * FROM TYPE_BEVERAGE";
+        var query = "SELECT ID, CATEGORY, STATUS FROM TYPE_BEVERAGE";
         var result = ExecuteSelectQuery(query);
 
         var categories = new FullObservableCollection<Category>();
-        categories.Add(new Category("All", GetAllBeverage()));
+
+        // Lấy danh sách tất cả sản phẩm
+        var allProducts = GetAllBeverage();
+
+        foreach (var row in result)
+        {
+            // Lấy danh sách sản phẩm thuộc danh mục hiện tại
+            var categoryId = Convert.ToInt32(row["ID"]);
+            var products = new FullObservableCollection<Product>(
+                allProducts.Where(p => p.TypeBeverageId == categoryId)
+            );
+
+            categories.Add(new Category(
+                row["CATEGORY"].ToString(),
+                products,
+                Convert.ToInt32(row["STATUS"]) // Đảm bảo lấy đúng trạng thái
+            ));
+        }
+
+        return categories;
+    }
+
+
+    public FullObservableCollection<Category> GetListTypeBeverageHome()
+    {
+        var query = "SELECT * FROM TYPE_BEVERAGE where status = 1";
+        var result = ExecuteSelectQuery(query);
+
+        var categories = new FullObservableCollection<Category>();
+        categories.Add(new Category("All", GetAllBeverageHome()));
 
         foreach (var row in result)
         {
             var type = row["CATEGORY"].ToString();
-            categories.Add(new Category(type, GetCategory(type).Products));
+            categories.Add(new Category(type, GetCategoryHome(type).Products));
         }
 
         return categories;
     }
 
     public FullObservableCollection<Product> GetAllBeverage()
+{
+    var query = "SELECT * FROM BEVERAGE";
+    var result = ExecuteSelectQuery(query);
+
+    var products = new List<Product>();
+
+    foreach (var row in result)
     {
-        var query = "SELECT * FROM BEVERAGE";
+        products.Add(new Product
+        {
+            Id = Convert.ToInt32(row["ID"]),
+            Name = row["BEVERAGE_NAME"].ToString(),
+            Image = row["IMAGE_PATH"].ToString(),
+            TypeBeverageId = Convert.ToInt32(row["CATEGORY_ID"]),
+            Status = Convert.ToInt32(row["STATUS"]) // Thêm dòng này để ánh xạ giá trị trạng thái
+        });
+    }
+
+    return new FullObservableCollection<Product>(products);
+}
+
+
+    public FullObservableCollection<Product> GetAllBeverageHome()
+    {
+        var query = "SELECT * FROM BEVERAGE where status = 1";
         var result = ExecuteSelectQuery(query);
 
         var products = new List<Product>();
@@ -232,7 +315,6 @@ public class MySqlDao : IDao
 
         return new FullObservableCollection<Product>(products);
     }
-
     public int GetProductPrice(int beverageId, string size)
     {
         var query = @"SELECT PRICE FROM BEVERAGE_SIZE WHERE BEVERAGE_ID = @id AND SIZE = @size";
@@ -762,7 +844,7 @@ public class MySqlDao : IDao
 
         return materials;
     }
-    
+
     public List<Material> getAllThreshold()
     {
         var query = "SELECT * FROM MATERIAL";
@@ -988,7 +1070,7 @@ public class MySqlDao : IDao
                 TotalRevenue = row["TotalRevenue"] != DBNull.Value ? Convert.ToInt32(row["TotalRevenue"]) : 0,
                 OrderCount = row["OrderCount"] != DBNull.Value ? Convert.ToInt32(row["OrderCount"]) : 0,
                 CashAmount = row["CashAmount"] != DBNull.Value ? Convert.ToInt32(row["CashAmount"]) : 0
-            }; 
+            };
         }
 
         return new Revenue();
@@ -1317,46 +1399,45 @@ public class MySqlDao : IDao
             //AccessLevel = Convert.ToInt32(row["AccessLevel"]),
             //Salary = Convert.ToInt32(row["SALARY"])
         //};
-            await connection.OpenAsync();
-            using (var command = new MySqlCommand(query, connection))
-            {
-                command.Parameters.AddWithValue("@Month", month);
-                command.Parameters.AddWithValue("@Year", year);
+            //await connection.OpenAsync();
+            //using (var command = new MySqlCommand(query, connection))
+            //{
+            //    command.Parameters.AddWithValue("@Month", month);
+            //    command.Parameters.AddWithValue("@Year", year);
 
-                using (var reader = await command.ExecuteReaderAsync())
-                {
-                    while (await reader.ReadAsync())
-                    {
-                        int employeeId = reader.GetInt32("EMPLOYEE_ID");
-                        DateTime shiftDate = reader.GetDateTime("SHIFT_DATE");
-                        bool morningShift = reader.GetBoolean("MORNING_SHIFT");
-                        bool afternoonShift = reader.GetBoolean("AFTERNOON_SHIFT");
+            //    using (var reader = await command.ExecuteReaderAsync())
+            //    {
+            //        while (await reader.ReadAsync())
+            //        {
+            //            int employeeId = reader.GetInt32("EMPLOYEE_ID");
+            //            DateTime shiftDate = reader.GetDateTime("SHIFT_DATE");
+            //            bool morningShift = reader.GetBoolean("MORNING_SHIFT");
+            //            bool afternoonShift = reader.GetBoolean("AFTERNOON_SHIFT");
 
-                        double hoursWorked = 0;
-                        if (morningShift)
-                        {
-                            hoursWorked += 4.5; // Giả sử ca sáng là 4.5 giờ
-                        }
-                        if (afternoonShift)
-                        {
-                            hoursWorked += 4.95; // Giả sử ca chiều là 4.95 giờ
-                        }
+            //            double hoursWorked = 0;
+            //            if (morningShift)
+            //            {
+            //                hoursWorked += 4.5; // Giả sử ca sáng là 4.5 giờ
+            //            }
+            //            if (afternoonShift)
+            //            {
+            //                hoursWorked += 4.95; // Giả sử ca chiều là 4.95 giờ
+            //            }
 
-                        if (workingHours.ContainsKey(employeeId))
-                        {
-                            workingHours[employeeId] += hoursWorked;
-                        }
-                        else
-                        {
-                            workingHours[employeeId] = hoursWorked;
-                        }
-                    }
-                }
-            }
-        }
-
+            //            if (workingHours.ContainsKey(employeeId))
+            //            {
+            //                workingHours[employeeId] += hoursWorked;
+            //            }
+            //            else
+            //            {
+            //                workingHours[employeeId] = hoursWorked;
+            //            }
+            //        }
+            //    }
+            //}
         return workingHours;
     }
+
 
     public List<User> SearchEmployees(string keyword)
     {
@@ -1416,7 +1497,314 @@ public class MySqlDao : IDao
         };
         return ExecuteNonQuery(query, parameters) > 0;
     }
+    public bool AddCategory(string categoryName, string imagePath)
+    {
+        var query = "INSERT INTO TYPE_BEVERAGE (CATEGORY, IMAGE_PATH, status) VALUES (@category, @imagePath, 1)";
+        var parameters = new List<MySqlParameter>
+    {
+        new ("@category", categoryName),
+        new ("@imagePath", imagePath)
+    };
+
+        return ExecuteNonQuery(query, parameters) > 0;
+    }
+    public bool DeleteCategory(string categoryName)
+    {
+        var query = "DELETE FROM TYPE_BEVERAGE WHERE CATEGORY = @category";
+        var parameters = new List<MySqlParameter>
+    {
+        new ("@category", categoryName)
+    };
+
+        return ExecuteNonQuery(query, parameters) > 0;
+    }
 
 
+    public bool AddBeverage(string categoryName, string beverageName, string imagePath,
+                        List<(string size, decimal price)> sizesAndPrices,
+                        List<(string materialCode, int quantity)> recipe)
+    {
+        try
+        {
+            // 1. Thêm Beverage vào bảng BEVERAGE
+            var beverageQuery = @"
+            INSERT INTO BEVERAGE (BEVERAGE_NAME, CATEGORY_ID, IMAGE_PATH, STATUS)
+            SELECT @beverageName, ID, @imagePath, 1
+            FROM TYPE_BEVERAGE
+            WHERE CATEGORY = @categoryName";
+
+            var beverageParameters = new List<MySqlParameter>
+        {
+            new MySqlParameter("@beverageName", beverageName),
+            new MySqlParameter("@imagePath", imagePath),
+            new MySqlParameter("@categoryName", categoryName)
+        };
+
+            // Thực thi câu truy vấn để thêm Beverage
+            if (ExecuteNonQuery(beverageQuery, beverageParameters) <= 0)
+            {
+                Debug.WriteLine("Không thể thêm Beverage.");
+                return false;
+            }
+
+            // 2. Lấy Beverage ID sau khi thêm
+            long beverageId = GetLastInsertedId();
+            if (beverageId <= 0)
+            {
+                Debug.WriteLine("Không thể lấy Beverage ID.");
+                return false;
+            }
+
+            // 3. Thêm các Size và Price vào bảng BEVERAGE_SIZE
+            foreach (var (size, price) in sizesAndPrices)
+            {
+                var sizeQuery = @"
+                INSERT INTO BEVERAGE_SIZE (BEVERAGE_ID, SIZE, PRICE)
+                VALUES (@beverageId, @size, @price)";
+
+                var sizeParameters = new List<MySqlParameter>
+            {
+                new MySqlParameter("@beverageId", beverageId),
+                new MySqlParameter("@size", size),
+                new MySqlParameter("@price", price)
+            };
+
+                // Thực thi câu truy vấn để thêm Size và Price
+                if (ExecuteNonQuery(sizeQuery, sizeParameters) <= 0)
+                {
+                    Debug.WriteLine($"Không thể thêm Size: {size} với Price: {price}");
+                    return false;
+                }
+            }
+
+            // 4. Thêm các nguyên liệu vào bảng RECIPE
+            foreach (var (size, price) in sizesAndPrices)
+            {
+                long beverageSizeId = GetLastInsertedId();
+                if (beverageSizeId <= 0)
+                {
+                    Debug.WriteLine("Không thể lấy Beverage_Size ID.");
+                    return false;
+                }
+
+                foreach (var (materialCode, quantity) in recipe)
+                {
+                    // Lấy MATERIAL_ID từ MATERIAL_CODE
+                    long materialId = GetMaterialIdByCode(materialCode);
+                    if (materialId <= 0)
+                    {
+                        Debug.WriteLine($"Không tìm thấy MATERIAL_CODE: {materialCode}.");
+                        return false;
+                    }
+
+                    // Thêm vào RECIPE
+                    var recipeQuery = @"
+                    INSERT INTO RECIPE (BEVERAGE_SIZE_ID, MATERIAL_ID, QUANTITY)
+                    VALUES (@beverageSizeId, @materialId, @quantity)";
+
+                    var recipeParameters = new List<MySqlParameter>
+                {
+                    new MySqlParameter("@beverageSizeId", beverageSizeId),
+                    new MySqlParameter("@materialId", materialId),
+                    new MySqlParameter("@quantity", quantity)
+                };
+
+                    // Thực thi câu truy vấn để thêm vào RECIPE
+                    if (ExecuteNonQuery(recipeQuery, recipeParameters) <= 0)
+                    {
+                        Debug.WriteLine($"Không thể thêm RECIPE cho MATERIAL_ID: {materialId}.");
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Lỗi khi thêm Beverage, các Size/Price và Recipe: {ex.Message}");
+            return false;
+        }
+    }
+
+    // Lấy LAST_INSERT_ID
+    private long GetLastInsertedId()
+    {
+        var query = "SELECT LAST_INSERT_ID();";
+        using (var connection = new MySqlConnection(_connectionString))
+        {
+            using (var command = new MySqlCommand(query, connection))
+            {
+                connection.Open();
+                return Convert.ToInt64(command.ExecuteScalar());
+            }
+        }
+    }
+
+    // Lấy MATERIAL_ID từ MATERIAL_CODE
+    private long GetMaterialIdByCode(string materialCode)
+    {
+        var query = "SELECT ID FROM MATERIAL WHERE MATERIAL_CODE = @materialCode";
+        var parameters = new List<MySqlParameter>
+    {
+        new MySqlParameter("@materialCode", materialCode)
+    };
+
+        using (var connection = new MySqlConnection(_connectionString))
+        {
+            using (var command = new MySqlCommand(query, connection))
+            {
+                command.Parameters.AddRange(parameters.ToArray());
+                connection.Open();
+                return Convert.ToInt64(command.ExecuteScalar());
+            }
+        }
+    }
+
+    // Thêm vào RECIPE
+    private bool InsertRecipe(long beverageSizeId, long materialId, int quantity)
+    {
+        var query = @"
+        INSERT INTO RECIPE (BEVERAGE_SIZE_ID, MATERIAL_ID, QUANTITY)
+        VALUES (@beverageSizeId, @materialId, @quantity)";
+
+        var parameters = new List<MySqlParameter>
+    {
+        new MySqlParameter("@beverageSizeId", beverageSizeId),
+        new MySqlParameter("@materialId", materialId),
+        new MySqlParameter("@quantity", quantity)
+    };
+
+        return ExecuteNonQuery(query, parameters) > 0;
+    }
+
+    public bool UpdateBeverage(Category category, Product updatedBeverage, List<(string size, decimal price)> sizesAndPrices, int status)
+    {
+        try
+        {
+            // Cập nhật thông tin cơ bản trong bảng BEVERAGE
+            var query = @"
+        UPDATE BEVERAGE 
+        SET BEVERAGE_NAME = @name, 
+            IMAGE_PATH = @image,
+            STATUS = @status
+        WHERE ID = @id";
+
+            var parameters = new List<MySqlParameter>
+        {
+            new MySqlParameter("@name", updatedBeverage.Name),
+            new MySqlParameter("@image", updatedBeverage.Image),
+            new MySqlParameter("@status", status),
+            new MySqlParameter("@id", updatedBeverage.Id)
+        };
+
+            // Thực hiện cập nhật thông tin cơ bản
+            if (ExecuteNonQuery(query, parameters) <= 0)
+            {
+                Debug.WriteLine($"Cập nhật thông tin cơ bản của Beverage thất bại: {updatedBeverage.Id}");
+                return false;
+            }
+
+            // Cập nhật size và price
+            foreach (var (size, price) in sizesAndPrices)
+            {
+                var sizeQuery = @"
+            UPDATE BEVERAGE_SIZE
+            SET PRICE = @price
+            WHERE BEVERAGE_ID = @beverageId AND SIZE = @size";
+
+                var sizeParams = new List<MySqlParameter>
+            {
+                new MySqlParameter("@price", price),
+                new MySqlParameter("@beverageId", updatedBeverage.Id),
+                new MySqlParameter("@size", size)
+            };
+
+                if (ExecuteNonQuery(sizeQuery, sizeParams) <= 0)
+                {
+                    Debug.WriteLine($"Cập nhật kích thước/giá thất bại cho Beverage ID: {updatedBeverage.Id}");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Lỗi khi cập nhật Beverage: {ex.Message}");
+            return false;
+        }
+    }
+
+
+    public List<(string size, decimal price)> GetSizesAndPrices(int beverageId)
+    {
+        var query = "SELECT SIZE, PRICE FROM BEVERAGE_SIZE WHERE BEVERAGE_ID = @beverageId";
+        var parameters = new List<MySqlParameter>
+    {
+        new MySqlParameter("@beverageId", beverageId)
+    };
+
+        var result = ExecuteSelectQuery(query, parameters);
+
+        return result.Select(row => (row["SIZE"].ToString(), Convert.ToDecimal(row["PRICE"]))).ToList();
+    }
+
+    public List<(string size, string materialName, int quantity, string unit)> GetRecipe(int beverageId)
+    {
+        var query = @"
+        SELECT 
+            bs.SIZE AS Size,
+            m.MATERIAL_NAME AS MaterialName,
+            r.QUANTITY AS Quantity,
+            m.UNIT AS Unit
+        FROM 
+            RECIPE r
+        JOIN 
+            MATERIAL m ON r.MATERIAL_ID = m.ID
+        JOIN 
+            BEVERAGE_SIZE bs ON r.BEVERAGE_SIZE_ID = bs.ID
+        WHERE 
+            bs.BEVERAGE_ID = @beverageId
+        ORDER BY 
+            bs.SIZE"; // Sắp xếp theo kích cỡ nếu cần
+        var parameters = new List<MySqlParameter>
+    {
+        new MySqlParameter("@beverageId", beverageId)
+    };
+
+        var result = ExecuteSelectQuery(query, parameters);
+
+        return result.Select(row => (
+            row["Size"].ToString(),
+            row["MaterialName"].ToString(),
+            Convert.ToInt32(row["Quantity"]),
+            row["Unit"].ToString()
+        )).ToList();
+    }
+
+    public bool UpdateCategoryStatus(string categoryName, int newStatus)
+    {
+        var query = "UPDATE TYPE_BEVERAGE SET STATUS = @newStatus WHERE CATEGORY = @categoryName";
+        var parameters = new List<MySqlParameter>
+    {
+        new ("@newStatus", newStatus),
+        new ("@categoryName", categoryName)
+    };
+
+        return ExecuteNonQuery(query, parameters) > 0;
+    }
+
+    public bool UpdateBeverageStatus(int beverageId, int newStatus)
+    {
+        var query = "UPDATE BEVERAGE SET STATUS = @newStatus WHERE ID = @beverageId";
+        var parameters = new List<MySqlParameter>
+    {
+        new ("@newStatus", newStatus),
+        new ("@beverageId", beverageId)
+    };
+
+        return ExecuteNonQuery(query, parameters) > 0;
+    }
 
 }

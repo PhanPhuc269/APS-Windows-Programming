@@ -5,6 +5,7 @@ namespace App.Model
 {
     public class Material : INotifyPropertyChanged
     {
+        private int id;
         private string materialCode;
         private string materialName;
         private int quantity;
@@ -21,6 +22,19 @@ namespace App.Model
         protected void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public int Id
+        {
+            get => id;
+            set
+            {
+                if (id != value)
+                {
+                    id = value;
+                    OnPropertyChanged(nameof(Id));
+                }
+            }
         }
 
         public string MaterialCode

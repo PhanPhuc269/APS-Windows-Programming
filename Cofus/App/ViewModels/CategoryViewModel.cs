@@ -15,10 +15,10 @@ public class CategoryViewModel
     public CategoryViewModel()
     {
         IDao dao = App.GetService<IDao>();//ServiceFactory.GetChildOf(typeof(IDao)) as IDao
-        ListTypeBeverages = dao.GetListTypeBeverage();
+        ListTypeBeverages = dao.GetListTypeBeverageHome();
     }
     public FullObservableCollection<Product> GetAllBeverage()
     {
-        return App.GetService<IDao>().GetAllBeverage();
+        return App.GetService<IDao>().GetAllBeverageHome();
     }
 }

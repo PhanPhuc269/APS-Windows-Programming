@@ -20,6 +20,7 @@ public class PageService : IPageService
         Configure<CustomerManagementViewModel, CustomerManagementPage>();
         Configure<EmployeeShiftViewModel, EmployeeShiftPage>();
         Configure<EmployeeManagementViewModel, EmployeeManagementPage>();
+        Configure<ProductManagementViewModel, ProductManagementPage>();
     }
 
     public Type GetPageType(string key)
