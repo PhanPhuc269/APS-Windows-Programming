@@ -54,7 +54,8 @@ public sealed partial class ShellPage : Page
         "SalePage",
         "CustomerManagementPage",
         "InventoryManagementPage",
-        "ProductManagement"
+        "ProductManagement",
+        "EmployeeShiftPage"
     };
 
         // Duyệt qua tất cả các mục trong NavigationViewControl

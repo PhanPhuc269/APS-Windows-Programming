@@ -62,6 +62,7 @@ public interface IDao
     User GetUserByUsername(string username);
     bool AddUser(User user);
 
+    User GetUserByEmail(string email);
     bool UpdateUser(User user);
     bool AddCategory(string categoryName, string imagePath);
     bool DeleteCategory(string categoryName);
