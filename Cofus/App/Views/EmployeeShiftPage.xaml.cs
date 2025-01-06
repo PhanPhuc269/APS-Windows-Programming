@@ -128,7 +128,7 @@ public sealed partial class EmployeeShiftPage : Page
         };
         if (await App.GetService<IDao>().CheckShiftAttendance(int.Parse(User.Id), shift))
         {
-            ShowError("Nhân viên đã chấm công.");
+            ShowError("Bạn đã chấm công cho ca này. Không thể chấm công lại");
             return;
         }
 
