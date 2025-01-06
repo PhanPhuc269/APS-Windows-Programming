@@ -78,7 +78,6 @@ public sealed partial class AuthenticationPage : Page
         }
     }
 
-
     private bool CheckLogin(string user, string password)
     {
         var existingUser = _dao.GetUserByUsername(user);

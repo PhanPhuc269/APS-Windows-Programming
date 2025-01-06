@@ -79,7 +79,7 @@ public sealed partial class ShellPage : Page
             }
         }
     }
-    
+
 
     private void ShellPage_Loaded(object sender, RoutedEventArgs e)
     {

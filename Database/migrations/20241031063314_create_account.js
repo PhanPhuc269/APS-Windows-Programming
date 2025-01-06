@@ -8,6 +8,7 @@ exports.up = function(knex) {
       table.string('USERNAME', 40).unique();
       table.string('USER_PASSWORD', 1000);
       table.string('EMAIL', 255);
+
     });
   };
   
