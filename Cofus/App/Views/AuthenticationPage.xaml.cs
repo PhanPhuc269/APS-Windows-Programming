@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
@@ -20,7 +20,6 @@ namespace App.Views;
 /// <summary>
 /// An empty page that can be used on its own or navigated to within a Frame.
 /// </summary>
-
 public sealed partial class AuthenticationPage : Page
 {
     private IDao _dao;
@@ -252,74 +251,53 @@ public sealed partial class AuthenticationPage : Page
                 if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(email))
                 {
                     var user = _dao.GetUserByUsername(username);
-                    if (user != null && user.Email == email)
+                    if (user == null)
                     {
-                        var newPassword = GenerateTemporaryPassword();
+                        await ShowContentDialog("Lỗi", "Tên đăng nhập không tồn tại trong hệ thống.");
+                        return;
+                    }
 
-                        // Cập nhật mật khẩu reset vào cơ sở dữ liệu
-                        user.Password = HashPassword(newPassword) ;
-                        var updated = _dao.UpdateUser(user);
+                    if (user.Email != email)
+                    {
+                        await ShowContentDialog("Lỗi", "Email không khớp với tên đăng nhập đã cung cấp.");
+                        return;
+                    }
 
-                        if (updated)
+                    var newPassword = GenerateTemporaryPassword();
+
+                    // Cập nhật mật khẩu mới trong cơ sở dữ liệu
+                    user.Password = HashPassword(newPassword);
+                    var updated = _dao.UpdateUser(user);
+
+                    if (updated)
+                    {
+                        if (await SendResetEmailAsync(email, newPassword))
                         {
-                            // Gửi email chỉ khi cập nhật mật khẩu thành công
-                            if (await SendResetEmailAsync(email, newPassword))
-                            {
-                                await new ContentDialog
-                                {
-                                    Title = "Thành công",
-                                    Content = "Mật khẩu mới đã được gửi tới email của bạn.",
-                                    CloseButtonText = "OK",
-                                    XamlRoot = this.Content.XamlRoot
-                                }.ShowAsync();
-                            }
-                            else
-                            {
-                                await new ContentDialog
-                                {
-                                    Title = "Thất bại",
-                                    Content = "Không thể gửi email. Vui lòng thử lại sau.",
-                                    CloseButtonText = "OK",
-                                    XamlRoot = this.Content.XamlRoot
-                                }.ShowAsync();
-                            }
+                            await ShowContentDialog("Thành công", "Mật khẩu mới đã được gửi tới email của bạn.");
                         }
                         else
                         {
-                            await new ContentDialog
-                            {
-                                Title = "Lỗi",
-                                Content = "Không thể cập nhật mật khẩu. Vui lòng thử lại sau.",
-                                CloseButtonText = "OK",
-                                XamlRoot = this.Content.XamlRoot
-                            }.ShowAsync();
+                            await ShowContentDialog("Thất bại", "Không thể gửi email. Vui lòng thử lại sau.");
                         }
+                    }
+                    else
+                    {
+                        await ShowContentDialog("Lỗi", "Không thể cập nhật mật khẩu. Vui lòng thử lại sau.");
                     }
                 }
                 else
                 {
-                    await new ContentDialog
-                    {
-                        Title = "Lỗi",
-                        Content = "Vui lòng nhập đầy đủ tên đăng nhập và email.",
-                        CloseButtonText = "OK",
-                        XamlRoot = this.Content.XamlRoot
-                    }.ShowAsync();
+                    await ShowContentDialog("Lỗi", "Vui lòng nhập đầy đủ tên đăng nhập và email.");
                 }
             }
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"An error occurred: {ex.Message}");
-            await new ContentDialog
-            {
-                Title = "Error",
-                Content = $"An error occurred: {ex.Message}",
-                CloseButtonText = "OK",
-                XamlRoot = this.Content.XamlRoot
-            }.ShowAsync();
+            await ShowContentDialog("Error", $"An error occurred: {ex.Message}");
         }
     }
+
     private string GenerateTemporaryPassword()
     {
         const string upperCaseChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
