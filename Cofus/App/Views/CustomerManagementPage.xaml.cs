@@ -69,6 +69,7 @@ public sealed partial class CustomerManagementPage : Page
         ClearInputFields();
         AddEditDialog.Title = "Thêm khách hàng";
         CustomerIdTextBox.Visibility = Visibility.Collapsed;
+        PointsTextBox.Visibility = Visibility.Collapsed;
         await AddEditDialog.ShowAsync();
     }
 
@@ -126,7 +127,7 @@ public sealed partial class CustomerManagementPage : Page
             CustomerName = CustomerNameTextBox.Text,
             PhoneNumber = PhoneNumberTextBox.Text,
             Email = EmailTextBox.Text,
-            Points = int.Parse(PointsTextBox.Text),
+            Points = string.IsNullOrEmpty(PointsTextBox.Text) ? 0 : int.Parse(PointsTextBox.Text),
         };
 
         if (!string.IsNullOrEmpty(CustomerIdTextBox.Text))
