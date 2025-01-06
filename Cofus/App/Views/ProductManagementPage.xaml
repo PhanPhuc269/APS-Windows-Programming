@@ -1,4 +1,4 @@
-﻿<Page
+<Page
     x:Class="App.Views.ProductManagementPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -10,189 +10,223 @@
     xmlns:control="using:ABI.Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d">
 
-	<Page.DataContext>
-		<vm:ProductManagementViewModel />
-	</Page.DataContext>
+    <Page.DataContext>
+        <vm:ProductManagementViewModel />
+    </Page.DataContext>
 
-	<Grid Height="auto">
-		<StackPanel>
-			<!-- Thanh công cụ với các nút -->
-			<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,10,10">
-				<Button Content="Thêm" Click="AddProduct_Click" Margin="5" />
-				<Button Content="Đổi trạng thái" Click="ToggleCategoryStatus_Click" Margin="5" IsEnabled="{x:Bind ViewModel.CanDelete, Mode=OneWay}" />
-			</StackPanel>
+    <Grid Background="#FFFFFF">
+        <StackPanel>
+            <!-- Tiêu đề trang -->
+            <TextBlock Text="Quản lý món nước và danh mục" 
+                       FontSize="28" 
+                       FontWeight="Bold" 
+                       Foreground="#4E342E" 
+                       HorizontalAlignment="Center" 
+                       Margin="0,20,0,20" />
+
+            <!-- Thanh công cụ với các nút -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,10,10">
+                <Button Content="Thêm danh mục" 
+                        Click="AddProduct_Click" 
+                        Margin="5" 
+                        Background="#6B4A39" 
+                        Foreground="White" 
+                        BorderBrush="#B49A8B" />
+                <Button Content="Đổi trạng thái bán" 
+                        Click="ToggleCategoryStatus_Click" 
+                        Margin="5" 
+                        IsEnabled="{x:Bind ViewModel.CanDelete, Mode=OneWay}"
+                        Background="#6B4A39" 
+                        Foreground="White" 
+                        BorderBrush="#B49A8B" />
+            </StackPanel>
+
+            <!-- Pivot hiển thị danh mục sản phẩm -->
+            <Pivot ItemsSource="{x:Bind ViewModel.ListTypeBeverages, Mode=OneWay}" SelectedItem="{x:Bind ViewModel.SelectedCategory, Mode=TwoWay}">
+                <Pivot.HeaderTemplate>
+                    <DataTemplate x:DataType="model:Category">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{x:Bind Name}" FontSize="14" Foreground="#6B4A39" />
+                            <TextBlock Text=" (" FontSize="14" Foreground="#6B4A39" />
+                            <TextBlock Text="{x:Bind Status}" FontSize="14" Foreground="#6B4A39" />
+                            <TextBlock Text=")" FontSize="14" Foreground="#6B4A39" />
+                        </StackPanel>
+                    </DataTemplate>
+                </Pivot.HeaderTemplate>
+                <Pivot.ItemTemplate>
+                    <DataTemplate x:DataType="model:Category">
+                        <PivotItem>
+                            <ScrollViewer VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
+                                    <!-- Nút thêm Beverage -->
+                                    <Button Content="Thêm món nước" 
+                                            Click="AddBeverage_Click" 
+                                            HorizontalAlignment="Right" 
+                                            Margin="10" 
+                                            Background="#6B4A39" 
+                                            Foreground="White" 
+                                            BorderBrush="#B49A8B" />
+
+                                    <GridView Padding="20,30,20,0" ItemsSource="{x:Bind Products}" IsItemClickEnabled="True" ItemClick="GridView_ItemClick" Height="660">
+                                        <GridView.ItemTemplate>
+                                            <DataTemplate x:DataType="model:Product">
+                                                <Grid>
+                                                    <Border BorderBrush="#6B4A39"
+                                                        BorderThickness="1"
+                                                        CornerRadius="5"
+                                                        Padding="16"
+                                                        Background="#F7F3F0" MinWidth="150">
+                                                        <StackPanel>
+                                                            <!-- Hình ảnh -->
+                                                            <Image Source="{x:Bind Image}" Height="120" Width="120" />
+
+                                                            <!-- Tên sản phẩm -->
+                                                            <TextBlock Text="{x:Bind Name}" FontWeight="Bold" Foreground="#6B4A39" Margin="10,0,0,0" TextAlignment="Center" />
+
+                                                            <!-- Các nút: Sửa và Xem chi tiết -->
+                                                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,0">
+                                                                <Button Content="Sửa" 
+                                                                Click="EditBeverage_Click" 
+                                                                Tag="{x:Bind}" 
+                                                                Margin="5,0" 
+                                                                Background="#6B4A39" 
+                                                                Foreground="White" 
+                                                                BorderBrush="#B49A8B" />
+                                                                <Button Content="Chi tiết" 
+                                                                Click="ViewDetails_Click" 
+                                                                Tag="{x:Bind}" 
+                                                                Margin="5,0" 
+                                                                Background="#6B4A39" 
+                                                                Foreground="White" 
+                                                                BorderBrush="#B49A8B" />
+                                                            </StackPanel>
+
+                                                            <!-- ToggleSwitch -->
+                                                            <ToggleSwitch
+                                                                Header="Trạng thái"
+                                                                IsOn="{x:Bind IsOn, Mode=TwoWay}"
+                                                                OnContent="Bán"
+                                                                OffContent="Nghỉ bán"
+                                                                Toggled="ToggleBeverageStatus_Toggled"
+                                                                HorizontalAlignment="Center"
+                                                                Margin="0,10,0,0"
+                                                                Foreground="#6B4A39" />
+                                                        </StackPanel>
+                                                    </Border>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </GridView.ItemTemplate>
+                                    </GridView>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </PivotItem>
+                    </DataTemplate>
+                </Pivot.ItemTemplate>
+            </Pivot>
+        </StackPanel>
+
+        <ContentDialog x:Name="AddCategoryDialog"
+            Title="Thêm danh mục"
+            PrimaryButtonText="Thêm"
+            CloseButtonText="Hủy"
+            PrimaryButtonClick="AddCategoryDialog_PrimaryButtonClick">
+                <StackPanel Spacing="10">
+                    <TextBox x:Name="CategoryNameTextBox" Header="Tên danh mục" PlaceholderText="Nhập tên danh mục" />
+                    <TextBox x:Name="ImagePathTextBox" Header="Đường dẫn ảnh" PlaceholderText="/Assets/example.jpg" />
+                </StackPanel>
+            </ContentDialog>
+
+            <!-- Dialog để xác nhận xóa danh mục -->
+            <ContentDialog x:Name="DeleteCategoryDialog"
+            Title="Xác nhận xóa"
+            PrimaryButtonText="Xóa"
+            CloseButtonText="Hủy"
+            PrimaryButtonClick="DeleteCategoryDialog_PrimaryButtonClick">
+                <StackPanel>
+                    <TextBlock Text="Bạn có chắc chắn muốn xóa danh mục này không?" />
+                    <TextBlock Text="{x:Bind ViewModel.SelectedCategory.Name, Mode=OneWay}" FontWeight="Bold" Foreground="Red" />
+                </StackPanel>
+            </ContentDialog>
+
+            <!-- Dialog để thêm Beverage -->
+            <ContentDialog x:Name="AddBeverageDialog"
+            Title="Thêm Beverage"
+            PrimaryButtonText="Thêm"
+            CloseButtonText="Hủy"
+            PrimaryButtonClick="AddBeverageDialog_PrimaryButtonClick">
+                <StackPanel Spacing="10">
+                    <TextBox x:Name="BeverageNameTextBox" Header="Tên Beverage" PlaceholderText="Nhập tên Beverage" />
+                    <TextBox x:Name="BeverageImagePathTextBox" Header="Đường dẫn ảnh" PlaceholderText="Nhập đường dẫn ảnh" />
+
+                    <!-- Nhập size -->
+                    <TextBox x:Name="BeverageSizeTextBox" Header="Kích thước (Size)" PlaceholderText="Nhập kích thước (S, M, L)" />
+
+                    <!-- Nhập giá -->
+                    <TextBox x:Name="BeveragePriceTextBox" Header="Giá" PlaceholderText="Nhập giá" />
+
+                    <!-- Phần Công Thức -->
+                    <TextBlock Text="Công thức" FontWeight="Bold" Margin="0,10,0,5" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="Thêm Nguyên Liệu" Click="AddMaterial_Click" />
+                    </StackPanel>
+                    <ListView x:Name="RecipeListView" Height="150" Margin="0,5,0,0">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="model:RecipeItem">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <TextBox Text="{x:Bind MaterialCode, Mode=TwoWay}" PlaceholderText="Mã nguyên liệu" Width="150"/>
+                                    <TextBox Text="{x:Bind Quantity, Mode=TwoWay}" PlaceholderText="Số lượng" Width="100"/>
+                                    <Button Content="Xóa" Click="RemoveMaterial_Click" Tag="{x:Bind}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </StackPanel>
+            </ContentDialog>
+
+        <!-- Dialog để chỉnh sửa Beverage -->
+        <ContentDialog x:Name="EditBeverageDialog"
+        Title="Sửa Beverage"
+        PrimaryButtonText="Lưu"
+        CloseButtonText="Hủy"
+        PrimaryButtonClick="EditBeverageDialog_PrimaryButtonClick">
+                <StackPanel Spacing="10">
+                    <TextBox x:Name="EditBeverageNameTextBox" Header="Tên Beverage" PlaceholderText="Nhập tên Beverage" />
+                    <TextBox x:Name="EditBeverageImagePathTextBox" Header="Đường dẫn ảnh" PlaceholderText="Nhập đường dẫn ảnh" />
+                    <TextBox x:Name="EditBeverageSizeTextBox" Header="Kích thước (Size)" PlaceholderText="Nhập kích thước (S, M, L)" />
+                    <TextBox x:Name="EditBeveragePriceTextBox" Header="Giá" PlaceholderText="Nhập giá" />
+                </StackPanel>
+         </ContentDialog>
 
 
-			<!-- Pivot hiển thị danh mục sản phẩm -->
-			<Pivot ItemsSource="{x:Bind ViewModel.ListTypeBeverages, Mode=OneWay}" SelectedItem="{x:Bind ViewModel.SelectedCategory, Mode=TwoWay}">
-				<Pivot.HeaderTemplate>
-					<DataTemplate x:DataType="model:Category">
-						<StackPanel Orientation="Horizontal">
-							<TextBlock Text="{x:Bind Name}" FontSize="14" />
-							<TextBlock Text=" (" FontSize="14" />
-							<TextBlock Text="{x:Bind Status}" FontSize="14" />
-							<TextBlock Text=")" FontSize="14" />
-						</StackPanel>
-					</DataTemplate>
-				</Pivot.HeaderTemplate>
-				<Pivot.ItemTemplate>
-					<DataTemplate x:DataType="model:Category">
-						<PivotItem>
-							<ScrollViewer VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Auto">
-								<StackPanel>
-									<!-- Nút thêm Beverage -->
-									<Button Content="Thêm Beverage" Click="AddBeverage_Click" HorizontalAlignment="Right" Margin="10" />
+        <ContentDialog x:Name="ViewDetailsDialog"
+        Title="Thông tin chi tiết"
+        CloseButtonText="Đóng">     
+            <StackPanel Spacing="10">
+                <!-- Tên món nước -->
+                <TextBlock Text="Tên:" FontWeight="Bold" />
+                <TextBlock x:Name="DetailBeverageNameTextBlock" Text="" Margin="0,0,0,10" />
 
-									<GridView Padding="20,60,20,0" ItemsSource="{x:Bind Products}" IsItemClickEnabled="True" ItemClick="GridView_ItemClick" Height="660">
-										<GridView.ItemTemplate>
-											<DataTemplate x:DataType="model:Product">
-												<Grid>
-													<Border BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}"
-															BorderThickness="1"
-															CornerRadius="5"
-															Padding="16"
-															Background="#ffff" MinWidth="150">
-														<StackPanel>
-															<!-- Hình ảnh -->
-															<Image Source="{x:Bind Image}" Height="120" Width="120" />
+                <!-- Các kích cỡ và giá -->
+                <TextBlock Text="Kích cỡ và giá:" FontWeight="Bold" />
+                <ListView x:Name="DetailSizePriceListView" Margin="0,0,0,10">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
 
-															<!-- Tên sản phẩm -->
-															<TextBlock Text="{x:Bind Name}" FontWeight="Bold" Foreground="Black" Margin="10,0,0,0" TextAlignment="Center" />
+                <!-- Công thức -->
+                <TextBlock Text="Công thức:" FontWeight="Bold" />
+                <ListView x:Name="DetailRecipeListView">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" />
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </StackPanel>
+        </ContentDialog>
 
-															<!-- Các nút: Sửa và Xem chi tiết -->
-															<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,0">
-																<Button Content="Sửa" Click="EditBeverage_Click" Tag="{x:Bind}" Margin="5,0" />
-																<Button Content="Chi tiết" Click="ViewDetails_Click" Tag="{x:Bind}" Margin="5,0" />
-															</StackPanel>
-
-															<!-- ToggleSwitch -->
-															<ToggleSwitch
-																Header="Trạng thái"
-																IsOn="{x:Bind IsOn, Mode=TwoWay}"
-																OnContent="Bán"
-																OffContent="Nghỉ bán"
-																Toggled="ToggleBeverageStatus_Toggled"
-																HorizontalAlignment="Center"
-																Margin="0,10,0,0" />
-														</StackPanel>
-													</Border>
-												</Grid>
-
-											</DataTemplate>
-
-										</GridView.ItemTemplate>
-									</GridView>
-								</StackPanel>
-							</ScrollViewer>
-						</PivotItem>
-					</DataTemplate>
-				</Pivot.ItemTemplate>
-			</Pivot>
-		</StackPanel>
-
-		<!-- Dialog để thêm danh mục -->
-		<ContentDialog x:Name="AddCategoryDialog"
-                       Title="Thêm danh mục"
-                       PrimaryButtonText="Thêm"
-                       CloseButtonText="Hủy"
-                       PrimaryButtonClick="AddCategoryDialog_PrimaryButtonClick">
-			<StackPanel Spacing="10">
-				<TextBox x:Name="CategoryNameTextBox" Header="Tên danh mục" PlaceholderText="Nhập tên danh mục" />
-				<TextBox x:Name="ImagePathTextBox" Header="Đường dẫn ảnh" PlaceholderText="/Assets/example.jpg" />
-			</StackPanel>
-		</ContentDialog>
-
-		<!-- Dialog để xác nhận xóa danh mục -->
-		<ContentDialog x:Name="DeleteCategoryDialog"
-                       Title="Xác nhận xóa"
-                       PrimaryButtonText="Xóa"
-                       CloseButtonText="Hủy"
-                       PrimaryButtonClick="DeleteCategoryDialog_PrimaryButtonClick">
-			<StackPanel>
-				<TextBlock Text="Bạn có chắc chắn muốn xóa danh mục này không?" />
-				<TextBlock Text="{x:Bind ViewModel.SelectedCategory.Name, Mode=OneWay}" FontWeight="Bold" Foreground="Red" />
-			</StackPanel>
-		</ContentDialog>
-
-		<!-- Dialog để thêm Beverage -->
-		<ContentDialog x:Name="AddBeverageDialog"
-                       Title="Thêm Beverage"
-                       PrimaryButtonText="Thêm"
-                       CloseButtonText="Hủy"
-                       PrimaryButtonClick="AddBeverageDialog_PrimaryButtonClick">
-			<StackPanel Spacing="10">
-				<TextBox x:Name="BeverageNameTextBox" Header="Tên Beverage" PlaceholderText="Nhập tên Beverage" />
-				<TextBox x:Name="BeverageImagePathTextBox" Header="Đường dẫn ảnh" PlaceholderText="Nhập đường dẫn ảnh" />
-
-				<!-- Nhập size -->
-				<TextBox x:Name="BeverageSizeTextBox" Header="Kích thước (Size)" PlaceholderText="Nhập kích thước (S, M, L)" />
-
-				<!-- Nhập giá -->
-				<TextBox x:Name="BeveragePriceTextBox" Header="Giá" PlaceholderText="Nhập giá" />
-
-				<!-- Phần Công Thức -->
-				<TextBlock Text="Công thức" FontWeight="Bold" Margin="0,10,0,5" />
-				<StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-					<Button Content="Thêm Nguyên Liệu" Click="AddMaterial_Click" />
-				</StackPanel>
-				<ListView x:Name="RecipeListView" Height="150" Margin="0,5,0,0">
-					<ListView.ItemTemplate>
-						<DataTemplate x:DataType="model:RecipeItem">
-							<StackPanel Orientation="Horizontal" Spacing="10">
-								<TextBox Text="{x:Bind MaterialCode, Mode=TwoWay}" PlaceholderText="Mã nguyên liệu" Width="150"/>
-								<TextBox Text="{x:Bind Quantity, Mode=TwoWay}" PlaceholderText="Số lượng" Width="100"/>
-								<Button Content="Xóa" Click="RemoveMaterial_Click" Tag="{x:Bind}" />
-							</StackPanel>
-						</DataTemplate>
-					</ListView.ItemTemplate>
-				</ListView>
-			</StackPanel>
-		</ContentDialog>
-
-		<!-- Dialog để chỉnh sửa Beverage -->
-		<ContentDialog x:Name="EditBeverageDialog"
-               Title="Sửa Beverage"
-               PrimaryButtonText="Lưu"
-               CloseButtonText="Hủy"
-               PrimaryButtonClick="EditBeverageDialog_PrimaryButtonClick">
-			<StackPanel Spacing="10">
-				<TextBox x:Name="EditBeverageNameTextBox" Header="Tên Beverage" PlaceholderText="Nhập tên Beverage" />
-				<TextBox x:Name="EditBeverageImagePathTextBox" Header="Đường dẫn ảnh" PlaceholderText="Nhập đường dẫn ảnh" />
-				<TextBox x:Name="EditBeverageSizeTextBox" Header="Kích thước (Size)" PlaceholderText="Nhập kích thước (S, M, L)" />
-				<TextBox x:Name="EditBeveragePriceTextBox" Header="Giá" PlaceholderText="Nhập giá" />
-			</StackPanel>
-		</ContentDialog>
-
-
-		<ContentDialog x:Name="ViewDetailsDialog"
-               Title="Thông tin chi tiết"
-               CloseButtonText="Đóng">
-			<StackPanel Spacing="10">
-				<!-- Tên món nước -->
-				<TextBlock Text="Tên:" FontWeight="Bold" />
-				<TextBlock x:Name="DetailBeverageNameTextBlock" Text="" Margin="0,0,0,10" />
-
-				<!-- Các kích cỡ và giá -->
-				<TextBlock Text="Kích cỡ và giá:" FontWeight="Bold" />
-				<ListView x:Name="DetailSizePriceListView" Margin="0,0,0,10">
-					<ListView.ItemTemplate>
-						<DataTemplate>
-							<TextBlock Text="{Binding}" />
-						</DataTemplate>
-					</ListView.ItemTemplate>
-				</ListView>
-
-				<!-- Công thức -->
-				<TextBlock Text="Công thức:" FontWeight="Bold" />
-				<ListView x:Name="DetailRecipeListView">
-					<ListView.ItemTemplate>
-						<DataTemplate>
-							<TextBlock Text="{Binding}" />
-						</DataTemplate>
-					</ListView.ItemTemplate>
-				</ListView>
-			</StackPanel>
-		</ContentDialog>
-
-	</Grid>
+    </Grid>
 </Page>
