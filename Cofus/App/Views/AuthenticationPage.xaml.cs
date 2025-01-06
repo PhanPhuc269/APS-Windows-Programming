@@ -215,7 +215,7 @@ public sealed partial class AuthenticationPage : Page
         }
         else
         {
-            await ShowContentDialog("Error", $"Người dùng đăng kí thất bại. Tên đăng nhập '{username}' đã tồn tại.");
+            await ShowContentDialog("Error", $"Người dùng đăng kí thất bại. Tên đăng nhập '{username}' hoặc Email '{email}' đã tồn tại.");
         }
     }
 
