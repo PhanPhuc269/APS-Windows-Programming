@@ -45,14 +45,16 @@ public sealed partial class ShellPage : Page
         "InventoryManagementPage",
         "EmployeeManagementPage",
         "RevenuePage",
-        "EmployeeShiftPage"
+        "EmployeeShiftPage",
+        "ProductManagement"
     };
 
         var staffVisibleTags = new HashSet<string>
     {
         "SalePage",
         "CustomerManagementPage",
-        "InventoryManagementPage"
+        "InventoryManagementPage",
+        "ProductManagement"
     };
 
         // Duyệt qua tất cả các mục trong NavigationViewControl
@@ -93,12 +95,20 @@ public sealed partial class ShellPage : Page
         //    }
         //}
         ConfigureNavigationMenu(App.CurrentUser?.Role);
+        string role = App.CurrentUser?.Role;
 
         foreach (var item in NavigationViewControl.MenuItems)
         {
-            if (item is NavigationViewItem navigationViewItem && navigationViewItem.Tag.ToString() == "SalePage")
+            
+            if (role =="Admin" && item is NavigationViewItem navigationViewItem && navigationViewItem.Tag.ToString() == "CustomerManagementPage")
             {
                 NavigationViewControl.SelectedItem = navigationViewItem;
+                ViewModel.NavigationService.NavigateTo("App.ViewModels.CustomerManagementViewModel");
+                break;
+            }
+            if (role == "Staff" && item is NavigationViewItem navigationViewItem2 && navigationViewItem2.Tag.ToString() == "SalePage")
+            {
+                NavigationViewControl.SelectedItem = navigationViewItem2;
                 ViewModel.NavigationService.NavigateTo("App.ViewModels.SalePageViewModel");
                 break;
             }

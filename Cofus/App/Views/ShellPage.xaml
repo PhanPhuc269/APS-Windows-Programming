@@ -85,19 +85,15 @@
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xEC08;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_EmployeeManagement" Tag="EmployeeManagementPage" helpers:NavigationHelper.NavigateTo="App.ViewModels.EmployeeManagementViewModel">
-                    <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE748;"/>
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
+                
                 <NavigationViewItem x:Uid="Shell_EmployeeShift" helpers:NavigationHelper.NavigateTo="App.ViewModels.EmployeeShiftViewModel">
                 <NavigationViewItem.Icon>
                     <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe7c3;"/>
                 </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_ProductManagement" helpers:NavigationHelper.NavigateTo="App.ViewModels.ProductManagementViewModel">
+                <NavigationViewItem x:Uid="Shell_ProductManagement" Tag="ProductManagement"  helpers:NavigationHelper.NavigateTo="App.ViewModels.ProductManagementViewModel">
                     <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe7c3;"/>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE923;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
             </NavigationView.MenuItems>
