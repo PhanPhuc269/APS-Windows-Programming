@@ -50,6 +50,7 @@
                     <Button x:Name="loginButton" Content="Đăng nhập" Width="110" FontSize="15" Padding="10" Background="RoyalBlue" Foreground="White" Click="Login_Click"/>
                     <Button x:Name="switchToSignUpButton" Content="Đăng ký" Width="110" FontSize="15" Padding="10" Background="Gray" Foreground="White" Click="SwitchToSignUp"/>
                 </StackPanel>
+                <Button x:Name="forgotPasswordButton" Content="Quên mật khẩu?" Width="250" FontSize="14" Padding="5" Background="Transparent" Foreground="RoyalBlue" Click="ForgotPassword_Click"/>
             </StackPanel>
 
             <!-- Giao diện "Sign Up" -->

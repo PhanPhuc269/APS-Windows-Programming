@@ -6,6 +6,8 @@ using MySql.Data.MySqlClient;
 using DotNetEnv;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Mysqlx.Notice;
+using System.Data;
 
 namespace App;
 
@@ -333,6 +335,55 @@ public class MySqlDao : IDao
 
         return orders;
     }
+    public List<HistoryOrder> GetBeveragesPurchasedByCustomer(string phoneNumber)
+    {
+        var query = @"
+        SELECT 
+            B.ID,
+            B.BEVERAGE_NAME,
+            B.IMAGE_PATH,
+            B.CATEGORY_ID,
+            OD.QUANTITY,
+            O.ORDER_TIME
+        FROM 
+            CUSTOMERS C
+        JOIN 
+            ORDERS O ON C.CUSTOMER_ID = O.CUSTOMER_ID
+        JOIN 
+            ORDER_DETAILS OD ON O.ORDER_ID = OD.ORDER_ID
+        JOIN 
+            BEVERAGE B ON OD.BEVERAGE_SIZE_ID = B.ID
+        WHERE 
+            C.PHONE_NUMBER = @phoneNumber
+        ORDER BY 
+            O.ORDER_TIME DESC;";
+
+        var parameters = new List<MySqlParameter>
+        {
+            new ("@phoneNumber", phoneNumber)
+        };
+
+        var result = ExecuteSelectQuery(query, parameters);
+
+        var products = new List<HistoryOrder>();
+
+        foreach (var row in result)
+        {
+            products.Add(new HistoryOrder
+            {
+                Id = Convert.ToInt32(row["ID"]),
+                Name = row["BEVERAGE_NAME"].ToString(),
+                Image = row["IMAGE_PATH"]?.ToString(),
+                TypeBeverageId = Convert.ToInt32(row["CATEGORY_ID"]),
+                Quantity = Convert.ToInt32(row["QUANTITY"]),
+                OrderTime = Convert.ToDateTime(row["ORDER_TIME"])
+            });
+        }
+
+        // Chuyển danh sách products thành JSON
+        return products;
+    }
+
 
     public async Task<object> ExecuteScalarAsync(string query, List<MySqlParameter> parameters)
     {
@@ -850,27 +901,11 @@ public class MySqlDao : IDao
 
     public User GetUserByUsername(string username)
     {
-        //var query = "SELECT * FROM ACCOUNT WHERE USERNAME = @username";
-        //var parameters = new List<MySqlParameter>
-        //{
-        //    new MySqlParameter("@username", username)
-        //};
-
-        //var result = ExecuteSelectQuery(query, parameters);
-
-        //if (result.Count == 0) return null;
-
-        //var row = result[0];
-        //return new User
-        //{
-        //    Username = row["USERNAME"].ToString(),
-        //    Password = row["USER_PASSWORD"].ToString()
-        //};
 
         var query = "SELECT * FROM ACCOUNT WHERE USERNAME = @username";
         var parameters = new List<MySqlParameter>
     {
-        new MySqlParameter("@username", username)
+        new ("@username", username)
     };
 
         var result = ExecuteSelectQuery(query, parameters);
@@ -880,13 +915,16 @@ public class MySqlDao : IDao
         var row = result[0];
         return new User
         {
+            Id = row["EMPLOYEE_ID"].ToString(),
             Username = row["USERNAME"].ToString(),
             Password = row["USER_PASSWORD"].ToString(),
+            Email = row["EMAIL"]?.ToString(), // Ánh xạ email từ kết quả
             Role = row["EMP_ROLE"].ToString(),
             AccessLevel = Convert.ToInt32(row["ACCESS_LEVEL"]),
             Salary = Convert.ToInt32(row["SALARY"])
         };
     }
+
 
     public bool AddUser(User user)
     {
@@ -902,12 +940,12 @@ public class MySqlDao : IDao
         var query = "INSERT INTO ACCOUNT (EMP_NAME, EMP_ROLE, ACCESS_LEVEL, USERNAME, USER_PASSWORD, SALARY) VALUES (@EmpName, @EmpRole, @AccessLevel, @Username, @UserPassword, @userSalary)";
         var parameters = new List<MySqlParameter>
     {
-        new MySqlParameter("@EmpName", user.Name),
-        new MySqlParameter("@EmpRole", "Staff"),
-        new MySqlParameter("@AccessLevel", 2),
-        new MySqlParameter("@Username", user.Username),
-        new MySqlParameter("@UserPassword", user.Password),
-        new MySqlParameter("@UserSalary", user.Salary)
+        new ("@EmpName", user.Name),
+        new ("@EmpRole", "Staff"),
+        new ("@AccessLevel", 2),
+        new ("@Username", user.Username),
+        new ("@UserPassword", user.Password),
+        new ("@UserSalary", user.Salary)
     };
 
         try
@@ -1140,33 +1178,184 @@ public class MySqlDao : IDao
         return materials;
     }
 
-
-
-
-
-
-
-
-
-    public User GetCurrentUser(string username)
+    public bool UpdateUser(User user)
     {
-        var query = "SELECT * FROM USERS WHERE USERNAME = @username"; // Modify according to your database schema
+        var query = @"
+        UPDATE ACCOUNT
+        SET USER_PASSWORD = @Password
+        WHERE USERNAME = @Username";
+
+        var parameters = new List<MySqlParameter>
+    {
+        new MySqlParameter("@Username", user.Username),
+        new MySqlParameter("@Password", user.Password) // Nếu cần mã hóa, mã hóa trước khi lưu
+    };
+
+        return ExecuteNonQuery(query, parameters) > 0;
+    }
+    public List<ShiftAttendance> GetShiftAttendances(DateTime startDate, DateTime endDate)
+    {
+        var shiftAttendances = new List<ShiftAttendance>();
+
+        string query = @"
+        SELECT sa.ID, sa.EMPLOYEE_ID, a.EMP_NAME, sa.SHIFT_DATE, sa.MORNING_SHIFT, sa.AFTERNOON_SHIFT, sa.NOTE, sa.CREATED_AT, sa.UPDATED_AT
+        FROM SHIFT_ATTENDANCE sa
+        JOIN ACCOUNT a ON sa.EMPLOYEE_ID = a.EMPLOYEE_ID
+        WHERE sa.SHIFT_DATE BETWEEN @StartDate AND @EndDate";
+
         var parameters = new List<MySqlParameter>
         {
-            new MySqlParameter("@username", username)
+            new ("@StartDate", startDate),
+            new ("@EndDate", endDate)
         };
 
         var result = ExecuteSelectQuery(query, parameters);
 
-        var row = result[0];
+        var shiftAttendanceDict = new Dictionary<int, ShiftAttendance>();
 
-        return new User
+        foreach (var row in result)
         {
-            Username = row["USERNAME"].ToString(),
-            Password = row["USER_PASSWORD"].ToString(),
-            AccessLevel = Convert.ToInt32(row["AccessLevel"]),
-            Salary = Convert.ToInt32(row["SALARY"])
-        };
+            int employeeId = Convert.ToInt32(row["EMPLOYEE_ID"]);
+            if (!shiftAttendanceDict.ContainsKey(employeeId))
+            {
+                var shiftAttendance = new ShiftAttendance
+                {
+                    Id = Convert.ToInt32(row["ID"]),
+                    EmployeeId = employeeId,
+                    Name = row["EMP_NAME"].ToString(),
+                    Shifts = new FullObservableCollection<Shift>()
+                };
+                shiftAttendanceDict[employeeId] = shiftAttendance;
+            }
+
+            var shift = new Shift
+            {
+                ShiftDate = Convert.ToDateTime(row["SHIFT_DATE"]),
+                MorningShift = Convert.ToBoolean(row["MORNING_SHIFT"]),
+                AfternoonShift = Convert.ToBoolean(row["AFTERNOON_SHIFT"]),
+                Note = row["NOTE"].ToString(),
+                CreatedAt = Convert.ToDateTime(row["CREATED_AT"]),
+                UpdatedAt = Convert.ToDateTime(row["UPDATED_AT"])
+            };
+
+            shiftAttendanceDict[employeeId].Shifts.Add(shift);
+        }
+
+        shiftAttendances.AddRange(shiftAttendanceDict.Values);
+
+        return shiftAttendances;
+    }
+    // New method to add shift attendance
+    public async Task<bool> AddShiftAttendance(Shift shift, int employeeId)
+    {
+        using (var connection = GetConnection())
+        {
+            await connection.OpenAsync();
+
+            // Determine if the current time is morning or afternoon
+            bool isAfternoon = DateTime.Now.TimeOfDay >= new TimeSpan(12, 0, 0);
+
+            // Check if the employee has already worked the shift on the same day
+            string checkQuery = "SELECT COUNT(*) FROM SHIFT_ATTENDANCE WHERE EMPLOYEE_ID = @EmployeeId AND SHIFT_DATE = @ShiftDate";
+            var checkParameters = new List<MySqlParameter>
+            {
+                new     ("@EmployeeId", employeeId),
+                new     ("@ShiftDate", shift.ShiftDate)
+            };
+
+            var count = (long)await ExecuteScalarAsync(checkQuery, checkParameters);
+
+            if (count > 0)
+            {
+                // Update the existing record to include the current shift
+                string updateQuery = isAfternoon
+                    ? "UPDATE SHIFT_ATTENDANCE SET AFTERNOON_SHIFT = @AfternoonShift WHERE EMPLOYEE_ID = @EmployeeId AND SHIFT_DATE = @ShiftDate"
+                    : "UPDATE SHIFT_ATTENDANCE SET MORNING_SHIFT = @MorningShift WHERE EMPLOYEE_ID = @EmployeeId AND SHIFT_DATE = @ShiftDate";
+
+                var updateParameters = new List<MySqlParameter>
+                {
+                    new     (isAfternoon ? "@AfternoonShift" : "@MorningShift", isAfternoon ? shift.AfternoonShift : shift.MorningShift),
+                    new     ("@EmployeeId", employeeId),
+                    new     ("@ShiftDate", shift.ShiftDate),
+                    new     ("@Note", shift.Note)
+                };
+
+                int result = await ExecuteNonQueryAsync(updateQuery, updateParameters);
+                return result > 0;
+            }
+            else
+            {
+                // Insert a new record for the shift
+                string insertQuery = "INSERT INTO SHIFT_ATTENDANCE (EMPLOYEE_ID, SHIFT_DATE, MORNING_SHIFT, AFTERNOON_SHIFT) VALUES (@EmployeeId, @ShiftDate, @MorningShift, @AfternoonShift)";
+                var insertParameters = new List<MySqlParameter>
+                {
+                    new     ("@EmployeeId", employeeId),
+                    new     ("@ShiftDate", shift.ShiftDate),
+                    new     ("@MorningShift", isAfternoon ? false : shift.MorningShift),
+                    new     ("@AfternoonShift", isAfternoon ? shift.AfternoonShift : false),
+                    new     ("@Note", shift.Note)
+                };
+
+                int result = await ExecuteNonQueryAsync(insertQuery, insertParameters);
+                return result > 0;
+            }
+        }
+    }
+    public async Task<Dictionary<int, double>> GetWorkingHoursForMonth(int month, int year)
+    {
+        var workingHours = new Dictionary<int, double>();
+
+        string query = @"
+            SELECT EMPLOYEE_ID, SHIFT_DATE, MORNING_SHIFT, AFTERNOON_SHIFT
+            FROM SHIFT_ATTENDANCE
+            WHERE MONTH(SHIFT_DATE) = @Month AND YEAR(SHIFT_DATE) = @Year";
+
+        //using (var connection = GetConnection())
+        //{
+            //Username = row["USERNAME"].ToString(),
+            //Password = row["USER_PASSWORD"].ToString(),
+            //AccessLevel = Convert.ToInt32(row["AccessLevel"]),
+            //Salary = Convert.ToInt32(row["SALARY"])
+        //};
+            await connection.OpenAsync();
+            using (var command = new MySqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Month", month);
+                command.Parameters.AddWithValue("@Year", year);
+
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        int employeeId = reader.GetInt32("EMPLOYEE_ID");
+                        DateTime shiftDate = reader.GetDateTime("SHIFT_DATE");
+                        bool morningShift = reader.GetBoolean("MORNING_SHIFT");
+                        bool afternoonShift = reader.GetBoolean("AFTERNOON_SHIFT");
+
+                        double hoursWorked = 0;
+                        if (morningShift)
+                        {
+                            hoursWorked += 4.5; // Giả sử ca sáng là 4.5 giờ
+                        }
+                        if (afternoonShift)
+                        {
+                            hoursWorked += 4.95; // Giả sử ca chiều là 4.95 giờ
+                        }
+
+                        if (workingHours.ContainsKey(employeeId))
+                        {
+                            workingHours[employeeId] += hoursWorked;
+                        }
+                        else
+                        {
+                            workingHours[employeeId] = hoursWorked;
+                        }
+                    }
+                }
+            }
+        }
+
+        return workingHours;
     }
 
     public List<User> SearchEmployees(string keyword)
@@ -1231,4 +1420,3 @@ public class MySqlDao : IDao
 
 
 }
-

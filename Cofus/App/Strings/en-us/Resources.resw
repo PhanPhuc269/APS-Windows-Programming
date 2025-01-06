@@ -150,6 +150,9 @@
   <data name="Shell_TimeKeeping.Content" xml:space="preserve">
     <value>TimeKeeping</value>
   </data>
+  <data name="Shell_EmployeeShift.Content" xml:space="preserve">
+    <value>Bảng chấm công</value>
+  </data>
   <data name="Shell_EmployeeManagement.Content" xml:space="preserve">
     <value>Quản lý nhân viên </value>
   </data>

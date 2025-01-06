@@ -110,5 +110,8 @@ public class User : INotifyPropertyChanged
                 OnPropertyChanged();
             }
         }
+    public string Email
+    {
+        get; set;
     }
 }
