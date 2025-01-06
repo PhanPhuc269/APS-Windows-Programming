@@ -18,12 +18,11 @@ public sealed partial class ShellPage : Page
     {
         get;
     }
-
+    public string Greeting => $"Hi, {App.CurrentUser.Username}";
     public ShellPage(ShellViewModel viewModel)
     {
         ViewModel = viewModel;
         InitializeComponent();
-
         ViewModel.NavigationService.Frame = NavigationFrame;
         ViewModel.NavigationViewService.Initialize(NavigationViewControl);
 
@@ -45,7 +44,8 @@ public sealed partial class ShellPage : Page
         "CustomerManagementPage",
         "InventoryManagementPage",
         "EmployeeManagementPage",
-        "RevenuePage"
+        "RevenuePage",
+        "EmployeeShiftPage"
     };
 
         var staffVisibleTags = new HashSet<string>
@@ -81,7 +81,6 @@ public sealed partial class ShellPage : Page
     }
 
 
-
     private void ShellPage_Loaded(object sender, RoutedEventArgs e)
     {
         //foreach (var item in NavigationViewControl.MenuItems)
@@ -104,6 +103,7 @@ public sealed partial class ShellPage : Page
                 break;
             }
         }
+
     }
     private void OnLoaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
@@ -152,4 +152,29 @@ public sealed partial class ShellPage : Page
 
         args.Handled = result;
     }
+    private async void LogoutButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new ContentDialog
+        {
+            Title = "Đăng xuất",
+            Content = "Bạn có muốn đăng xuất?",
+            PrimaryButtonText = "OK",
+            CloseButtonText = "Hủy",
+            XamlRoot = this.Content.XamlRoot // Set the XamlRoot property
+        };
+
+        var result = await dialog.ShowAsync();
+
+        if (result == ContentDialogResult.Primary)
+        {
+            // Clear user data
+            App.CurrentUser = null;
+
+
+            UIElement? shell = App.GetService<AuthenticationPage>();
+            App.MainWindow.Content = shell ?? new Frame();
+        }
+    }
+
+
 }

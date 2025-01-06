@@ -56,6 +56,14 @@ public interface IDao
     User GetUserByUsername(string username);
     bool AddUser(User user);
 
+    bool UpdateUser(User user);
+
+    List<HistoryOrder> GetBeveragesPurchasedByCustomer(string phoneNumber);
+
+    //Quản lý ca làm việc
+    List<ShiftAttendance> GetShiftAttendances(DateTime startDate, DateTime endDate);
+    Task<bool> AddShiftAttendance(Shift shift, int employeeId);
+
     List<User> SearchEmployees(string keyword);
     public bool DeleteEmployee(string userId);
 

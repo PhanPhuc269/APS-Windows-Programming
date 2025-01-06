@@ -24,6 +24,12 @@
                        TextWrapping="NoWrap"
                        Style="{StaticResource CaptionTextBlockStyle}"
                        Margin="28,0,0,0"/>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,180,0">
+                <TextBlock Text="{x:Bind Greeting, Mode=OneWay}" VerticalAlignment="Center" Margin="0,0,10,0" Width="120" Foreground="Black" FontSize="16"/>
+
+                <Button Content="Đăng xuất" Click="LogoutButton_Click"/>
+            </StackPanel>
         </Grid>
         <NavigationView
             x:Name="NavigationViewControl"
@@ -63,9 +69,33 @@
                         <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE748;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_Revenue" Tag="RevenuePage" helpers:NavigationHelper.NavigateTo="App.ViewModels.RevenueViewModel">
+                <NavigationViewItem x:Uid="Shell_Revenue" 
+                 Tag="RevenuePage" helpers:NavigationHelper.NavigateTo="App.ViewModels.RevenueViewModel">
+
                     <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE8BC;"/>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE716;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Uid="Shell_EmployeeShift" 
+ Tag="EmployeeShiftPage" helpers:NavigationHelper.NavigateTo="App.ViewModels.EmployeeShiftViewModel">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE779;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Uid="Shell_InventoryManagement" helpers:NavigationHelper.NavigateTo="App.ViewModels.InventoryManagementViewModel">
+
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xEC08;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Uid="Shell_EmployeeManagement" Tag="EmployeeManagementPage" helpers:NavigationHelper.NavigateTo="App.ViewModels.EmployeeManagementViewModel">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE748;"/>
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Uid="Shell_EmployeeShift" helpers:NavigationHelper.NavigateTo="App.ViewModels.EmployeeShiftViewModel">
+                    <NavigationViewItem.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xe7c3;"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
