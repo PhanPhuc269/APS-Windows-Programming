@@ -55,10 +55,11 @@ public sealed partial class EmployeeShiftPage : Page
             ShiftInfoError.Text = "Vui lòng nhập tên đăng nhập của nhân viên.";
             return;
         }
-        var email = App.GetService<IDao>().GetUserByUsername(usernameEmployee).Email;
+        var email = App.GetService<IDao>().GetUserByUsername(usernameEmployee)?.Email;
         if (email == null)
         {
-            ShiftInfoError.Text = "Username nhân viên không đúng.";
+            ShiftInfoError.Text = "Không tìm thấy tài khoản hoặc email không hợp lệ";
+            return;
         }    
 
         // Tạo mã xác thực
@@ -95,7 +96,7 @@ public sealed partial class EmployeeShiftPage : Page
         if (Code == null)
         {
             // Hiển thị lỗi nếu mã xác thực không tồn tại
-            ShowError("Chưa được gửi.");
+            ShowError("Mã xác thực chưa được gửi.");
             return;
         }
         if (authCode != Code)
@@ -104,6 +105,8 @@ public sealed partial class EmployeeShiftPage : Page
             ShowError("Mã xác thực không đúng.");
             return;
         }
+        //Kiểm tra nhân viên này đã chấm công chưa
+        
 
         var now = DateTime.Now;
 
@@ -123,6 +126,11 @@ public sealed partial class EmployeeShiftPage : Page
             MorningShift = !isAfternoon,
             AfternoonShift = isAfternoon,
         };
+        if (await App.GetService<IDao>().CheckShiftAttendance(int.Parse(User.Id), shift))
+        {
+            ShowError("Nhân viên đã chấm công.");
+            return;
+        }
 
         bool success = await ViewModel.CheckInShift(int.Parse(User.Id), shift);
 
@@ -149,9 +157,17 @@ public sealed partial class EmployeeShiftPage : Page
         }
     }
 
-    private void ShowError(string message)
+    private async void ShowError(string message)
     {
-        ShiftInfoError.Text = message;
+        //ShiftInfoError.Text = message;
+        var dialog = new ContentDialog
+        {
+            Title = "Error",
+            Content = message,
+            CloseButtonText = "Close",
+            XamlRoot = this.XamlRoot
+        };
+        await dialog.ShowAsync();
     }
 
     private string GenerateAuthCode()

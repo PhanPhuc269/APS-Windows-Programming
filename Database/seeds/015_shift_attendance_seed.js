@@ -1,18 +1,49 @@
-// seeds/013_shift_attendance_seed.js
 exports.seed = function(knex) {
-    return knex('SHIFT_ATTENDANCE').del()
-      .then(function() {
-        return knex('SHIFT_ATTENDANCE').insert([
-          { ID: 1, EMPLOYEE_ID: 1, SHIFT_DATE: '2024-12-18', MORNING_SHIFT: true, AFTERNOON_SHIFT: false, NOTE: 'Attended morning shift' },
-          { ID: 2, EMPLOYEE_ID: 2, SHIFT_DATE: '2024-12-17', MORNING_SHIFT: false, AFTERNOON_SHIFT: true, NOTE: 'Attended afternoon shift' },
-          { ID: 3, EMPLOYEE_ID: 3, SHIFT_DATE: '2024-12-20', MORNING_SHIFT: true, AFTERNOON_SHIFT: true, NOTE: 'Attended both shifts' },
-          { ID: 4, EMPLOYEE_ID: 4, SHIFT_DATE: '2024-12-18', MORNING_SHIFT: true, AFTERNOON_SHIFT: false, NOTE: 'Attended morning shift' },
-          { ID: 5, EMPLOYEE_ID: 5, SHIFT_DATE: '2024-12-17', MORNING_SHIFT: false, AFTERNOON_SHIFT: true, NOTE: 'Attended afternoon shift' },
-          { ID: 6, EMPLOYEE_ID: 1, SHIFT_DATE: '2024-12-02', MORNING_SHIFT: true, AFTERNOON_SHIFT: true, NOTE: 'Attended both shifts' },
-          { ID: 7, EMPLOYEE_ID: 2, SHIFT_DATE: '2024-12-03', MORNING_SHIFT: true, AFTERNOON_SHIFT: false, NOTE: 'Attended morning shift' },
-          { ID: 8, EMPLOYEE_ID: 3, SHIFT_DATE: '2024-12-19', MORNING_SHIFT: false, AFTERNOON_SHIFT: true, NOTE: 'Attended afternoon shift' },
-          { ID: 9, EMPLOYEE_ID: 4, SHIFT_DATE: '2024-12-03', MORNING_SHIFT: true, AFTERNOON_SHIFT: true, NOTE: 'Attended both shifts' },
-          { ID: 10, EMPLOYEE_ID: 5, SHIFT_DATE: '2024-12-04', MORNING_SHIFT: true, AFTERNOON_SHIFT: false, NOTE: 'Attended morning shift' }
-        ]);
-      });
-  };
+  return knex('SHIFT_ATTENDANCE').del()
+    .then(function() {
+      return knex('SHIFT_ATTENDANCE').insert([
+        { ID: 1, EMPLOYEE_ID: 2, SHIFT_DATE: '2024-12-30', MORNING_SHIFT: true, AFTERNOON_SHIFT: false, NOTE: 'Attended morning shift' },
+        { ID: 2, EMPLOYEE_ID: 3, SHIFT_DATE: '2024-12-30', MORNING_SHIFT: true, AFTERNOON_SHIFT: false, NOTE: 'Attended morning shift' },
+        { ID: 3, EMPLOYEE_ID: 4, SHIFT_DATE: '2024-12-30', MORNING_SHIFT: true, AFTERNOON_SHIFT: false, NOTE: 'Attended morning shift' },
+        { ID: 4, EMPLOYEE_ID: 5, SHIFT_DATE: '2024-12-30', MORNING_SHIFT: false, AFTERNOON_SHIFT: true, NOTE: 'Attended afternoon shift' },
+        { ID: 5, EMPLOYEE_ID: 6, SHIFT_DATE: '2024-12-30', MORNING_SHIFT: false, AFTERNOON_SHIFT: true, NOTE: 'Attended afternoon shift' },
+        { ID: 6, EMPLOYEE_ID: 7, SHIFT_DATE: '2024-12-30', MORNING_SHIFT: false, AFTERNOON_SHIFT: true, NOTE: 'Attended afternoon shift' },
+        { ID: 7, EMPLOYEE_ID: 2, SHIFT_DATE: '2024-12-31', MORNING_SHIFT: true, AFTERNOON_SHIFT: false, NOTE: 'Attended morning shift' },
+        { ID: 8, EMPLOYEE_ID: 3, SHIFT_DATE: '2024-12-31', MORNING_SHIFT: true, AFTERNOON_SHIFT: false, NOTE: 'Attended morning shift' },
+        { ID: 9, EMPLOYEE_ID: 4, SHIFT_DATE: '2024-12-31', MORNING_SHIFT: true, AFTERNOON_SHIFT: false, NOTE: 'Attended morning shift' },
+        { ID: 10, EMPLOYEE_ID: 5, SHIFT_DATE: '2024-12-31', MORNING_SHIFT: false, AFTERNOON_SHIFT: true, NOTE: 'Attended afternoon shift' },
+        { ID: 11, EMPLOYEE_ID: 6, SHIFT_DATE: '2024-12-31', MORNING_SHIFT: false, AFTERNOON_SHIFT: true, NOTE: 'Attended afternoon shift' },
+        { ID: 12, EMPLOYEE_ID: 7, SHIFT_DATE: '2024-12-31', MORNING_SHIFT: false, AFTERNOON_SHIFT: true, NOTE: 'Attended afternoon shift' },
+        { ID: 13, EMPLOYEE_ID: 2, SHIFT_DATE: '2025-01-01', MORNING_SHIFT: true, AFTERNOON_SHIFT: false, NOTE: 'Attended morning shift' },
+        { ID: 14, EMPLOYEE_ID: 3, SHIFT_DATE: '2025-01-01', MORNING_SHIFT: true, AFTERNOON_SHIFT: false, NOTE: 'Attended morning shift' },
+        { ID: 15, EMPLOYEE_ID: 4, SHIFT_DATE: '2025-01-01', MORNING_SHIFT: true, AFTERNOON_SHIFT: false, NOTE: 'Attended morning shift' },
+        { ID: 16, EMPLOYEE_ID: 5, SHIFT_DATE: '2025-01-01', MORNING_SHIFT: false, AFTERNOON_SHIFT: true, NOTE: 'Attended afternoon shift' },
+        { ID: 17, EMPLOYEE_ID: 6, SHIFT_DATE: '2025-01-01', MORNING_SHIFT: false, AFTERNOON_SHIFT: true, NOTE: 'Attended afternoon shift' },
+        { ID: 18, EMPLOYEE_ID: 7, SHIFT_DATE: '2025-01-01', MORNING_SHIFT: false, AFTERNOON_SHIFT: true, NOTE: 'Attended afternoon shift' },
+        { ID: 19, EMPLOYEE_ID: 2, SHIFT_DATE: '2025-01-02', MORNING_SHIFT: true, AFTERNOON_SHIFT: false, NOTE: 'Attended morning shift' },
+        { ID: 20, EMPLOYEE_ID: 3, SHIFT_DATE: '2025-01-02', MORNING_SHIFT: true, AFTERNOON_SHIFT: false, NOTE: 'Attended morning shift' },
+        { ID: 21, EMPLOYEE_ID: 4, SHIFT_DATE: '2025-01-02', MORNING_SHIFT: true, AFTERNOON_SHIFT: false, NOTE: 'Attended morning shift' },
+        { ID: 22, EMPLOYEE_ID: 5, SHIFT_DATE: '2025-01-02', MORNING_SHIFT: false, AFTERNOON_SHIFT: true, NOTE: 'Attended afternoon shift' },
+        { ID: 23, EMPLOYEE_ID: 6, SHIFT_DATE: '2025-01-02', MORNING_SHIFT: false, AFTERNOON_SHIFT: true, NOTE: 'Attended afternoon shift' },
+        { ID: 24, EMPLOYEE_ID: 7, SHIFT_DATE: '2025-01-02', MORNING_SHIFT: false, AFTERNOON_SHIFT: true, NOTE: 'Attended afternoon shift' },
+        { ID: 25, EMPLOYEE_ID: 2, SHIFT_DATE: '2025-01-03', MORNING_SHIFT: true, AFTERNOON_SHIFT: false, NOTE: 'Attended morning shift' },
+        { ID: 26, EMPLOYEE_ID: 3, SHIFT_DATE: '2025-01-03', MORNING_SHIFT: true, AFTERNOON_SHIFT: false, NOTE: 'Attended morning shift' },
+        { ID: 27, EMPLOYEE_ID: 4, SHIFT_DATE: '2025-01-03', MORNING_SHIFT: true, AFTERNOON_SHIFT: false, NOTE: 'Attended morning shift' },
+        { ID: 28, EMPLOYEE_ID: 5, SHIFT_DATE: '2025-01-03', MORNING_SHIFT: false, AFTERNOON_SHIFT: true, NOTE: 'Attended afternoon shift' },
+        { ID: 29, EMPLOYEE_ID: 6, SHIFT_DATE: '2025-01-03', MORNING_SHIFT: false, AFTERNOON_SHIFT: true, NOTE: 'Attended afternoon shift' },
+        { ID: 30, EMPLOYEE_ID: 7, SHIFT_DATE: '2025-01-03', MORNING_SHIFT: false, AFTERNOON_SHIFT: true, NOTE: 'Attended afternoon shift' },
+        { ID: 31, EMPLOYEE_ID: 2, SHIFT_DATE: '2025-01-04', MORNING_SHIFT: true, AFTERNOON_SHIFT: false, NOTE: 'Attended morning shift' },
+        { ID: 32, EMPLOYEE_ID: 3, SHIFT_DATE: '2025-01-04', MORNING_SHIFT: true, AFTERNOON_SHIFT: false, NOTE: 'Attended morning shift' },
+        { ID: 33, EMPLOYEE_ID: 4, SHIFT_DATE: '2025-01-04', MORNING_SHIFT: true, AFTERNOON_SHIFT: false, NOTE: 'Attended morning shift' },
+        { ID: 34, EMPLOYEE_ID: 5, SHIFT_DATE: '2025-01-04', MORNING_SHIFT: false, AFTERNOON_SHIFT: true, NOTE: 'Attended afternoon shift' },
+        { ID: 35, EMPLOYEE_ID: 6, SHIFT_DATE: '2025-01-04', MORNING_SHIFT: false, AFTERNOON_SHIFT: true, NOTE: 'Attended afternoon shift' },
+        { ID: 36, EMPLOYEE_ID: 7, SHIFT_DATE: '2025-01-04', MORNING_SHIFT: false, AFTERNOON_SHIFT: true, NOTE: 'Attended afternoon shift' },
+        { ID: 37, EMPLOYEE_ID: 2, SHIFT_DATE: '2025-01-05', MORNING_SHIFT: true, AFTERNOON_SHIFT: false, NOTE: 'Attended morning shift' },
+        { ID: 38, EMPLOYEE_ID: 3, SHIFT_DATE: '2025-01-05', MORNING_SHIFT: true, AFTERNOON_SHIFT: false, NOTE: 'Attended morning shift' },
+        { ID: 39, EMPLOYEE_ID: 4, SHIFT_DATE: '2025-01-05', MORNING_SHIFT: true, AFTERNOON_SHIFT: false, NOTE: 'Attended morning shift' },
+        { ID: 40, EMPLOYEE_ID: 5, SHIFT_DATE: '2025-01-05', MORNING_SHIFT: false, AFTERNOON_SHIFT: true, NOTE: 'Attended afternoon shift' },
+        { ID: 41, EMPLOYEE_ID: 6, SHIFT_DATE: '2025-01-05', MORNING_SHIFT: false, AFTERNOON_SHIFT: true, NOTE: 'Attended afternoon shift' },
+        { ID: 42, EMPLOYEE_ID: 7, SHIFT_DATE: '2025-01-05', MORNING_SHIFT: false, AFTERNOON_SHIFT: true, NOTE: 'Attended afternoon shift' }
+      ]);
+    });
+};

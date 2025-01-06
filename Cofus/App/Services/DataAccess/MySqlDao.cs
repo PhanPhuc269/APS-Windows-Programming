@@ -1411,6 +1411,29 @@ public class MySqlDao : IDao
             }
         }
     }
+    //Hàm kiểm tra nhân viên có làm ở ca này không 
+    public async Task<bool> CheckShiftAttendance(int employeeId, Shift shift)
+    {
+        string query = "SELECT COUNT(*) FROM SHIFT_ATTENDANCE WHERE EMPLOYEE_ID = @EmployeeId AND SHIFT_DATE = @ShiftDate";
+
+        if (shift.MorningShift)
+        {
+            query += " AND MORNING_SHIFT = 1";
+        }
+        else if (shift.AfternoonShift)
+        {
+            query += " AND AFTERNOON_SHIFT = 1";
+        }
+
+        var parameters = new List<MySqlParameter>
+        {
+            new ("@EmployeeId", employeeId),
+            new ("@ShiftDate", shift.ShiftDate.Date)
+        };
+
+        var count = (long)await ExecuteScalarAsync(query, parameters);
+        return count > 0;
+    }
     public async Task<Dictionary<int, double>> GetWorkingHoursForMonth(int month, int year)
     {
         var workingHours = new Dictionary<int, double>();

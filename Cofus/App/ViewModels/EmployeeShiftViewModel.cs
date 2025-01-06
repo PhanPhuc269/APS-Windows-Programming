@@ -77,7 +77,7 @@ public partial class EmployeeShiftViewModel : ObservableRecipient
             referenceDate = referenceDate.AddDays(delta);
         }
 
-        CurrentWeekStartDate = referenceDate;
+        CurrentWeekStartDate = referenceDate.Date;
         CurrentWeekEndDate = CurrentWeekStartDate.AddDays(6);
         UpdateDays();
     }
