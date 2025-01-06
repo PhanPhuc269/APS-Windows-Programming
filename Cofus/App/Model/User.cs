@@ -16,6 +16,7 @@ public class User : INotifyPropertyChanged
     private int accessLevel;
     private string username;
     private string password;
+
     private int salary;
     public event PropertyChangedEventHandler PropertyChanged;
 

@@ -1007,19 +1007,46 @@ public class MySqlDao : IDao
         };
     }
 
+    public User GetUserByEmail(string email)
+    {
+
+        var query = "SELECT * FROM ACCOUNT WHERE EMAIL = @email";
+        var parameters = new List<MySqlParameter>
+    {
+        new ("@email", email)
+    };
+
+        var result = ExecuteSelectQuery(query, parameters);
+
+        if (result.Count == 0) return null;
+
+        var row = result[0];
+        return new User
+        {
+            Id = row["EMPLOYEE_ID"].ToString(),
+            Username = row["USERNAME"].ToString(),
+            Password = row["USER_PASSWORD"].ToString(),
+            Email = row["EMAIL"]?.ToString(), // Ánh xạ email từ kết quả
+            Role = row["EMP_ROLE"].ToString(),
+            AccessLevel = Convert.ToInt32(row["ACCESS_LEVEL"]),
+            Salary = Convert.ToInt32(row["SALARY"])
+        };
+    }
 
     public bool AddUser(User user)
     {
         // Kiểm tra xem Username đã tồn tại chưa
         var existingUser = GetUserByUsername(user.Username);
-        if (existingUser != null)
+
+        var existingUser2 = GetUserByEmail(user.Email);
+        if (existingUser != null || existingUser2 != null)
         {
-            Console.WriteLine($"Username '{user.Username}' already exists.");
+            Console.WriteLine($"Email '{user.Username}' already exists.");
             return false;
         }
 
         // Nếu Username không tồn tại, thêm người dùng
-        var query = "INSERT INTO ACCOUNT (EMP_NAME, EMP_ROLE, ACCESS_LEVEL, USERNAME, USER_PASSWORD, SALARY) VALUES (@EmpName, @EmpRole, @AccessLevel, @Username, @UserPassword, @userSalary)";
+        var query = "INSERT INTO ACCOUNT (EMP_NAME, EMP_ROLE, ACCESS_LEVEL, USERNAME, USER_PASSWORD, SALARY, EMAIL) VALUES (@EmpName, @EmpRole, @AccessLevel, @Username, @UserPassword, @userSalary, @UserEmail)";
         var parameters = new List<MySqlParameter>
     {
         new ("@EmpName", user.Name),
@@ -1027,6 +1054,7 @@ public class MySqlDao : IDao
         new ("@AccessLevel", 2),
         new ("@Username", user.Username),
         new ("@UserPassword", user.Password),
+        new ("@UserEmail", user.Email),
         new ("@UserSalary", user.Salary)
     };
 
