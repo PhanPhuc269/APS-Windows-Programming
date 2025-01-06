@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml;
 using SendGrid.Helpers.Mail;
 using SendGrid;
+using WinUIEx.Messaging;
 
 namespace App.Views;
 
@@ -136,8 +137,8 @@ public sealed partial class EmployeeShiftPage : Page
 
         if (success)
         {
-            ShowError("");
             CheckInDialog.Hide();
+            ShiftInfoError.Text = "";
             ViewModel.LoadShiftAttendance();
 
             // Hiển thị thông báo thành công
@@ -156,20 +157,41 @@ public sealed partial class EmployeeShiftPage : Page
             ShowError("Có lỗi xảy ra khi chấm công.");
         }
     }
-
-    private async void ShowError(string message)
+    private ContentDialog _currentDialog;
+    private async Task ShowError(string message)
     {
-        //ShiftInfoError.Text = message;
-        var dialog = new ContentDialog
+        if (_currentDialog != null)
+        {
+            _currentDialog.Hide();
+        }
+        ShiftInfoError.Text = message;
+        _currentDialog = new ContentDialog
         {
             Title = "Error",
             Content = message,
             CloseButtonText = "Close",
             XamlRoot = this.XamlRoot
         };
-        await dialog.ShowAsync();
+        await _currentDialog.ShowAsync();
+        _currentDialog = null;
     }
+    private async Task ShowSuccess(string message)
+    {
+        if (_currentDialog != null)
+        {
+            _currentDialog.Hide();
+        }
 
+        _currentDialog = new ContentDialog
+        {
+            Title = "Thành công",
+            Content = message,
+            CloseButtonText = "Đóng",
+            XamlRoot = this.XamlRoot
+        };
+        await _currentDialog.ShowAsync();
+        _currentDialog = null;
+    }
     private string GenerateAuthCode()
     {
         var random = new Random();
