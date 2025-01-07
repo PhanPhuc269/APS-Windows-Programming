@@ -1,4 +1,4 @@
-﻿using App.ViewModels;
+using App.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 using System;
 
@@ -17,36 +17,56 @@ namespace App.Views
             ViewModel = new RevenueViewModel();
             this.DataContext = ViewModel;
 
-            ViewModel.SelectedDate = DateTime.Today;
-            DatePicker.SelectedDate = ViewModel.SelectedDate;  // Cập nhật lại cho DatePicker
+            ViewModel.StartDate = DateTime.Today; // Ngày bắt đầu mặc định là hôm nay
+            ViewModel.EndDate = DateTime.Today;   // Ngày kết thúc mặc định là hôm nay
 
+            StartDatePicker.SelectedDate = ViewModel.StartDate;
+            EndDatePicker.SelectedDate = ViewModel.EndDate;
 
-            // Gọi LoadRevenueData mặc định với ngày hiện tại
-            LoadData(ViewModel.SelectedDate);
+            // Gọi LoadRevenueData mặc định với khoảng thời gian hiện tại
+            LoadData(ViewModel.StartDate, ViewModel.EndDate);
         }
 
-        // Đảm bảo khi ngày thay đổi sẽ gọi lại LoadRevenueData
-        private async void DatePicker_DateChanged(object sender, DatePickerValueChangedEventArgs e)
+        // Khi ngày bắt đầu thay đổi
+        private async void StartDatePicker_DateChanged(object sender, DatePickerValueChangedEventArgs e)
         {
-            // Kiểm tra nếu NewDate có giá trị
             if (e.NewDate != null)
             {
-                // Cập nhật ngày được chọn trong ViewModel
-                ViewModel.SelectedDate = e.NewDate.Date;
+                ViewModel.StartDate = e.NewDate.Date;
 
-                // Gọi phương thức LoadRevenueData với ngày mới
-                await ViewModel.LoadRevenueData(ViewModel.SelectedDate);
+                // Đảm bảo ngày bắt đầu không lớn hơn ngày kết thúc
+                if (ViewModel.StartDate > ViewModel.EndDate)
+                {
+                    ViewModel.EndDate = ViewModel.StartDate;
+                    EndDatePicker.SelectedDate = ViewModel.EndDate;
+                }
 
-                // Cập nhật lại giá trị cho DatePicker (đảm bảo DatePicker hiển thị đúng)
-                DatePicker.SelectedDate = ViewModel.SelectedDate;
+                await LoadData(ViewModel.StartDate, ViewModel.EndDate);
             }
         }
 
-
-        // Thay đổi phương thức LoadData để sử dụng ngày được chọn
-        private async void LoadData(DateTime selectedDate)
+        // Khi ngày kết thúc thay đổi
+        private async void EndDatePicker_DateChanged(object sender, DatePickerValueChangedEventArgs e)
         {
-            await ViewModel.LoadRevenueData(selectedDate);
+            if (e.NewDate != null)
+            {
+                ViewModel.EndDate = e.NewDate.Date;
+
+                // Đảm bảo ngày kết thúc không nhỏ hơn ngày bắt đầu
+                if (ViewModel.EndDate < ViewModel.StartDate)
+                {
+                    ViewModel.StartDate = ViewModel.EndDate;
+                    StartDatePicker.SelectedDate = ViewModel.StartDate;
+                }
+
+                await LoadData(ViewModel.StartDate, ViewModel.EndDate);
+            }
+        }
+
+        // Phương thức LoadData để tải dữ liệu theo khoảng thời gian
+        private async System.Threading.Tasks.Task LoadData(DateTime startDate, DateTime endDate)
+        {
+            await ViewModel.LoadRevenueData(startDate, endDate);
         }
     }
 }
