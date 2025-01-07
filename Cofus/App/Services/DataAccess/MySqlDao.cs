@@ -1070,23 +1070,23 @@ public class MySqlDao : IDao
     }
 
 
-
-    public async Task<Revenue> GetRevenue(DateTime selectedDate)
+    public async Task<Revenue> GetRevenue(DateTime startDate, DateTime endDate)
     {
         var query = @"
-        SELECT 
-            SUM(o.TOTAL_AMOUNT) AS TotalRevenue, 
-            COUNT(o.ORDER_ID) AS OrderCount,
-            SUM(CASE WHEN o.PAYMENT_METHOD = 'Cash' THEN o.TOTAL_AMOUNT ELSE 0 END) AS CashAmount
-        FROM 
-            ORDERS o
-        WHERE 
-            DATE(o.ORDER_TIME) = @selectedDate";
+    SELECT 
+        SUM(o.TOTAL_AMOUNT) AS TotalRevenue, 
+        COUNT(o.ORDER_ID) AS OrderCount,
+        SUM(CASE WHEN o.PAYMENT_METHOD = 'Cash' THEN o.TOTAL_AMOUNT ELSE 0 END) AS CashAmount
+    FROM 
+        ORDERS o
+    WHERE 
+        DATE(o.ORDER_TIME) BETWEEN @startDate AND @endDate";
 
         var parameters = new List<MySqlParameter>
-        {
-            new MySqlParameter("@selectedDate", selectedDate)
-        };
+    {
+        new MySqlParameter("@startDate", startDate),
+        new MySqlParameter("@endDate", endDate)
+    };
 
         var result = ExecuteSelectQuery(query, parameters);
 
@@ -1103,32 +1103,34 @@ public class MySqlDao : IDao
 
         return new Revenue();
     }
-    public async Task<List<TopProduct>> GetTopProducts(DateTime selectedDate)
+
+    public async Task<List<TopProduct>> GetTopProducts(DateTime startDate, DateTime endDate)
     {
         var query = @"
-        SELECT
-            b.IMAGE_PATH AS ImageUrl,
-            b.BEVERAGE_NAME AS Name,
-            SUM(od.SUBTOTAL) AS Revenue
-        FROM
-            ORDER_DETAILS od
-        JOIN
-            BEVERAGE_SIZE bz ON od.BEVERAGE_SIZE_ID = bz.ID
-        JOIN 
-            BEVERAGE b ON bz.BEVERAGE_ID = b.ID 
-        JOIN
-            ORDERS o ON od.ORDER_ID = o.ORDER_ID
-        WHERE
-            DATE(o.ORDER_TIME) = @selectedDate
-        GROUP BY
-            b.IMAGE_PATH, b.BEVERAGE_NAME
-        ORDER BY
-            Revenue DESC
-        LIMIT 5";
+    SELECT
+        b.IMAGE_PATH AS ImageUrl,
+        b.BEVERAGE_NAME AS Name,
+        SUM(od.SUBTOTAL) AS Revenue
+    FROM
+        ORDER_DETAILS od
+    JOIN
+        BEVERAGE_SIZE bz ON od.BEVERAGE_SIZE_ID = bz.ID
+    JOIN 
+        BEVERAGE b ON bz.BEVERAGE_ID = b.ID 
+    JOIN
+        ORDERS o ON od.ORDER_ID = o.ORDER_ID
+    WHERE
+        DATE(o.ORDER_TIME) BETWEEN @startDate AND @endDate
+    GROUP BY
+        b.IMAGE_PATH, b.BEVERAGE_NAME
+    ORDER BY
+        Revenue DESC
+    LIMIT 5";
 
         var parameters = new List<MySqlParameter>
     {
-        new MySqlParameter("@selectedDate", selectedDate)
+        new MySqlParameter("@startDate", startDate),
+        new MySqlParameter("@endDate", endDate)
     };
 
         var result = ExecuteSelectQuery(query, parameters);
@@ -1148,35 +1150,35 @@ public class MySqlDao : IDao
         return topProducts;
     }
 
-    public async Task<List<TopCategory>> GetTopCategories(DateTime selectedDate)
+    public async Task<List<TopCategory>> GetTopCategories(DateTime startDate, DateTime endDate)
     {
         var query = @"
-        SELECT
-            t.IMAGE_PATH AS ImageUrl,
-            t.CATEGORY AS Name,
-            SUM(od.SUBTOTAL) AS Revenue
-        FROM
-            ORDER_DETAILS od
-        JOIN
-            BEVERAGE_SIZE bz ON od.BEVERAGE_SIZE_ID = bz.ID
-        JOIN 
-            BEVERAGE b ON bz.BEVERAGE_ID = b.ID 
-        JOIN
-            TYPE_BEVERAGE t ON b.CATEGORY_ID = t.ID
-        JOIN
-            ORDERS o ON od.ORDER_ID = o.ORDER_ID
-        WHERE
-            DATE(o.ORDER_TIME) = @selectedDate
-        GROUP BY
-            t.CATEGORY, t.IMAGE_PATH
-        ORDER BY
-            Revenue DESC
-        LIMIT 5";
-
+    SELECT
+        t.IMAGE_PATH AS ImageUrl,
+        t.CATEGORY AS Name,
+        SUM(od.SUBTOTAL) AS Revenue
+    FROM
+        ORDER_DETAILS od
+    JOIN
+        BEVERAGE_SIZE bz ON od.BEVERAGE_SIZE_ID = bz.ID
+    JOIN 
+        BEVERAGE b ON bz.BEVERAGE_ID = b.ID 
+    JOIN
+        TYPE_BEVERAGE t ON b.CATEGORY_ID = t.ID
+    JOIN
+        ORDERS o ON od.ORDER_ID = o.ORDER_ID
+    WHERE
+        DATE(o.ORDER_TIME) BETWEEN @startDate AND @endDate
+    GROUP BY
+        t.CATEGORY, t.IMAGE_PATH
+    ORDER BY
+        Revenue DESC
+    LIMIT 5";
 
         var parameters = new List<MySqlParameter>
     {
-        new MySqlParameter("@selectedDate", selectedDate)
+        new MySqlParameter("@startDate", startDate),
+        new MySqlParameter("@endDate", endDate)
     };
 
         var result = ExecuteSelectQuery(query, parameters);
@@ -1196,34 +1198,34 @@ public class MySqlDao : IDao
         return topCategories;
     }
 
-    public async Task<List<TopSeller>> GetTopSellers(DateTime selectedDate)
+    public async Task<List<TopSeller>> GetTopSellers(DateTime startDate, DateTime endDate)
     {
         var query = @"
-        SELECT 
-            b.IMAGE_PATH AS ImageUrl, 
-            b.BEVERAGE_NAME AS Name,
-            SUM(od.QUANTITY) AS Amount
-        FROM
-            ORDER_DETAILS od
-        JOIN
-            BEVERAGE_SIZE bz ON od.BEVERAGE_SIZE_ID = bz.ID
-        JOIN 
-            BEVERAGE b ON bz.BEVERAGE_ID = b.ID 
-        JOIN
-            ORDERS o ON od.ORDER_ID = o.ORDER_ID
-        WHERE
-            DATE(o.ORDER_TIME) = @selectedDate
-        GROUP BY 
-            b.IMAGE_PATH, b.BEVERAGE_NAME
-        ORDER BY 
-            Amount DESC
-        LIMIT 5";
-
+    SELECT 
+        b.IMAGE_PATH AS ImageUrl, 
+        b.BEVERAGE_NAME AS Name,
+        SUM(od.QUANTITY) AS Amount
+    FROM
+        ORDER_DETAILS od
+    JOIN
+        BEVERAGE_SIZE bz ON od.BEVERAGE_SIZE_ID = bz.ID
+    JOIN 
+        BEVERAGE b ON bz.BEVERAGE_ID = b.ID 
+    JOIN
+        ORDERS o ON od.ORDER_ID = o.ORDER_ID
+    WHERE
+        DATE(o.ORDER_TIME) BETWEEN @startDate AND @endDate
+    GROUP BY 
+        b.IMAGE_PATH, b.BEVERAGE_NAME
+    ORDER BY 
+        Amount DESC
+    LIMIT 5";
 
         var parameters = new List<MySqlParameter>
-        {
-            new ("@selectedDate", selectedDate)
-        };
+    {
+        new MySqlParameter("@startDate", startDate),
+        new MySqlParameter("@endDate", endDate)
+    };
 
         var result = ExecuteSelectQuery(query, parameters);
 
@@ -1241,6 +1243,8 @@ public class MySqlDao : IDao
 
         return topSellers;
     }
+
+    
     public bool UpdateMaterialThreshold(string materialCode, int newThreshold)
     {
         try
