@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using ClosedXML.Excel; // Thêm thư viện này vào file
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace App.Views;
 
@@ -120,8 +121,43 @@ public sealed partial class CustomerManagementPage : Page
         }
     }
 
+    private bool IsValidVietnamesePhoneNumber(string phoneNumber)
+    {
+        // Vietnamese phone numbers start with 03, 05, 07, 08, or 09 and have 10 digits
+        var regex = new Regex(@"^(03|05|07|08|09)\d{8}$");
+        return regex.IsMatch(phoneNumber);
+    }
+
+    private bool IsValidEmail(string email)
+    {
+        // Basic email validation regex
+        var regex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+        return regex.IsMatch(email);
+    }
     private void AddEditDialogPrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
+        // Validate input fields
+        if (string.IsNullOrEmpty(CustomerNameTextBox.Text) || string.IsNullOrEmpty(PhoneNumberTextBox.Text) || string.IsNullOrEmpty(EmailTextBox.Text))
+        {
+            //Ngăn dialog đóng
+            args.Cancel = true;
+            ErrorTextBox.Text = "Vui lòng điền đầy đủ thông tin";
+            return;
+        }
+        if (!IsValidVietnamesePhoneNumber(PhoneNumberTextBox.Text))
+        {
+            args.Cancel = true;
+            ErrorTextBox.Text = "Số điện thoại không hợp lệ";
+            return;
+        }
+        if (!IsValidEmail(EmailTextBox.Text))
+        {
+            args.Cancel = true;
+            ErrorTextBox.Text = "Email không hợp lệ";
+            return;
+        }
+
+
         var newCustomer = new Customer
         {
             CustomerName = CustomerNameTextBox.Text,
@@ -151,8 +187,13 @@ public sealed partial class CustomerManagementPage : Page
         }
 
         ViewModel.UpdateCurrentPage();
+        ErrorTextBox.Text = "";
     }
-
+    private void AllowOnlyNumber(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
+    {
+        // Chỉ cho phép ký tự số
+        args.Cancel = args.NewText.Any(c => !char.IsDigit(c));
+    }
     private void ClearInputFields()
     {
         CustomerIdTextBox.Text = string.Empty;
