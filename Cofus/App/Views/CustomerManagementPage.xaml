@@ -28,9 +28,9 @@
 
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock Text="Điểm từ" Foreground="White" VerticalAlignment="Center" Margin="5,0"/>
-                            <TextBox x:Name="MinPointsTextBox" PlaceholderText="Tối thiểu" Width="150" Background="White"/>
+                            <TextBox x:Name="MinPointsTextBox" PlaceholderText="Tối thiểu" Width="150" Background="White" BeforeTextChanging="AllowOnlyNumber"/>
                             <TextBlock Text="đến" Foreground="White" VerticalAlignment="Center" Margin="5,0"/>
-                            <TextBox x:Name="MaxPointsTextBox" PlaceholderText="Tối đa" Width="150" Background="White"/>
+                            <TextBox x:Name="MaxPointsTextBox" PlaceholderText="Tối đa" Width="150" Background="White"  BeforeTextChanging="AllowOnlyNumber"/>
                         </StackPanel>
                     </StackPanel>
 
@@ -96,7 +96,9 @@
                         <TextBox x:Name="CustomerNameTextBox" PlaceholderText="Tên khách hàng"/>
                         <TextBox x:Name="PhoneNumberTextBox" PlaceholderText="Số điện thoại"/>
                         <TextBox x:Name="EmailTextBox" PlaceholderText="Email"/>
-                        <TextBox x:Name="PointsTextBox" PlaceholderText="Điểm"/>
+                        <TextBlock x:Name="PointsTextBox"/>
+                        <TextBlock x:Name="ErrorTextBox" Foreground="Red"/>
+                        
                     </StackPanel>
                 </ContentDialog>
 

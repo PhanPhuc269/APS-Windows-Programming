@@ -20,6 +20,15 @@ public class MoMoPayment: IPaymentMethod
     public async Task<bool> ProcessPayment(Invoice invoice)
     {
         ContentDialog checkoutDia = await ShowMoMoQRCode(invoice);
+        if (checkoutDia==null)
+        {
+            checkoutDia=new ContentDialog();
+            checkoutDia.Title = "Error";
+            checkoutDia.Content = "Failed to generate QR code URL.";
+
+            checkoutDia.CloseButtonText = "Close";
+
+        }
         checkoutDia.XamlRoot = App.MainWindow.Content.XamlRoot;
         var dialogResult = await checkoutDia.ShowAsync();
         return dialogResult == ContentDialogResult.Primary;
