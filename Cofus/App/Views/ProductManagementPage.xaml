@@ -132,8 +132,10 @@
             PrimaryButtonClick="AddCategoryDialog_PrimaryButtonClick">
                 <StackPanel Spacing="10">
                     <TextBox x:Name="CategoryNameTextBox" Header="Tên danh mục" PlaceholderText="Nhập tên danh mục" />
-                    <TextBox x:Name="ImagePathTextBox" Header="Đường dẫn ảnh" PlaceholderText="/Assets/example.jpg" />
-                </StackPanel>
+                    <TextBox x:Name="ImagePathTextBox" Visibility="Collapsed" Header="Đường dẫn ảnh" PlaceholderText="/Assets/example.jpg" />
+                    <TextBlock x:Name="ImageName"/>
+                    <Button Click="AddCategoryImageButton_Click" >Chọn ảnh</Button>
+            </StackPanel>
             </ContentDialog>
 
             <!-- Dialog để xác nhận xóa danh mục -->
@@ -156,9 +158,10 @@
             PrimaryButtonClick="AddBeverageDialog_PrimaryButtonClick">
                 <StackPanel Spacing="10">
                     <TextBox x:Name="BeverageNameTextBox" Header="Tên Beverage" PlaceholderText="Nhập tên Beverage" />
-                    <TextBox x:Name="BeverageImagePathTextBox" Header="Đường dẫn ảnh" PlaceholderText="Nhập đường dẫn ảnh" />
-
-                    <!-- Nhập size -->
+                    <TextBox x:Name="BeverageImagePathTextBox" Header="Đường dẫn ảnh" Visibility="Collapsed" PlaceholderText="Nhập đường dẫn ảnh" />
+                    <TextBlock x:Name="BeverageImageName"/>
+                    <Button Click="AddChooseImageButton_Click" >Chọn ảnh</Button>
+                <!-- Nhập size -->
                     <TextBox x:Name="BeverageSizeTextBox" Header="Kích thước (Size)" PlaceholderText="Nhập kích thước (S, M, L)" />
 
                     <!-- Nhập giá -->
@@ -191,7 +194,9 @@
         PrimaryButtonClick="EditBeverageDialog_PrimaryButtonClick">
                 <StackPanel Spacing="10">
                     <TextBox x:Name="EditBeverageNameTextBox" Header="Tên Beverage" PlaceholderText="Nhập tên Beverage" />
-                    <TextBox x:Name="EditBeverageImagePathTextBox" Header="Đường dẫn ảnh" PlaceholderText="Nhập đường dẫn ảnh" />
+                    <TextBox x:Name="EditBeverageImagePathTextBox" Visibility="Collapsed" Header="Đường dẫn ảnh" PlaceholderText="Nhập đường dẫn ảnh" />
+                    <TextBlock x:Name="EditBeverageImageName"/>
+                    <Button Click="ChooseImageButton_Click" >Chọn ảnh</Button>
                     <TextBox x:Name="EditBeverageSizeTextBox" Header="Kích thước (Size)" PlaceholderText="Nhập kích thước (S, M, L)" />
                     <TextBox x:Name="EditBeveragePriceTextBox" Header="Giá" PlaceholderText="Nhập giá" />
                 </StackPanel>

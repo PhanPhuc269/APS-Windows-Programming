@@ -6,6 +6,8 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Windows.Storage.Pickers;
+using Windows.Storage;
 
 namespace App.Views
 {
@@ -203,6 +205,9 @@ namespace App.Views
                     decimal.TryParse(EditBeveragePriceTextBox.Text.Trim(), out decimal price))
                 {
                     sizesAndPrices.Add((EditBeverageSizeTextBox.Text.Trim(), price));
+                }else if (_selectedBeverage.Image!=null)
+                {
+
                 }
                 else
                 {
@@ -290,7 +295,104 @@ namespace App.Views
                 }
             }
         }
+        private async void ChooseImageButton_Click(object sender, RoutedEventArgs e)
+        {
+            var picker = new FileOpenPicker();
 
+            // Cần thiết để hỗ trợ WinUI 3 trên desktop
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(new Window());
 
+            WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+
+            picker.ViewMode = PickerViewMode.Thumbnail;
+            picker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+            picker.FileTypeFilter.Add(".jpg");
+            picker.FileTypeFilter.Add(".png");
+            picker.FileTypeFilter.Add(".jpeg");
+
+            StorageFile file = await picker.PickSingleFileAsync();
+            if (file != null)
+            {
+                // Sao chép file vào thư mục LocalFolder
+                var localFolder = ApplicationData.Current.LocalFolder;
+                var copiedFile = await file.CopyAsync(localFolder, file.Name, NameCollisionOption.ReplaceExisting);
+
+                // Lưu tên ảnh vào biến tạm để sử dụng sau khi lưu vào database
+                EditBeverageImageName.Text= copiedFile.Name;  // Chỉ lưu tên file, không bao gồm đường dẫn đầy đủ
+                //EditBeverageImageName2.Text = copiedFile.Name;
+                // Hiển thị đường dẫn file ảnh đã chọn (local path)
+                EditBeverageImagePathTextBox.Text = copiedFile.Path;
+            }
+            else
+            {
+                EditBeverageImageName.Text = "Không có ảnh nào được chọn.";
+            }
+        }
+        private async void AddChooseImageButton_Click(object sender, RoutedEventArgs e)
+        {
+            var picker = new FileOpenPicker();
+
+            // Cần thiết để hỗ trợ WinUI 3 trên desktop
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(new Window());
+
+            WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+
+            picker.ViewMode = PickerViewMode.Thumbnail;
+            picker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+            picker.FileTypeFilter.Add(".jpg");
+            picker.FileTypeFilter.Add(".png");
+            picker.FileTypeFilter.Add(".jpeg");
+
+            StorageFile file = await picker.PickSingleFileAsync();
+            if (file != null)
+            {
+                // Sao chép file vào thư mục LocalFolder
+                var localFolder = ApplicationData.Current.LocalFolder;
+                var copiedFile = await file.CopyAsync(localFolder, file.Name, NameCollisionOption.ReplaceExisting);
+
+                // Lưu tên ảnh vào biến tạm để sử dụng sau khi lưu vào database
+                BeverageImageName.Text = copiedFile.Name;  // Chỉ lưu tên file, không bao gồm đường dẫn đầy đủ
+                //EditBeverageImageName2.Text = copiedFile.Name;
+                // Hiển thị đường dẫn file ảnh đã chọn (local path)
+                BeverageImagePathTextBox.Text = copiedFile.Path;
+            }
+            else
+            {
+                BeverageImageName.Text = "Không có ảnh nào được chọn.";
+            }
+        }
+        private async void AddCategoryImageButton_Click(object sender, RoutedEventArgs e)
+        {
+            var picker = new FileOpenPicker();
+
+            // Cần thiết để hỗ trợ WinUI 3 trên desktop
+            var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(new Window());
+
+            WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+
+            picker.ViewMode = PickerViewMode.Thumbnail;
+            picker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+            picker.FileTypeFilter.Add(".jpg");
+            picker.FileTypeFilter.Add(".png");
+            picker.FileTypeFilter.Add(".jpeg");
+
+            StorageFile file = await picker.PickSingleFileAsync();
+            if (file != null)
+            {
+                // Sao chép file vào thư mục LocalFolder
+                var localFolder = ApplicationData.Current.LocalFolder;
+                var copiedFile = await file.CopyAsync(localFolder, file.Name, NameCollisionOption.ReplaceExisting);
+
+                // Lưu tên ảnh vào biến tạm để sử dụng sau khi lưu vào database
+                ImageName.Text = copiedFile.Name;  // Chỉ lưu tên file, không bao gồm đường dẫn đầy đủ
+                //EditBeverageImageName2.Text = copiedFile.Name;
+                // Hiển thị đường dẫn file ảnh đã chọn (local path)
+                ImagePathTextBox.Text = copiedFile.Path;
+            }
+            else
+            {
+                ImageName.Text = "Không có ảnh nào được chọn.";
+            }
+        }
     }
 }
