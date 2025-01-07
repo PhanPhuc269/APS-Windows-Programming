@@ -178,9 +178,16 @@ public sealed partial class AuthenticationPage : Page
         var password = signupPasswordBox.Password;
         var confirmPassword = signupConfirmPasswordBox.Password;
         var email = signupEmailTextBox.Text;
+
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(email))
         {
             await ShowContentDialog("Thông báo", "Tên đăng nhập, Email hoặc mật khẩu không thể trống.");
+            return;
+        }
+
+        if (!IsEmailValid(email))
+        {
+            await ShowContentDialog("Thông báo", "Email không hợp lệ. Vui lòng kiểm tra lại.");
             return;
         }
 
@@ -219,6 +226,21 @@ public sealed partial class AuthenticationPage : Page
         }
     }
 
+
+    private bool IsEmailValid(string email)
+    {
+        try
+        {
+            // Biểu thức chính quy để kiểm tra định dạng email
+            var emailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+            return System.Text.RegularExpressions.Regex.IsMatch(email, emailPattern);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error validating email: {ex.Message}");
+            return false;
+        }
+    }
 
     private async void ForgotPassword_Click(object sender, RoutedEventArgs e)
     {
