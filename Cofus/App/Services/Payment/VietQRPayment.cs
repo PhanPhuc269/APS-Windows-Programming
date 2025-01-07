@@ -159,7 +159,7 @@ public class VietQRPayment:IPaymentMethod
         } // Dùng tên không dấu
     }
     // Hàm để kiểm tra thanh toán liên tục cho đến khi thành công
-    public async Task<bool> WaitForPaymentAsync(Invoice invoice, string token, int delayMilliseconds = 5000)
+    public async Task<bool> WaitForPaymentAsync(Invoice invoice, string token, int delayMilliseconds = 3000)
     {
         // Kiểm tra thanh toán cho đến khi thành công hoặc hết số lần thử
         while (!await CheckPaymentAsync(invoice, token))

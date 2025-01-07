@@ -96,7 +96,7 @@
                         <TextBox x:Name="CustomerNameTextBox" PlaceholderText="Tên khách hàng"/>
                         <TextBox x:Name="PhoneNumberTextBox" PlaceholderText="Số điện thoại"/>
                         <TextBox x:Name="EmailTextBox" PlaceholderText="Email"/>
-                        <TextBox x:Name="PointsTextBox" PlaceholderText="Điểm"/>
+                        <TextBlock x:Name="PointsTextBox"/>
                         <TextBlock x:Name="ErrorTextBox" Foreground="Red"/>
                         
                     </StackPanel>

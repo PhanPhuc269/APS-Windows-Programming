@@ -76,6 +76,7 @@ public sealed partial class CustomerManagementPage : Page
 
     private async void EditButton_Click(object sender, RoutedEventArgs e)
     {
+        PointsTextBox.Visibility = Visibility.Collapsed;
         var selectedCustomer = (Customer)CustomersListView.SelectedItem;
         if (selectedCustomer != null)
         {
@@ -157,6 +158,17 @@ public sealed partial class CustomerManagementPage : Page
             return;
         }
 
+        // Check for duplicate email or phone number
+        var isDuplicate = ViewModel.Customers.Any(c =>
+            (c.Email == EmailTextBox.Text || c.PhoneNumber == PhoneNumberTextBox.Text) &&
+            c.CustomerId != (string.IsNullOrEmpty(CustomerIdTextBox.Text) ? 0 : int.Parse(CustomerIdTextBox.Text)));
+
+        if (isDuplicate)
+        {
+            args.Cancel = true;
+            ErrorTextBox.Text = "Email hoặc số điện thoại đã tồn tại";
+            return;
+        }
 
         var newCustomer = new Customer
         {
