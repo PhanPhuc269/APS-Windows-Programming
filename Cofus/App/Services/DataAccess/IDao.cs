@@ -37,10 +37,10 @@ public interface IDao
     bool UpdateCustomer(Customer customer);
     bool DeleteCustomer(int customerId);
     // Revenue
-    Task<Revenue> GetRevenue(DateTime selectedDate);
-    Task<List<TopProduct>> GetTopProducts(DateTime selectedDate);
-    Task<List<TopCategory>> GetTopCategories(DateTime selectedDate);
-    Task<List<TopSeller>> GetTopSellers(DateTime selectedDate);
+    Task<Revenue> GetRevenue(DateTime startDate, DateTime endDate);
+    Task<List<TopProduct>> GetTopProducts(DateTime startDate, DateTime endDate);
+    Task<List<TopCategory>> GetTopCategories(DateTime startDate, DateTime endDate);
+    Task<List<TopSeller>> GetTopSellers(DateTime startDate, DateTime endDate);
 
     // Quản lý nguyên liệu
     List<Material> GetAllMaterials();
